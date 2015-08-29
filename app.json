@@ -1,0 +1,83 @@
+{
+  "id": "com.nest",
+  "version": "1.0.0",
+  "compatibility": ">=0.1.0",
+  "name": {
+    "en": "Nest devices support",
+    "nl": "Nest apparaten ondersteuning"
+  },
+  "description": {
+    "en": "This app lets you control your Nest Thermostat and Protect",
+    "nl": "Deze app laat jou je Nest Thermostaat en Protect bedienen"
+  },
+  "author": {
+    "name": "Robin Bolscher",
+    "email": "robin@athom.nl"
+  },
+  "dependencies": {
+    "firebase": "latest",
+    "request": "latest",
+    "underscore": "latest"
+  },
+  "permissions": [],
+  "speech": [
+  ],
+  "drivers": [
+    {
+      "id": "nest_thermostat",
+      "name": {
+        "en": "Nest thermostat"
+      },
+      "class": "thermostat",
+      "capabilities": [
+        "name",
+        "onoff",
+        "target_temperature",
+        "measure_temperature",
+        "heating",
+        "cooling"
+      ],
+      "pair": [
+        {
+          "id": "authorization"
+        },
+        {
+          "id": "list_nests_thermostats",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_nest_thermostats"
+          }
+        },
+        {
+          "id": "add_nest_thermostats",
+          "template": "add_devices"
+        }
+      ]
+    },
+    {
+      "id": "nest_protect",
+      "name": {
+        "en": "Nest protect"
+      },
+      "class": "sensor",
+      "capabilities": [
+      ],
+      "pair": [
+        {
+          "id": "authorization"
+        },
+        {
+          "id": "list_nests_protects",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_nest_protects"
+          }
+        },
+        {
+          "id": "add_nest_protects",
+          "template": "add_devices"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "pair": {
+    "authorization": {
+      "authenticate": "Authenticate with Nest",
+      "authorization_explanation": "Before Homey can do anything with your Nest device you need to give permission for this using your Nest account. Press the button below to find out what permissions Homey needs and to authorize it.",
+      "start_authentication": "Authenticate"
+    }
+  }
+}

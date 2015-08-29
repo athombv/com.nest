@@ -1,0 +1,9 @@
+{
+  "pair": {
+    "authorization": {
+      "authenticate": "Authenticatie met Nest",
+      "authorization_explanation": "Voordat Homey kan verbinden met je Nest apparaat moet je hier eerst toestemming voor geven met je Nest account. Klik op de knop hieronder om te kijken welke permissies Homey nodig heeft en hier toestemming voor te geven.",
+      "start_authentication": "Authentiseer"
+    }
+  }
+}

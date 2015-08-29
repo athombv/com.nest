@@ -1,0 +1,34 @@
+<script type="text/javascript">
+
+    // Initially hide content to prevent flashing when already authenticated
+    $( '#authentication_button,#authentication_text' ).hide();
+
+    var url;
+    Homey.on( 'authorized', function () {
+        console.log('authorized');
+        Homey.showView( 'list_nests_thermostats' );
+    } );
+
+    Homey.emit( 'authenticate', {}, function ( err, result ) {
+
+        if ( result.url ) {
+            // Set title when authentication is needed
+            Homey.setTitle( __( 'pair.authorization.authenticate' ) );
+
+            // Show authentication content
+            $( '#authentication_button,#authentication_text' ).show();
+
+            // Store authURL to use in button
+            url = result.url;
+        }
+        else if ( result ) {
+            // Continue to listing devices
+            Homey.showView( 'list_nests_thermostats' );
+        }
+    } );
+</script>
+
+<p id="authentication_text" data-i18n="pair.authorization.authorization_explanation"></p>
+
+<button id="authentication_button" onclick="window.open(url);"><p
+        data-i18n="pair.authorization.start_authentication"></p></button>
