@@ -7,12 +7,17 @@
     "nl": "Nest apparaten ondersteuning"
   },
   "description": {
-    "en": "This app lets you control your Nest Thermostat and Protect",
-    "nl": "Deze app laat jou je Nest Thermostaat en Protect bedienen"
+    "en": "This app lets you control your Nest Thermostat and Nest Protect",
+    "nl": "Deze app laat jou je Nest Thermostaat en Nest Protect bedienen"
   },
+  "category": "climate",
   "author": {
     "name": "Robin Bolscher",
     "email": "robin@athom.nl"
+  },
+  "images": {
+    "large": "assets/images/large.png",
+    "small": "assets/images/small.png"
   },
   "dependencies": {
     "firebase": "latest",
@@ -26,16 +31,17 @@
     {
       "id": "nest_thermostat",
       "name": {
-        "en": "Nest thermostat"
+        "en": "Nest Thermostat",
+        "nl": "Nest Thermostaat"
+      },
+      "images": {
+        "large": "drivers/nest_thermostat/assets/images/large.jpg",
+        "small": "drivers/nest_thermostat/assets/images/small.jpg"
       },
       "class": "thermostat",
       "capabilities": [
-        "name",
-        "onoff",
         "target_temperature",
-        "measure_temperature",
-        "heating",
-        "cooling"
+        "measure_temperature"
       ],
       "pair": [
         {
@@ -57,10 +63,18 @@
     {
       "id": "nest_protect",
       "name": {
-        "en": "Nest protect"
+        "en": "Nest Protect",
+        "nl": "Nest Protect"
+      },
+      "images": {
+        "large": "drivers/nest_protect/assets/images/large.jpg",
+        "small": "drivers/nest_protect/assets/images/small.jpg"
       },
       "class": "sensor",
       "capabilities": [
+        "alarm_co",
+        "alarm_co2",
+        "alarm_battery"
       ],
       "pair": [
         {

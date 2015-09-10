@@ -1,9 +1,9 @@
-### Nest App for Homey
+Nest App for Homey
 
-This app provides two drivers:
+This app provides support for the following devices:
 
-- Nest Thermostat
-- Nest Protect
+- Nest Learning Thermostat
+- Nest Protect Smoke and CO Alarm
 
 You can use this app to:
 

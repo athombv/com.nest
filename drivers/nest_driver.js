@@ -1,13 +1,9 @@
+/**
+ * Include necessary dependencies
+ */
 var Firebase = require( 'firebase' );
 var request = require( 'request' );
 var events = require( 'events' );
-var _ = require( 'underscore' );
-
-/**
- * Global array to store all the incoming Nest data in
- * @type {Array}
- */
-var devices = [];
 
 /**
  * Declare static nest driver variables
@@ -99,122 +95,6 @@ nestDriver.fetchAccessToken = function ( callback, emit ) {
 };
 
 /**
- * Starts listening to incoming data from Nest, it keeps the devices array filled with the latest data
- * @param callback
+ * Export nest driver
  */
-nestDriver.fetchDeviceData = function ( device_type, callback ) {
-
-    // Listen for incoming value events
-    nestDriver.socket.on( 'value', function ( snapshot ) {
-        var data = snapshot.val();
-
-        // To avoid piling up of devices
-        var found_devices = [];
-
-        // Loop over all devices from different categories
-        for ( var device_category in data.devices ) {
-            for ( var x in data.devices[ device_category ] ) {
-
-                // Thermostat or smoke_co_alarms
-                var device = data.devices[ device_category ][ x ];
-
-                // Store device_id as id
-                device[ "id" ] = device.device_id;
-
-                // Store structure protect is in
-                device[ "structure" ] = data.structures[ device.structure_id ];
-
-                // Store device type in device_data
-                device[ "type" ] = device_category;
-
-                // Store access_token to enable quick re-authentication
-                device[ "access_token" ] = nestDriver.credentials.access_token;
-
-                // Add device to devices array
-                found_devices.push( {
-                    data: device,
-                    name: (_.keys( data.structures ).length > 1) ? device.structure.name + ' - ' + device.name_long : device.name_long,
-                    type: device_category
-                } );
-            }
-        }
-
-        // Give back the array containing all devices of the type that is asked for
-        if ( callback ) callback( _.where( found_devices, { type: device_type } ) );
-
-        // Emit event to notify
-        nestDriver.events.emit( 'fetchedDeviceData', snapshot );
-    } );
-};
-
-/**
- * Adds a device to the devices array
- * @param callback
- */
-nestDriver.addDevice = function ( device, callback ) {
-    // Add device
-    devices.push( device );
-
-    if ( callback ) callback()
-};
-
-/**
- * Removes a device from the devices array
- * @param device_data
- */
-nestDriver.removeDevice = function ( device_data ) {
-    // Removes device
-    devices = _.reject( devices, function ( device ) {
-        return device.id === device_data.id
-    } );
-};
-
-/**
- * Searches all devices for the parameter device id, returns data object of device
- * @param device_id
- * @returns {*}
- */
-nestDriver.getDeviceData = function ( device_id ) {
-    for ( var x = 0; x < devices.length; x++ ) {
-        if ( devices[ x ].id === device_id ) {
-            return devices[ x ];
-        }
-    }
-};
-
-/**
- * Gets all devices from a specific device_type
- * @param device_type (thermostats/smoke_co_alarms)
- * @param callback
- * @returns {*}
- */
-nestDriver.getDevices = function ( device_type, callback ) {
-
-    if ( callback ) {
-        callback( _.filter( devices, function ( device ) {
-            return _.where( device, { type: device_type } );
-        } ) );
-    }
-    else {
-        return _.filter( devices, function ( device ) {
-            return _.where( device, { type: device_type } );
-        } );
-    }
-};
-
-/**
- * Stores devices that are already installed when driver is initiated
- * @param init_devices (devices array)
- */
-nestDriver.storeDevices = function ( init_devices, callback ) {
-
-    // Store devices
-    devices = init_devices;
-
-    // Store access token from first device
-    nestDriver.credentials.access_token = init_devices[ 0 ].access_token;
-
-    if ( callback ) callback();
-};
-
 module.exports = nestDriver;
