@@ -3,6 +3,7 @@
  */
 var Firebase = require( 'firebase' );
 var request = require( 'request' );
+var _ = require( 'underscore' );
 var events = require( 'events' );
 
 /**
@@ -92,6 +93,72 @@ nestDriver.fetchAccessToken = function ( callback, emit ) {
             );
         }
     );
+};
+
+nestDriver.fetchDeviceData = function ( device_type, devices ) {
+
+    // First fetch structures
+    nestDriver.socket.child( 'structures' ).on( 'value', function ( snapshot ) {
+        var structures = snapshot.val();
+
+        // Second fetch device data
+        nestDriver.socket.child( 'devices/' + device_type ).on( 'value', function ( snapshot ) {
+            var devices_data = snapshot.val();
+
+            var devices_in_api = [];
+            for ( var id in devices_data ) {
+                var device_data = snapshot.child( id ).val();
+
+                // Map device_id to id for internal use
+                device_data.id = device_data.device_id;
+
+                // Store access token for quick restart
+                device_data.access_token = nestDriver.credentials.access_token;
+
+                // Keep track of away state
+                device_data.structure_away = _.findWhere( structures, device_data.structure_id ).away;
+
+                // Create device object
+                var device = {
+                    data: device_data,
+                    name: device_data.name_long
+                };
+
+                // Check if device already present, then replace it with new data
+                var added = false;
+                for ( var x = 0; x < devices.length; x++ ) {
+                    if ( devices[ x ].data && devices[ x ].data.id === device_data.id ) {
+                        devices [ x ].data = device_data;
+                        added = true;
+                    }
+                }
+
+                // If device was not already present in devices array, add it
+                if ( !added ) {
+                    console.log(device);
+                    devices.push( device );
+                }
+
+                devices_in_api.push( device.data.id );
+            }
+            // Make sure if devices removed from API also removed as installed device
+            nestDriver.events.emit( device_type + '_devices', [ devices, devices_in_api ] );
+
+        } );
+    } );
+};
+
+/**
+ * Util function that returns device according to its id
+ */
+nestDriver.getDevice = function ( devices, installedDevices, device_id ) {
+    var device = _.filter( devices, function ( device ) {
+        if ( _.indexOf( installedDevices, device_id ) > -1 ) {
+            return device.data.id === device_id;
+        }
+    } )[ 0 ];
+
+    return device;
 };
 
 /**

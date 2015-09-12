@@ -41,8 +41,14 @@ module.exports.init = function ( devices_data, callback ) {
         }
     } );
 
-    // Fetch data, and keep listening for updated data
-    fetchData();
+    // Fetch data
+    nestDriver.fetchDeviceData( 'smoke_co_alarms', devices );
+
+    // And keep listening for updated data
+    nestDriver.events.on( 'smoke_co_alarms_devices', function ( data ) {
+        devices = data[ 0 ];
+        installedDevices = _.intersection( installedDevices, data[ 1 ] );
+    } );
 
     // Start listening to alarms
     listenForAlarms();
@@ -124,7 +130,11 @@ module.exports.capabilities = {
         get: function ( device_data, callback ) {
             if ( device_data instanceof Error ) return callback( device_data );
 
-            var value = (getDevice( device_data.id ).data.co_alarm_state !== 'ok');
+            // Get device data
+            var protect = nestDriver.getDevice( devices, installedDevices,  device_data.id );
+            if ( !protect ) return callback( device_data );
+
+            var value = (protect.data.co_alarm_state !== 'ok');
             if ( callback ) callback( value );
 
             // Return casted boolean of co_alarm (int)
@@ -136,7 +146,11 @@ module.exports.capabilities = {
         get: function ( device_data, callback ) {
             if ( device_data instanceof Error ) return callback( device_data );
 
-            var value = (getDevice( device_data.id ).data.smoke_alarm_state !== 'ok');
+            // Get device data
+            var protect = nestDriver.getDevice( devices, installedDevices,  device_data.id );
+            if ( !protect ) return callback( device_data );
+
+            var value = (protect.data.smoke_alarm_state !== 'ok');
             if ( callback ) callback( value );
 
             // Return casted boolean of smoke_alarm_state (int)
@@ -148,7 +162,11 @@ module.exports.capabilities = {
         get: function ( device_data, callback ) {
             if ( device_data instanceof Error ) return callback( device_data );
 
-            var value = (getDevice( device_data.id ).data.battery_health !== 'ok');
+            // Get device data
+            var protect = nestDriver.getDevice( devices, installedDevices,  device_data.id );
+            if ( !protect ) return callback( device_data );
+
+            var value = (protect.data.battery_health !== 'ok');
             if ( callback ) callback( value );
 
             // Return casted boolean of battery_health (int)
@@ -174,70 +192,6 @@ module.exports.deleted = function ( device_data ) {
 };
 
 /**
- * Util function that returns device according to its id
- * @param device_id
- */
-function getDevice ( device_id ) {
-    var device = _.filter( devices, function ( device ) {
-        if ( _.indexOf( installedDevices, device_id ) > -1 ) {
-            return device.data.id === device_id;
-        }
-    } )[ 0 ];
-
-    return device;
-};
-
-/**
- * Listen for incoming data from the nest API, update internal data
- * to keep in sync with API data
- */
-function fetchData () {
-
-    // First fetch structures
-    nestDriver.socket.child( 'structures' ).on( 'value', function ( snapshot ) {
-        var structures = snapshot.val();
-
-        // Second fetch device data
-        nestDriver.socket.child( 'devices/smoke_co_alarms' ).on( 'value', function ( snapshot ) {
-            var devices_data = snapshot.val();
-
-            for ( var id in devices_data ) {
-                var device_data = snapshot.child( id ).val();
-
-                // Map device_id to id for internal use
-                device_data.id = device_data.device_id;
-
-                // Extract name of structure device belongs to
-                device_data.structure_name = _.findWhere( structures, device_data.structure_id ).name;
-
-                // Store access token for quick restart
-                device_data.access_token = nestDriver.credentials.access_token;
-
-                // Create device object
-                var device = {
-                    data: device_data,
-                    name: (_.keys( structures ).length > 1) ? device_data.structure_name + ' - ' + device_data.name_long : device_data.name_long
-                };
-
-                // Check if device already present, then replace it with new data
-                var added = false;
-                for ( var x = 0; x < devices.length; x++ ) {
-                    if ( devices[ x ].data && devices[ x ].data.id === device_data.id ) {
-                        devices [ x ].data = device_data;
-                        added = true;
-                    }
-                }
-
-                // If device was not already present in devices array, add it
-                if ( !added ) {
-                    devices.push( device );
-                }
-            }
-        } );
-    } );
-};
-
-/**
  * Disables previous connections and creates new listeners on the updated set of installed devices
  */
 function listenForAlarms () {
@@ -254,7 +208,7 @@ function listenForAlarms () {
                 var device_id = snapshot.child( id ).child( 'device_id' ).val();
 
                 // Only listen on added device
-                if ( getDevice( device_id ) ) {
+                if ( nestDriver.getDevice( devices, installedDevices,  device_id ) ) {
 
                     listenForSmokeAlarms( device );
 
@@ -274,7 +228,7 @@ function listenForSmokeAlarms ( device ) {
     var deviceState;
     device.child( 'smoke_alarm_state' ).ref().off();
     device.child( 'smoke_alarm_state' ).ref().on( 'value', function ( state ) {
-        var device_data = getDevice( device.child( 'device_id' ).val() ).data;
+        var device_data = nestDriver.getDevice( devices, installedDevices,  device.child( 'device_id' ).val() ).data;
 
         switch ( state.val() ) {
             case 'warning':
@@ -307,7 +261,7 @@ function listenForCOAlarms ( device ) {
     var deviceState;
     device.child( 'co_alarm_state' ).ref().off();
     device.child( 'co_alarm_state' ).ref().on( 'value', function ( state ) {
-        var device_data = getDevice( device.child( 'device_id' ).val() ).data;
+        var device_data = nestDriver.getDevice( devices, installedDevices,  device.child( 'device_id' ).val() ).data;
 
         switch ( state.val() ) {
             case 'warning':
@@ -338,7 +292,7 @@ function listenForCOAlarms ( device ) {
 function listenForBatteryAlarms ( device ) {
     device.child( 'battery_health' ).ref().off();
     device.child( 'battery_health' ).ref().on( 'value', function ( state ) {
-        var device_data = getDevice( device.child( 'device_id' ).val() ).data;
+        var device_data = nestDriver.getDevice( devices, installedDevices,  device.child( 'device_id' ).val() ).data;
 
         // Don't show battery alerts if a more
         // important alert is already showing

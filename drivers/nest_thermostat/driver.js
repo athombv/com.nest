@@ -41,8 +41,14 @@ module.exports.init = function ( devices_data, callback ) {
         }
     } );
 
-    // Fetch data, and keep listening for updated data
-    fetchData();
+    // Fetch data
+    nestDriver.fetchDeviceData( 'thermostats', devices );
+
+    // And keep listening for updated data
+    nestDriver.events.on( 'thermostats_devices', function ( data ) {
+        devices = data[ 0 ];
+        installedDevices = _.intersection( installedDevices, data[ 1 ] );
+    } );
 
     // Bind realtime updates to changes in devices
     bindRealtimeUpdates();
@@ -123,7 +129,9 @@ module.exports.capabilities = {
             if ( device instanceof Error ) return callback( device );
 
             // Get device data
-            var thermostat = getDevice( device.id );
+            var thermostat = nestDriver.getDevice( devices, installedDevices, device.id );
+
+            if ( !thermostat ) return callback( device );
 
             callback( thermostat.data.target_temperature_c );
         },
@@ -134,14 +142,17 @@ module.exports.capabilities = {
             if ( !temperature ) {
                 callback();
                 return false;
-            } else if (temperature < 9) {
+            }
+            else if ( temperature < 9 ) {
                 temperature = 9;
-            } else if (temperature > 32) {
+            }
+            else if ( temperature > 32 ) {
                 temperature = 32;
             }
 
             // Get device data
-            var thermostat = getDevice( device.id );
+            var thermostat = nestDriver.getDevice( devices, installedDevices, device.id );
+            if ( !thermostat ) return callback( device );
 
             // Perform api call
             setTemperature( thermostat.data, temperature, 'c' );
@@ -155,7 +166,8 @@ module.exports.capabilities = {
             if ( device instanceof Error ) return callback( device );
 
             // Get device data
-            var thermostat = getDevice( device.id );
+            var thermostat = nestDriver.getDevice( devices, installedDevices, device.id );
+            if ( !thermostat ) return callback( device );
 
             // Callback ambient temperature
             callback( thermostat.data.ambient_temperature_c );
@@ -179,73 +191,6 @@ module.exports.deleted = function ( device_data ) {
 };
 
 /**
- * Util function that returns device according to its id
- * @param device_id
- */
-function getDevice ( device_id ) {
-    var device = _.filter( devices, function ( device ) {
-        if ( _.indexOf( installedDevices, device_id ) > -1 ) {
-            return device.data.id === device_id;
-        }
-    } )[ 0 ];
-
-    return device;
-};
-
-/**
- * Listen for incoming data from the nest API, update internal data
- * to keep in sync with API data
- */
-function fetchData () {
-
-    // First fetch structures
-    nestDriver.socket.child( 'structures' ).on( 'value', function ( snapshot ) {
-        var structures = snapshot.val();
-
-        // Second fetch device data
-        nestDriver.socket.child( 'devices/thermostats' ).on( 'value', function ( snapshot ) {
-            var devices_data = snapshot.val();
-
-            for ( var id in devices_data ) {
-                var device_data = snapshot.child( id ).val();
-
-                // Map device_id to id for internal use
-                device_data.id = device_data.device_id;
-
-                // Extract name of structure device belongs to
-                device_data.structure_name = _.findWhere( structures, device_data.structure_id ).name;
-
-                // Keep track of away state
-                device_data.structure_away = _.findWhere( structures, device_data.structure_id ).away;
-
-                // Store access token for quick restart
-                device_data.access_token = nestDriver.credentials.access_token;
-
-                // Create device object
-                var device = {
-                    data: device_data,
-                    name: (_.keys( structures ).length > 1) ? device_data.structure_name + ' - ' + device_data.name_long : device_data.name_long
-                };
-
-                // Check if device already present, then replace it with new data
-                var added = false;
-                for ( var x = 0; x < devices.length; x++ ) {
-                    if ( devices[ x ].device_id === device_data.id ) {
-                        devices [ x ] = device_data;
-                        added = true;
-                    }
-                }
-
-                // If device was not already present in devices array, add it
-                if ( !added ) {
-                    devices.push( device );
-                }
-            }
-        } );
-    } );
-};
-
-/**
  * Listens for specific changes on thermostats, and triggers
  * realtime updates if necessary
  */
@@ -266,7 +211,7 @@ function bindRealtimeUpdates () {
     var listenForChange = function ( device_id, id, attribute, capability ) {
         var init = true;
         nestDriver.socket.child( 'devices/thermostats/' + id + '/' + attribute ).on( 'value', function ( value ) {
-            var device = getDevice( device_id );
+            var device = nestDriver.getDevice( devices, installedDevices, device_id );
 
             // Check if device is present, and skip initial event (on device added)
             if ( device && device.data && !init ) {
