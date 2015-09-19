@@ -1,3 +1,5 @@
+//TODO remove unnecessary data from device.data object
+
 /**
  * Include necessary dependencies
  */
@@ -12,7 +14,7 @@ var events = require( 'events' );
  */
 var nestDriver = {
     socket: new Firebase( 'wss://developer-api.nest.com' ),
-    credentials: Homey.env.nestCredentials,
+    credentials: Homey.env.credentials,
     events: new events.EventEmitter()
 };
 

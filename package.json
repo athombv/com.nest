@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "firebase":"latest",
-    "request":"latest",
-    "underscore":"latest"
-  }
-}
