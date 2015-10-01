@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "compatibility": ">=0.1.0",
   "name": {
-    "en": "Nest devices support",
-    "nl": "Nest apparaten ondersteuning"
+    "en": "Nest",
+    "nl": "Nest"
   },
   "description": {
     "en": "This app lets you control your Nest Thermostat and Nest Protect",
