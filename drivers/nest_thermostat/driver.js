@@ -131,16 +131,16 @@ module.exports.capabilities = {
             // Get device data
             var thermostat = nestDriver.getDevice( devices, installedDevices, device.id );
 
-            if ( !thermostat ) return callback( device );
+            if ( !thermostat ) return callback( thermostat );
 
-            callback( thermostat.data.target_temperature_c );
+            callback( null, thermostat.data.target_temperature_c );
         },
         set: function ( device, temperature, callback ) {
             if ( device instanceof Error ) return callback( device );
 
             // Catch faulty trigger
             if ( !temperature ) {
-                callback();
+                callback( null );
                 return false;
             }
             else if ( temperature < 9 ) {
@@ -152,12 +152,12 @@ module.exports.capabilities = {
 
             // Get device data
             var thermostat = nestDriver.getDevice( devices, installedDevices, device.id );
-            if ( !thermostat ) return callback( device );
+            if ( !thermostat ) return callback( thermostat );
 
             // Perform api call
             setTemperature( thermostat.data, temperature, 'c' );
 
-            if ( callback ) callback( temperature );
+            if ( callback ) callback( null, temperature );
         }
     },
 
@@ -170,7 +170,7 @@ module.exports.capabilities = {
             if ( !thermostat ) return callback( device );
 
             // Callback ambient temperature
-            callback( thermostat.data.ambient_temperature_c );
+            callback( null, thermostat.data.ambient_temperature_c );
         }
     }
 };
