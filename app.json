@@ -29,6 +29,20 @@
   ],
   "drivers": [
     {
+      "id": "nest",
+      "name": {
+        "en": "Nest",
+        "nl": "Nest"
+      },
+      "images": {
+        "large": "drivers/nest_thermostat/assets/images/large.jpg",
+        "small": "drivers/nest_thermostat/assets/images/small.jpg"
+      },
+      "class": "thermostat",
+      "capabilities": [
+      ]
+    },
+    {
       "id": "nest_thermostat",
       "name": {
         "en": "Nest Thermostat",
@@ -73,7 +87,7 @@
       "class": "sensor",
       "capabilities": [
         "alarm_co",
-        "alarm_co2",
+        "alarm_smoke",
         "alarm_battery"
       ],
       "pair": [

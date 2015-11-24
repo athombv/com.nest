@@ -1,7 +1,7 @@
 /**
  * Import nest driver and underscore
  */
-var nestDriver = require( '../nest_driver.js' );
+var nestDriver = require( '../nest/driver.js' );
 var _ = require( 'underscore' );
 
 /**
@@ -20,9 +20,6 @@ module.exports.init = function ( devices_data, callback ) {
 
     // Pass already installed devices to nestDriver
     devices_data.forEach( function ( device_data ) {
-
-        // Get stored access_token
-        nestDriver.credentials.access_token = device_data.access_token;
 
         // Register installed devices
         installedDevices.push( device_data.id );
@@ -46,8 +43,35 @@ module.exports.init = function ( devices_data, callback ) {
 
     // And keep listening for updated data
     nestDriver.events.on( 'smoke_co_alarms_devices', function ( data ) {
-        devices = data[ 0 ];
+
+        // Get all devices from api
+        devices = _.filter( data [ 0 ], function ( val ) {
+            return _.some( this, function ( val2 ) {
+                return val2 === val.data.id;
+            } );
+        }, data [ 1 ] );
+
+        // Check for each device if unreachable and check if installedDevices contains unreachable device
+        installedDevices.forEach( function ( device_id ) {
+            nestDriver.registerDeviceReachability( data[ 0 ], data[ 1 ], installedDevices, device_id );
+        } );
+
+        // Update to usable installed devices
         installedDevices = _.intersection( installedDevices, data[ 1 ] );
+    } );
+
+    // Handle not authenticated by disabling devices
+    nestDriver.events.on( 'not_authenticated', function () {
+
+        // Not authenticated with Nest, so no devices in API available
+        installedDevices.forEach( function ( device_id ) {
+            nestDriver.registerDeviceReachability( devices, [], installedDevices, device_id );
+        } );
+    } );
+
+    // Handle authenticated, to re-enable devices
+    nestDriver.events.on( 'authenticated', function () {
+        nestDriver.fetchDeviceData( 'smoke_co_alarms', devices );
     } );
 
     // Start listening to alarms
@@ -73,6 +97,9 @@ module.exports.pair = {
         nestDriver.authWithToken( function ( success ) {
             if ( success ) {
                 Homey.log( 'Authorization with Nest successful' );
+
+                // Fetch data
+                nestDriver.fetchDeviceData( 'smoke_co_alarms', devices );
 
                 // Continue to list devices
                 callback( true );
@@ -100,8 +127,7 @@ module.exports.pair = {
         devices.forEach( function ( device ) {
             devices_list.push( {
                 data: {
-                    id: device.data.id,
-                    access_token: nestDriver.credentials.access_token
+                    id: device.data.id
                 },
                 name: device.name
             } );
@@ -118,6 +144,9 @@ module.exports.pair = {
 
         // Mark device as installed
         installedDevices.push( device.data.id );
+
+        // Start listening for alarms
+        listenForAlarms();
     }
 };
 
@@ -130,8 +159,11 @@ module.exports.capabilities = {
         get: function ( device_data, callback ) {
             if ( device_data instanceof Error ) return callback( device_data );
 
+            // Check if authenticated
+            nestDriver.authWithToken();
+
             // Get device data
-            var protect = nestDriver.getDevice( devices, installedDevices,  device_data.id );
+            var protect = nestDriver.getDevice( devices, installedDevices, device_data.id );
             if ( !protect ) return callback( device_data );
 
             var value = (protect.data.co_alarm_state !== 'ok');
@@ -142,12 +174,15 @@ module.exports.capabilities = {
         }
     },
 
-    alarm_co2: {
+    alarm_smoke: {
         get: function ( device_data, callback ) {
             if ( device_data instanceof Error ) return callback( device_data );
 
+            // Check if authenticated
+            nestDriver.authWithToken();
+
             // Get device data
-            var protect = nestDriver.getDevice( devices, installedDevices,  device_data.id );
+            var protect = nestDriver.getDevice( devices, installedDevices, device_data.id );
             if ( !protect ) return callback( device_data );
 
             var value = (protect.data.smoke_alarm_state !== 'ok');
@@ -162,8 +197,11 @@ module.exports.capabilities = {
         get: function ( device_data, callback ) {
             if ( device_data instanceof Error ) return callback( device_data );
 
+            // Check if authenticated
+            nestDriver.authWithToken();
+
             // Get device data
-            var protect = nestDriver.getDevice( devices, installedDevices,  device_data.id );
+            var protect = nestDriver.getDevice( devices, installedDevices, device_data.id );
             if ( !protect ) return callback( device_data );
 
             var value = (protect.data.battery_health !== 'ok');
@@ -201,19 +239,20 @@ function listenForAlarms () {
 
     // Listen for incoming value events
     nestDriver.socket.child( 'devices/smoke_co_alarms' ).once( 'value', function ( snapshot ) {
-
             for ( var id in snapshot.val() ) {
+
+                // Get device
                 var device = snapshot.child( id );
 
+                // Get device id
                 var device_id = snapshot.child( id ).child( 'device_id' ).val();
 
                 // Only listen on added device
-                if ( nestDriver.getDevice( devices, installedDevices,  device_id ) ) {
+                if ( nestDriver.getDevice( devices, installedDevices, device_id ) ) {
 
+                    // Activate listeners
                     listenForSmokeAlarms( device );
-
                     listenForCOAlarms( device );
-
                     listenForBatteryAlarms( device );
                 }
             }
@@ -225,63 +264,86 @@ function listenForAlarms () {
  * Listen for smoke alarms on a Protect
  */
 function listenForSmokeAlarms ( device ) {
-    var deviceState;
-    device.child( 'smoke_alarm_state' ).ref().off();
-    device.child( 'smoke_alarm_state' ).ref().on( 'value', function ( state ) {
-        var device_data = nestDriver.getDevice( devices, installedDevices,  device.child( 'device_id' ).val() ).data;
+    var deviceState = null;
 
+    // Disable previous listeners
+    device.child( 'smoke_alarm_state' ).ref().off();
+
+    // Listen on changes to smoke_alarm_state
+    device.child( 'smoke_alarm_state' ).ref().on( 'value', function ( state ) {
+
+        // Get device_data
+        var device_data = nestDriver.getDevice( devices, installedDevices, device.child( 'device_id' ).val() ).data;
+
+        // Act on the state change of the device
         switch ( state.val() ) {
             case 'warning':
-                if ( deviceState !== 'warning' && device_data ) { // only alert the first change
+                if ( deviceState && deviceState !== 'warning' && device_data ) { // only alert the first change
 
                     // Update alarm_co2
-                    module.exports.realtime( device_data, 'alarm_co2', true );
+                    module.exports.realtime( device_data, 'alarm_smoke', true );
                 }
                 break;
             case 'emergency':
-                if ( deviceState !== 'emergency' && device_data ) { // only alert the first change
+                if ( deviceState && deviceState !== 'emergency' && device_data ) { // only alert the first change
 
                     // Update alarm_co2
-                    module.exports.realtime( device_data, 'alarm_co2', true );
+                    module.exports.realtime( device_data, 'alarm_smoke', true );
                 }
                 break;
             default:
+                if ( deviceState ) {
 
-                // Update alarm_co2
-                module.exports.realtime( device_data, 'alarm_co2', false );
+                    // Update alarm_co2
+                    module.exports.realtime( device_data, 'alarm_smoke', false );
+                }
         }
+
+        // Reset deviceState to prevent multiple events from one change
         deviceState = state.val();
     } );
 };
 
 /**
  * Listen for CO alarms on a Protect
+ * TODO seems to trigger on driver startup
  */
 function listenForCOAlarms ( device ) {
-    var deviceState;
-    device.child( 'co_alarm_state' ).ref().off();
-    device.child( 'co_alarm_state' ).ref().on( 'value', function ( state ) {
-        var device_data = nestDriver.getDevice( devices, installedDevices,  device.child( 'device_id' ).val() ).data;
+    var deviceState = null;
 
+    // Remove previous listeners
+    device.child( 'co_alarm_state' ).ref().off();
+
+    // Start listening on co_alarm_state changes
+    device.child( 'co_alarm_state' ).ref().on( 'value', function ( state ) {
+
+        // Get device data
+        var device_data = nestDriver.getDevice( devices, installedDevices, device.child( 'device_id' ).val() ).data;
+
+        // Act on device state change
         switch ( state.val() ) {
             case 'warning':
-                if ( deviceState !== 'warning' && device_data ) { // only alert the first change
-
+                if ( deviceState && deviceState !== 'warning' && device_data ) { // only alert the first change
                     // Update alarm_co
                     module.exports.realtime( device_data, 'alarm_co', true );
                 }
                 break;
             case 'emergency':
-                if ( deviceState !== 'emergency' && device_data ) { // only alert the first change
+                if ( deviceState && deviceState !== 'emergency' && device_data ) { // only alert the first change
 
                     // Update alarm_co
                     module.exports.realtime( device_data, 'alarm_co', true );
                 }
                 break;
             default:
-                // Update alarm_co
-                module.exports.realtime( device_data, 'alarm_co', false );
+                if ( deviceState ) {
+
+                    // Update alarm_co
+                    module.exports.realtime( device_data, 'alarm_co', false );
+                }
         }
+
+        // Reset deviceState to prevent multiple events from one change
         deviceState = state.val();
     } );
 };
@@ -290,23 +352,41 @@ function listenForCOAlarms ( device ) {
  * Listen for low battery on a Protect
  */
 function listenForBatteryAlarms ( device ) {
+    var deviceState = null;
+
+    // Remove previous listeners
     device.child( 'battery_health' ).ref().off();
+
+    // Start listening for changes on battery_health
     device.child( 'battery_health' ).ref().on( 'value', function ( state ) {
-        var device_data = nestDriver.getDevice( devices, installedDevices,  device.child( 'device_id' ).val() ).data;
+
+        // Get device data
+        var device_data = nestDriver.getDevice( devices, installedDevices, device.child( 'device_id' ).val() ).data;
 
         // Don't show battery alerts if a more
         // important alert is already showing
         if ( state.val() === 'replace' &&
             device.child( 'smoke_alarm_state' ).val() === 'ok' &&
             device.child( 'co_alarm_state' ).val() === 'ok' &&
-            device_data ) {
+            device_data && deviceState && deviceState !== 'replace'
+        ) {
 
             // Update battery_empty
             module.exports.realtime( device_data, 'alarm_battery', true );
+
+            // Update state
+            deviceState = state.val();
         }
-        else {
+        else if ( deviceState ) {
+
             // Update battery_empty
             module.exports.realtime( device_data, 'alarm_battery', false );
+
+            // Update state
+            deviceState = 'good';
         }
+
+        // Make sure state is set after initial startup
+        if (!deviceState) deviceState = 'good';
     } );
 };

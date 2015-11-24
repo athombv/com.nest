@@ -1,4 +1,16 @@
 {
+  "offline": "Dit apparaat blijkt offline te zijn",
+  "removed_externally": "Dit apparaat is extern verwijderd",
+  "settings": {
+    "title": "Nest Instellingen",
+    "authorize_intro": "Je kunt Homey toegang verlenen tot je Nest account door op de knop hieronder te klikken, dit geeft Homey de mogelijkheid je Nest apparaten te bedienen.",
+    "auth_title": "Geef Homey toegang tot je Nest apparaten",
+    "deauth_title": "Trek Homey's permissies in",
+    "deauthorize_intro": "Mocht je Homey de toegang tot je Nest account willen ontzeggen, of inloggen met een ander Nest account, klik dan op de knop hieronder om Homey's toestemming terug te trekken, en je Nest account uit te loggen. Als je wil inloggen met een (nieuw) Nest account, ga naar de Devices pagina en voeg een Nest apparaat toe, er wordt dan gevraagd om in te loggen met je Nest account.",
+    "deauthorize": "Trek Homey's toestemming terug",
+    "authorize": "Geef Homey toestemming voor het gebruik van je Nest apparaten!",
+    "warning": "Er ging iets fout, probeer nog eens"
+  },
   "pair": {
     "authorization": {
       "authenticate": "Authenticatie met Nest",

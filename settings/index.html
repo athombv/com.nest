@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="/manager/webserver/assets/css/font.awesome.css">
+    <script type="application/javascript">var authURL;</script>
+</head>
+<body>
+<h1 data-i18n="settings.title"></h1>
+
+<div id="content">
+    <p data-i18n="settings.deauthorize_intro"></p>
+
+    <fieldset>
+        <legend data-i18n="settings.deauth_title"></legend>
+        <button onclick="deauthorize();" id="deauthorize" data-i18n="settings.deauthorize"></button>
+    </fieldset>
+
+    <p data-i18n="settings.authorize_intro"></p>
+
+    <fieldset>
+        <legend data-i18n="settings.auth_title"></legend>
+        <button onclick="window.open(authURL); authorize();" id="authorize" data-i18n="settings.authorize"></button>
+    </fieldset>
+
+    <p data-i18n="settings.warning" id="warning" style="display:none;"></p>
+</div>
+</body>
+</html>
+
+<script type="text/javascript">
+    var deauth_icon = document.createElement( "SPAN" );
+    deauth_icon.id = 'deauth_icon';
+    deauth_icon.className = 'fa fa-cog fa-spin';
+    deauth_icon.style[ "margin-left" ] = '5px';
+
+    var auth_icon = document.createElement( "SPAN" );
+    auth_icon.id = 'auth_icon';
+    auth_icon.className = 'fa fa-cog fa-spin';
+    auth_icon.style[ "margin-left" ] = '5px';
+
+    // Disable buttons by default
+    document.getElementById( 'deauthorize' ).disabled = true;
+    document.getElementById( 'authorize' ).disabled = true;
+
+    // Fetch authorized state
+    function getAuthorizedState ( reflow ) {
+
+        // Make API call to Nest driver to get authorized state
+        Homey.api( 'GET', '/authorized/', {}, function ( err, authorized ) {
+            if ( !err && authorized === true ) {
+
+                // Enable deauthorization button
+                var deauthorizeDiv = document.getElementById( 'deauthorize' );
+                if ( deauthorizeDiv ) deauthorizeDiv.disabled = false;
+                var deauth_iconDiv = document.getElementById( 'deauth_icon' );
+                if ( deauth_iconDiv ) deauth_iconDiv.className = '';
+
+                // Disable authorization button
+                var authorizeDiv = document.getElementById( 'authorize' );
+                if ( authorizeDiv ) authorizeDiv.disabled = true;
+
+                // Make sure warning is not shown
+                document.getElementById( 'warning' ).style.display = 'none';
+            }
+            else if ( err ) {
+
+                // If something went wrong, let the user know
+                document.getElementById( 'warning' ).style.display = 'block';
+                if ( deauth_iconDiv ) deauth_iconDiv.className = 'fa fa-warning';
+            }
+            else {
+
+                // Disable deauthorize button and mark as success
+                var deauthorizeDiv = document.getElementById( 'deauthorize' );
+                if ( deauthorizeDiv ) deauthorizeDiv.disabled = true;
+                var deauth_iconDiv = document.getElementById( 'deauth_icon' );
+                if ( deauth_iconDiv ) deauth_iconDiv.className = 'fa fa-check';
+
+                // Enable authorize button
+                var authorizeDiv = document.getElementById( 'authorize' );
+                if ( authorizeDiv ) authorizeDiv.disabled = false;
+                var auth_iconDiv = document.getElementById( 'auth_icon' );
+                if ( auth_iconDiv ) auth_iconDiv.className = '';
+
+                // Make sure warning is not shown
+                document.getElementById( 'warning' ).style.display = 'none';
+
+                // Get auth URL if not reflowing
+                if ( !reflow ) getAuthorizationURL();
+            }
+        } );
+    }
+
+    // Remove Homey's authorization to use Nest data
+    function deauthorize () {
+
+        // Turn on loading icon
+        var deauth_iconDiv = document.getElementById( 'deauth_icon' );
+        if ( deauth_iconDiv ) deauth_iconDiv.className = 'fa fa-cog fa-spin';
+
+        // Disable deauthorize button and append loading icon
+        var deauthorizeDiv = document.getElementById( 'deauthorize' );
+        if ( deauthorizeDiv ) {
+            deauthorizeDiv.disabled = true;
+            deauthorizeDiv.appendChild( deauth_icon )
+        }
+
+        // Reset auth icon
+        var auth_iconDiv = document.getElementById( 'auth_icon' );
+        if ( auth_iconDiv ) auth_iconDiv.className = '';
+
+        // Make API call to trigger removeWWNConnection in Nest driver
+        Homey.api( 'PUT', '/deauthorize/', {}, function ( err, data ) {
+            if ( !err && data ) {
+
+                // Update authorized state
+                getAuthorizedState();
+            }
+        } );
+    }
+
+    function authorize () {
+        // Turn on loading icon
+        var auth_iconDiv = document.getElementById( 'auth_icon' );
+        if ( auth_iconDiv ) auth_iconDiv.className = 'fa fa-cog fa-spin';
+
+        // Disable authorize button and append loading icon
+        var authorizeDiv = document.getElementById( 'authorize' );
+        if ( authorizeDiv ) {
+            authorizeDiv.disabled = true;
+            authorizeDiv.appendChild( auth_icon )
+        }
+
+        // Turn off loading icon on deauth button
+        var deauth_iconDiv = document.getElementById( 'deauth_icon' );
+        if ( deauth_iconDiv ) deauth_iconDiv.className = '';
+    }
+
+    function getAuthorizationURL () {
+
+        // Make API call to trigger fetchAuthorizationURL in Nest driver
+        Homey.api( 'PUT', '/authorize/', {}, function ( err, data ) {
+            if ( !err && typeof data === 'object' ) {
+                authURL = data.url;
+
+                // Update authorized state
+                getAuthorizedState( true );
+            }
+        } );
+    }
+
+    // Wait for Homey to be available
+    function onHomeyReady () {
+
+        // We are ready
+        Homey.ready();
+
+        // Check if authorized
+        getAuthorizedState();
+
+        Homey.on( 'authorized', function () {
+
+            var auth_iconDiv = document.getElementById( 'auth_icon' );
+            if ( auth_iconDiv ) auth_iconDiv.className = 'fa fa-check';
+
+            // Update authorized state in UI
+            getAuthorizedState()
+        } );
+    }
+</script>
