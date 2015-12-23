@@ -83,18 +83,13 @@ module.exports.init = function ( devices_data, callback ) {
     callback( true );
 };
 
-/**
- * Pairing process that starts with authentication with nest, and declares some callbacks when devices are added and
- * removed
- */
-module.exports.pair = {
+module.exports.pair = function ( socket ) {
 
     /**
      * Passes credentials to front-end, to be used to construct the authorization url,
      * gets called when user initiates pairing process
      */
-    authenticate: function ( callback, emit ) {
-
+    socket.on("authenticate", function ( data, callback ) {
         // Authenticate using access_token
         nestDriver.authWithToken( function ( success ) {
             if ( success ) {
@@ -104,23 +99,23 @@ module.exports.pair = {
                 nestDriver.fetchDeviceData( 'thermostats', devices );
 
                 // Continue to list devices
-                callback( true );
+                callback(null, true);
             }
             else {
                 // Get new access_token and authenticate with Nest
                 nestDriver.fetchAccessToken( function ( result ) {
-                    callback( result );
-                }, emit );
+                    callback(null, result);
+                }, socket );
             }
         } );
-    },
+    });
 
     /**
      * Called when user is presented the list_devices template,
      * this function fetches relevant data from devices and passes
      * it to the front-end
      */
-    list_devices: function ( callback ) {
+    socket.on( 'list_devices', function ( data, callback ) {
         // Create device list from found devices
         var devices_list = [];
         devices.forEach( function ( device ) {
@@ -133,18 +128,20 @@ module.exports.pair = {
         } );
 
         // Return list to front-end
-        callback( devices_list );
-    },
+        callback( null, devices_list );
+    } );
 
     /**
      * When a user adds a device, make sure the driver knows about it
      */
-    add_device: function ( callback, emit, device ) {
+    socket.on( 'add_device', function ( device, callback) {
 
         // Mark device as installed
         installedDevices.push( device.data.id );
-    }
-};
+
+        if (callback) callback(null, device.data.id);
+    } );
+}
 
 /**
  * These represent the capabilities of the Nest Thermostat
@@ -165,8 +162,6 @@ module.exports.capabilities = {
             callback( null, thermostat.data.target_temperature_c );
         },
         set: function ( device, temperature, callback ) {
-            console.log('SET TEMPERATURE');
-
             if ( device instanceof Error ) return callback( device );
 
             // Make sure we are authenticated
@@ -267,11 +262,12 @@ function bindRealtimeUpdates () {
  * @param type
  */
 function setTemperature ( thermostat, degrees, scale, type ) {
-    Homey.log( 'Set Temperature to: ' + degrees );
 
     // Make sure connection is set-up
     nestDriver.authWithToken( function ( success ) {
         if ( success ) {
+            Homey.log( 'Set Temperature to: ' + degrees );
+
             scale = scale.toLowerCase();
             type = type ? type + '_' : '';
 
@@ -283,16 +279,27 @@ function setTemperature ( thermostat, degrees, scale, type ) {
             }
             else if ( thermostat.hvac_mode === 'heat-cool' && !type ) {
                 // Set correct hvac mode for desired temperature
-                setHvacMode( thermostat, (thermostat.ambient_temperature_c > degrees) ? 'cool' : 'heat' );
+                setHvacMode( thermostat, (thermostat.ambient_temperature_c > degrees) ? 'cool' : 'heat', function(err, result){
+                    if(!err && result){
+                        // All clear to change the target temperature
+                        nestDriver.socket.child( path ).set( degrees );
+                    }
+                } );
             }
             else if ( type && thermostat.hvac_mode !== 'heat-cool' ) {
                 // Set correct hvac mode for desired temperature
-                setHvacMode( thermostat, (thermostat.ambient_temperature_c > degrees) ? 'cool' : 'heat' );
+                setHvacMode( thermostat, (thermostat.ambient_temperature_c > degrees) ? 'cool' : 'heat', function(err, result){
+                    if(!err && result){
+                        // All clear to change the target temperature
+                        nestDriver.socket.child( path ).set( degrees );
+                    }
+                } );
             }
             else if ( thermostat.structure_away.indexOf( 'away' ) > -1 ) {
                 Homey.log( "Can't adjust target temperature while structure is set to Away or Auto-away." );
             }
             else {
+
                 // All clear to change the target temperature
                 nestDriver.socket.child( path ).set( degrees );
             }
@@ -308,7 +315,7 @@ function setTemperature ( thermostat, degrees, scale, type ) {
  * @param thermostat
  * @param mode (String: 'heat'/'cool'/'heat-cool')
  */
-function setHvacMode ( thermostat, mode ) {
+function setHvacMode ( thermostat, mode, callback ) {
     Homey.log( 'setHvacMode ' + mode );
 
     // Construct API path
@@ -320,9 +327,13 @@ function setHvacMode ( thermostat, mode ) {
 
             // Set updated mode
             nestDriver.socket.child( path ).set( mode );
+
+            callback(false, true)
         }
         else {
             Homey.log( 'Error, not authenticated' );
+
+            callback(true, false);
         }
     } );
 }

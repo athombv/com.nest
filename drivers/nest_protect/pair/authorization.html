@@ -9,7 +9,6 @@
     } );
 
     Homey.emit( 'authenticate', {}, function ( err, result ) {
-
         if ( result.url ) {
             // Set title when authentication is needed
             Homey.setTitle( __( 'pair.authorization.authenticate' ) );

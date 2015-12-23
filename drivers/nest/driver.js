@@ -26,7 +26,7 @@ nestDriver.authWithToken = function ( callback ) {
     if ( !nestDriver.socket.getAuth() ) {
 
         // Authenticate using access_token
-        nestDriver.socket.authWithCustomToken( Homey.settings.nestAccesstoken || '', function ( err ) {
+        nestDriver.socket.authWithCustomToken( Homey.manager("settings").get("nestAccesstoken") || '', function ( err ) {
             if ( err ) {
                 if ( callback ) callback( null );
 
@@ -73,7 +73,7 @@ nestDriver.fetchAuthorizationURL = function ( callback ) {
                     }
                     else {
                         // Store access token for later reference
-                        Homey.settings.nestAccesstoken = body.access_token;
+                        Homey.manager("settings").set("nestAccesstoken", body.access_token);
 
                         // Authenticate with Nest using the access_token
                         nestDriver.authWithToken( function ( success ) {
@@ -83,7 +83,6 @@ nestDriver.fetchAuthorizationURL = function ( callback ) {
 
                                 // Let the front-end know we are authorized
                                 Homey.manager( 'api' ).realtime( 'authorized' );
-
                             }
                             else {
                                 Homey.log( '' + err );
@@ -99,13 +98,13 @@ nestDriver.fetchAuthorizationURL = function ( callback ) {
 /**
  * Starts OAuth2 flow with Nest to get authenticated
  */
-nestDriver.fetchAccessToken = function ( callback, emit ) {
+nestDriver.fetchAccessToken = function ( callback, socket ) {
 
     // Only clear tokens when fetching new one
-    if ( emit ) {
+    if ( socket ) {
 
         // Reset access_token to make sure front-end doesn't receive old (invalid) tokens
-        Homey.settings.nestAccesstoken = null;
+        Homey.manager("settings").set("nestAccesstoken", null);
     }
 
     // Generate OAuth2 callback, this helps to catch the authorization token
@@ -134,7 +133,7 @@ nestDriver.fetchAccessToken = function ( callback, emit ) {
                     else {
 
                         // Store access_token for the long run
-                        Homey.settings.nestAccesstoken = body.access_token;
+                        Homey.manager("settings").set("nestAccesstoken", body.access_token);
 
                         // Authenticate with Nest using the access_token
                         nestDriver.authWithToken( function ( success ) {
@@ -145,8 +144,8 @@ nestDriver.fetchAccessToken = function ( callback, emit ) {
                                 nestDriver.events.emit( 'authenticated' );
 
                                 // Let the front-end know we are authorized
-                                if ( emit ) {
-                                    emit( 'authorized' );
+                                if ( socket ) {
+                                    socket.emit( 'authorized' );
                                 }
                                 else {
                                     Homey.manager( 'api' ).realtime( 'authorized' );
@@ -172,6 +171,7 @@ nestDriver.fetchDeviceData = function ( device_type, devices ) {
         // Second fetch device data
         nestDriver.socket.child( 'devices/' + device_type ).on( 'value', function ( snapshot ) {
             var devices_data = snapshot.val();
+
             var devices_in_api = [];
             for ( var id in devices_data ) {
                 var device_data = snapshot.child( id ).val();
@@ -217,7 +217,7 @@ nestDriver.removeWWNConnection = function ( callback, access_tokens ) {
     access_tokens = ( access_tokens instanceof String) ? [ access_tokens ] : _.uniq( access_tokens );
 
     // If Nest accesstoken is stored in settings, add it to be removed
-    if ( Homey.settings.nestAccesstoken ) access_tokens.push( Homey.settings.nestAccesstoken );
+    if ( Homey.manager("settings").get("nestAccesstoken") ) access_tokens.push( Homey.manager("settings").get("nestAccesstoken") );
 
     // Double check for array to loop over
     if ( access_tokens instanceof Array ) {
