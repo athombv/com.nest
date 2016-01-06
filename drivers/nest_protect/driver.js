@@ -135,7 +135,7 @@ module.exports.pair = function (socket) {
 	/**
 	 * When a user adds a device, make sure the driver knows about it
 	 */
-	socket.on('add_device', function (data, callback) {
+	socket.on('add_device', function (device, callback) {
 
 		// Mark device as installed
 		installedDevices.push(device.data.id);
