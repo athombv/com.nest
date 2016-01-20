@@ -116,19 +116,24 @@ module.exports.pair = function ( socket ) {
      * it to the front-end
      */
     socket.on( 'list_devices', function ( data, callback ) {
-        // Create device list from found devices
-        var devices_list = [];
-        devices.forEach( function ( device ) {
-            devices_list.push( {
-                data: {
-                    id: device.data.id
-                },
-                name: device.name
-            } );
-        } );
 
-        // Return list to front-end
-        callback( null, devices_list );
+		// Fetch data
+		nestDriver.fetchDeviceData( 'thermostats', devices, function() {
+
+			// Create device list from found devices
+			var devices_list = [];
+			devices.forEach( function ( device ) {
+				devices_list.push( {
+					data: {
+						id: device.data.id
+					},
+					name: device.name
+				} );
+			} );
+
+			// Return list to front-end
+			callback( null, devices_list );
+		} );
     } );
 
     /**

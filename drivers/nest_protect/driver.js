@@ -117,19 +117,22 @@ module.exports.pair = function (socket) {
 	 */
 	socket.on('list_devices', function (data, callback) {
 
-		// Create device list from found devices
-		var devices_list = [];
-		devices.forEach(function (device) {
-			devices_list.push({
-				data: {
-					id: device.data.id
-				},
-				name: device.name
+		// Fetch data
+		nestDriver.fetchDeviceData('smoke_co_alarms', devices, function () {
+			// Create device list from found devices
+			var devices_list = [];
+			devices.forEach(function (device) {
+				devices_list.push({
+					data: {
+						id: device.data.id
+					},
+					name: device.name
+				});
 			});
-		});
 
-		// Return list to front-end
-		callback(null, devices_list);
+			// Return list to front-end
+			callback(null, devices_list);
+		});
 	});
 
 	/**
