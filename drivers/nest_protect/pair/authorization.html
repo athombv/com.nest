@@ -3,6 +3,12 @@
     // Initially hide content to prevent flashing when already authenticated
     $( '#authentication_button,#authentication_text' ).hide();
 
+    // Set window options
+    var width	= 400;
+    var height	= 400;
+    var left	= (screen.width/2)-(width/2);
+    var top		= (screen.height/2)-(height/2);
+
     var url;
     Homey.on( 'authorized', function () {
         Homey.showView( 'list_nests_protects' );
@@ -28,5 +34,5 @@
 
 <p id="authentication_text" data-i18n="pair.authorization.authorization_explanation"></p>
 
-<button id="authentication_button" onclick="window.open(url);"><p
+<button class="button" id="authentication_button" onclick="window.open(url, 'auth_dialog', 'width=' + width + ', height=' + height + ', left=' + left + ', top=' + top + ', menubar=no, status=no, toolbar=no');"><p
         data-i18n="pair.authorization.start_authentication"></p></button>

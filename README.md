@@ -1,4 +1,4 @@
-Nest App for Homey
+Nest App for Homey (pilot, maximal 50 users only)
 
 This app provides support for the following devices:
 

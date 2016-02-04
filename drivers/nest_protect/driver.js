@@ -165,7 +165,7 @@ module.exports.capabilities = {
 			if (!protect) return callback(device_data);
 
 			var value = (protect.data.co_alarm_state !== 'ok');
-			if (callback) callback(value);
+			if (callback) callback(null, value);
 
 			// Return casted boolean of co_alarm (int)
 			return value;
@@ -184,7 +184,7 @@ module.exports.capabilities = {
 			if (!protect) return callback(device_data);
 
 			var value = (protect.data.smoke_alarm_state !== 'ok');
-			if (callback) callback(value);
+			if (callback) callback(null, value);
 
 			// Return casted boolean of smoke_alarm_state (int)
 			return value;
@@ -203,7 +203,7 @@ module.exports.capabilities = {
 			if (!protect) return callback(device_data);
 
 			var value = (protect.data.battery_health !== 'ok');
-			if (callback) callback(value);
+			if (callback) callback(null, value);
 
 			// Return casted boolean of battery_health (int)
 			return value;

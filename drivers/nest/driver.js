@@ -81,12 +81,14 @@ nestDriver.fetchAuthorizationURL = function (callback) {
 								Homey.log('Authorization with Nest successful');
 								nestDriver.events.emit('authenticated');
 
+								Homey.manager('api').realtime('authorized_state', success);
+
 								// Let the front-end know we are authorized
 								Homey.manager('api').realtime('authorized');
-
 							}
 							else {
 								Homey.log('' + err);
+								Homey.manager('api').realtime('authorized_state', false);
 							}
 						});
 					}
@@ -141,6 +143,8 @@ nestDriver.fetchAccessToken = function (callback, socket) {
 							if (success) {
 								Homey.log('Authorization with Nest successful');
 
+								Homey.manager('api').realtime('authorized_state', success);
+
 								// Emit event to look for devices that need to be re-enabled
 								nestDriver.events.emit('authenticated');
 
@@ -154,6 +158,7 @@ nestDriver.fetchAccessToken = function (callback, socket) {
 							}
 							else {
 								Homey.log('' + err);
+								Homey.manager('api').realtime('authorized_state', false);
 							}
 						});
 					}
@@ -168,7 +173,7 @@ nestDriver.fetchDeviceData = function (device_type, devices, callback) {
 	// First fetch structures
 	nestDriver.socket.child('structures').on('value', function (snapshot) {
 		var structures = snapshot.val();
-		console.log(structures);
+
 		// Second fetch device data
 		nestDriver.socket.child('devices/' + device_type).on('value', function (snapshot) {
 			var devices_data = snapshot.val();
@@ -231,6 +236,7 @@ nestDriver.removeWWNConnection = function (callback, access_tokens) {
 					if (!err && response) {
 						Homey.manager('api').realtime('deauthorized', access_token);
 						Homey.log('Connection removed');
+						Homey.manager('api').realtime('authorized_state', false);
 						if (callback) callback(null, true);
 					}
 					else {

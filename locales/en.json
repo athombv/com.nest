@@ -3,10 +3,10 @@
   "removed_externally": "This device seems to be removed externally",
   "settings": {
     "title": "Nest Settings",
-    "authorize_intro": "You can connect your Nest account to Homey by clicking the button below, this will give Homey access to your Nest devices.",
+    "authorize_intro": "To give Homey access to your Nest devices, click the button below!",
     "auth_title": "Authorize Homey",
     "deauth_title": "Deauthorize Homey",
-    "deauthorize_intro": "If you ever would like to disconnect Homey from your Nest account, or switch to a different Nest account, click the button below to withdraw Homey's permission to use your account and log out from your Nest account. To login with a (new) Nest account, you can click the Authorize Homey button, or go to the Devices page and add a Nest device, you will be asked to login to your Nest account.",
+    "deauthorize_intro": "If you want to disconnect Homey from your Nest account, click the button below.",
     "deauthorize": "Withdraw Homey's authorization",
     "authorize": "Authorize Homey to use your Nest device!",
     "warning": "Something went wrong, please try again"
@@ -14,7 +14,7 @@
   "pair": {
     "authorization": {
       "authenticate": "Authenticate with Nest",
-      "authorization_explanation": "Before Homey can do anything with your Nest device you need to give permission for this using your Nest account. Press the button below to find out what permissions Homey needs and to authorize it.",
+      "authorization_explanation": "Give Homey access to your Nest devices!",
       "start_authentication": "Authenticate"
     }
   }
