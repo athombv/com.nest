@@ -19,9 +19,9 @@
     "small": "assets/images/small.png"
   },
   "dependencies": {
-    "firebase": "latest",
-    "request": "latest",
-    "underscore": "latest"
+    "firebase": "~2.4.0",
+    "request": "~2.69.0",
+    "underscore": "~1.8.3"
   },
   "permissions": [],
   "speech": [

@@ -34,7 +34,6 @@ module.exports.init = function (devices_data, callback) {
 		else {
 			// Get new access_token and authenticate with Nest
 			Homey.log('Initializing driver failed, try adding devices.');
-
 		}
 	});
 
@@ -165,6 +164,7 @@ module.exports.capabilities = {
 			if (!protect) return callback(device_data);
 
 			var value = (protect.data.co_alarm_state !== 'ok');
+
 			if (callback) callback(null, value);
 
 			// Return casted boolean of co_alarm (int)
@@ -184,6 +184,7 @@ module.exports.capabilities = {
 			if (!protect) return callback(device_data);
 
 			var value = (protect.data.smoke_alarm_state !== 'ok');
+
 			if (callback) callback(null, value);
 
 			// Return casted boolean of smoke_alarm_state (int)
@@ -203,6 +204,7 @@ module.exports.capabilities = {
 			if (!protect) return callback(device_data);
 
 			var value = (protect.data.battery_health !== 'ok');
+
 			if (callback) callback(null, value);
 
 			// Return casted boolean of battery_health (int)
@@ -231,9 +233,6 @@ module.exports.deleted = function (device_data) {
  * Disables previous connections and creates new listeners on the updated set of installed devices
  */
 function listenForAlarms() {
-
-	// Remove possible previous listeners
-	nestDriver.socket.child('devices/smoke_co_alarms').off();
 
 	// Listen for incoming value events
 	nestDriver.socket.child('devices/smoke_co_alarms').once('value', function (snapshot) {
@@ -264,14 +263,12 @@ function listenForAlarms() {
 function listenForSmokeAlarms(device) {
 	var deviceState = null;
 
-	// Disable previous listeners
-	device.child('smoke_alarm_state').ref().off();
-
 	// Listen on changes to smoke_alarm_state
 	device.child('smoke_alarm_state').ref().on('value', function (state) {
 
-		// Get device_data
-		var device_data = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val()).data;
+		// Get device data
+		var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
+		var device_data = (stored_device) ? stored_device.data : null;
 
 		// Act on the state change of the device
 		switch (state.val()) {
@@ -304,24 +301,22 @@ function listenForSmokeAlarms(device) {
 
 /**
  * Listen for CO alarms on a Protect
- * TODO seems to trigger on driver startup
  */
 function listenForCOAlarms(device) {
 	var deviceState = null;
-
-	// Remove previous listeners
-	device.child('co_alarm_state').ref().off();
 
 	// Start listening on co_alarm_state changes
 	device.child('co_alarm_state').ref().on('value', function (state) {
 
 		// Get device data
-		var device_data = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val()).data;
+		var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
+		var device_data = (stored_device) ? stored_device.data : null;
 
 		// Act on device state change
 		switch (state.val()) {
 			case 'warning':
 				if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
+
 					// Update alarm_co
 					module.exports.realtime(device_data, 'alarm_co', true);
 				}
@@ -352,20 +347,16 @@ function listenForCOAlarms(device) {
 function listenForBatteryAlarms(device) {
 	var deviceState = null;
 
-	// Remove previous listeners
-	device.child('battery_health').ref().off();
-
 	// Start listening for changes on battery_health
 	device.child('battery_health').ref().on('value', function (state) {
 
 		// Get device data
-		var device_data = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val()).data;
+		var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
+		var device_data = (stored_device) ? stored_device.data : null;
 
 		// Don't show battery alerts if a more
 		// important alert is already showing
 		if (state.val() === 'replace' &&
-			device.child('smoke_alarm_state').val() === 'ok' &&
-			device.child('co_alarm_state').val() === 'ok' &&
 			device_data && deviceState && deviceState !== 'replace'
 		) {
 
@@ -384,7 +375,7 @@ function listenForBatteryAlarms(device) {
 			deviceState = 'good';
 		}
 
-		// Make sure state is set after initial startup
-		if (!deviceState) deviceState = 'good';
+		// Reset deviceState to prevent multiple events from one change
+		deviceState = state.val();
 	});
 };

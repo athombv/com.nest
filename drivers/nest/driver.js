@@ -177,7 +177,6 @@ nestDriver.fetchDeviceData = function (device_type, devices, callback) {
 		// Second fetch device data
 		nestDriver.socket.child('devices/' + device_type).on('value', function (snapshot) {
 			var devices_data = snapshot.val();
-
 			var devices_in_api = [];
 			for (var id in devices_data) {
 				var device_data = snapshot.child(id).val();
