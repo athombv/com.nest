@@ -177,6 +177,7 @@ nestDriver.fetchDeviceData = function (device_type, devices, callback) {
 		// Second fetch device data
 		nestDriver.socket.child('devices/' + device_type).on('value', function (snapshot) {
 			var devices_data = snapshot.val();
+
 			var devices_in_api = [];
 			for (var id in devices_data) {
 				var device_data = snapshot.child(id).val();
@@ -197,7 +198,8 @@ nestDriver.fetchDeviceData = function (device_type, devices, callback) {
 				var added = false;
 				for (var x = 0; x < devices.length; x++) {
 					if (devices[x].data && devices[x].data.id === device_data.id) {
-						devices [x].data = device_data;
+						devices[x].data = device_data;
+						devices[x].name = device_data.name_long;
 						added = true;
 					}
 				}
