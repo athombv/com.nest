@@ -252,8 +252,8 @@ function bindRealtimeUpdates () {
 
             // Check if device is present, and skip initial event (on device added)
             if ( device && device.data && !init ) {
-                module.exports.realtime( device.data, capability, value.val() );
-            }
+				module.exports.realtime( device.data, capability, value.val() );
+			}
             init = false;
         } );
     };
