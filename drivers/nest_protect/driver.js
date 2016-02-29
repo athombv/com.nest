@@ -1,7 +1,7 @@
 /**
  * Import nest driver and underscore
  */
-var nestDriver = require('../nest/driver.js');
+var nestDriver = require('./../../app.js');
 var _ = require('underscore');
 
 /**

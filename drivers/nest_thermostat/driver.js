@@ -1,7 +1,7 @@
 /**
  * Import nest driver and underscore
  */
-var nestDriver = require( '../nest/driver.js' );
+var nestDriver = require( './../../app.js' );
 var _ = require( 'underscore' );
 
 /**
@@ -225,6 +225,29 @@ module.exports.deleted = function ( device_data ) {
             } );
         }
     }
+};
+
+/**
+ * Handle enabling a device from app.js, this handles both thermostats and protects
+ * @param device_id
+ */
+module.exports.registerAvailable = function (device_id) {
+	module.exports.setAvailable(device_id);
+};
+
+/**
+ * Handles disabling a device from app.js, this handles both thermostats and protects
+ * @param device_id
+ * @param warning
+ * @param callback
+ */
+module.exports.registerUnavailable = function (device_id, warning, callback) {
+	if (typeof callback == "function") {
+		module.exports.setUnavailable({id: device_id}, warning, callback);
+	}
+	else {
+		module.exports.setUnavailable({id: device_id}, warning);
+	}
 };
 
 /**
