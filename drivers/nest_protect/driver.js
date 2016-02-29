@@ -145,7 +145,7 @@ module.exports.pair = function (socket) {
 		// Start listening for alarms
 		listenForAlarms();
 	});
-}
+};
 
 /**
  * These represent the capabilities of the Nest Protect
@@ -163,7 +163,7 @@ module.exports.capabilities = {
 			var protect = nestDriver.getDevice(devices, installedDevices, device_data.id);
 			if (!protect) return callback(device_data);
 
-			var value = (protect.data.co_alarm_state !== 'ok');
+			var value = (protect.data.co_alarm_state !== 'ok' && protect.data.hasOwnProperty("alarm_co"));
 
 			if (callback) callback(null, value);
 
@@ -183,7 +183,7 @@ module.exports.capabilities = {
 			var protect = nestDriver.getDevice(devices, installedDevices, device_data.id);
 			if (!protect) return callback(device_data);
 
-			var value = (protect.data.smoke_alarm_state !== 'ok');
+			var value = (protect.data.smoke_alarm_state !== 'ok' && protect.data.hasOwnProperty("alarm_smoke"));
 
 			if (callback) callback(null, value);
 
@@ -203,7 +203,7 @@ module.exports.capabilities = {
 			var protect = nestDriver.getDevice(devices, installedDevices, device_data.id);
 			if (!protect) return callback(device_data);
 
-			var value = (protect.data.battery_health !== 'ok');
+			var value = (protect.data.battery_health !== 'ok' && protect.data.hasOwnProperty("battery_health"));
 
 			if (callback) callback(null, value);
 
@@ -376,6 +376,6 @@ function listenForBatteryAlarms(device) {
 		}
 
 		// Reset deviceState to prevent multiple events from one change
-		deviceState = state.val();
+		if (state.val() != null) deviceState = state.val();
 	});
 };
