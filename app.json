@@ -28,20 +28,6 @@
   ],
   "drivers": [
     {
-      "id": "nest",
-      "name": {
-        "en": "Nest",
-        "nl": "Nest"
-      },
-      "images": {
-        "large": "drivers/nest_thermostat/assets/images/large.jpg",
-        "small": "drivers/nest_thermostat/assets/images/small.jpg"
-      },
-      "class": "thermostat",
-      "capabilities": [
-      ]
-    },
-    {
       "id": "nest_thermostat",
       "name": {
         "en": "Nest Thermostat",

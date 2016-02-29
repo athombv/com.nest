@@ -12,7 +12,7 @@ var events = require('events');
  */
 var nestDriver = {
 	socket: new Firebase('wss://developer-api.nest.com'),
-	credentials: Homey.env.credentials,
+	credentials: {clientID: Homey.env.NEST_CLIENT_ID, clientSecret: Homey.env.NEST_CLIENT_SECRET},
 	events: new events.EventEmitter()
 };
 
