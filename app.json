@@ -92,5 +92,43 @@
         }
       ]
     }
-  ]
+  ],
+  "flow": {
+    "conditions": [
+      {
+        "id": "status_home",
+        "title": {
+          "en": "Is set to home",
+          "nl": "Is ingesteld op aanwezig"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      },
+      {
+        "id": "status_away",
+        "title": {
+          "en": "Is set to away",
+          "nl": "Is ingesteld op afwezig"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      }
+    ]
+  }
 }

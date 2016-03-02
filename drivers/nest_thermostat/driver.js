@@ -301,6 +301,9 @@ function setTemperature ( thermostat, degrees, scale, type ) {
 
             var path = getApiPath( thermostat ) + '/target_temperature_' + type + scale;
 
+			// Get structure of device
+			var structure = nestDriver.getStructure(thermostat.structure_id);
+
             // Check for blocking events
             if ( thermostat.is_using_emergency_heat ) {
                 Homey.log( "Can't adjust target temperature while using emergency heat." );
@@ -323,8 +326,9 @@ function setTemperature ( thermostat, degrees, scale, type ) {
                     }
                 } );
             }
-            else if ( thermostat.structure_away.indexOf( 'away' ) > -1 ) {
+            else if ( structure != null && structure.hasOwnProperty("away") && structure.away != "home") {
                 Homey.log( "Can't adjust target temperature while structure is set to Away or Auto-away." );
+				//TODO this could cause problems as the users gets no feedback when it fails, and we can't set it to "Home" programatically
             }
             else {
 
