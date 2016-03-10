@@ -1,4 +1,4 @@
-Nest App for Homey (pilot, maximal 50 users only)
+# Nest App for Homey (pilot, maximal 50 users only)
 
 This app provides support for the following devices:
 
@@ -7,5 +7,7 @@ This app provides support for the following devices:
 
 You can use this app to:
 
-- Control and read the temperature
-- Get emergency notifications for smoke and carbonoxide
+- Control and read the target temperature
+- Read the measured temperature
+- Get emergency notifications for smoke, carbonoxide and battery level
+- Use the Nest Away state in your flows

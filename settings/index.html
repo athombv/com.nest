@@ -65,7 +65,7 @@
                     authURL = data.url;
                 }
             });
-        })
+        });
 
         // Catch authorization click
         $('#authorize').on('click', function () {
@@ -81,6 +81,8 @@
         // Listen for incoming changes concerning the authorization state from the app
         Homey.on('authorized_state', function (authorized) {
             if (authorized) {
+
+                // Mark buttons as authorized
                 $('#deauth_icon').attr('class', "");
                 $('#auth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').show();
@@ -88,6 +90,8 @@
                 $('#deauthorize').prop('disabled', false);
             }
             else {
+
+                // Mark buttons as unauthorized
                 $('#deauth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').attr('class', "");
                 $('#deauthorize').prop('disabled', true);
@@ -98,6 +102,8 @@
         // Fetch current authorization state from the app
         Homey.api('GET', '/authorized/', {}, function (err, authorized) {
             if (authorized) {
+
+                // Mark buttons as authorized
                 $('#deauth_icon').attr('class', "");
                 $('#auth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').show();
@@ -105,6 +111,8 @@
                 $('#deauthorize').prop('disabled', false);
             }
             else {
+
+                // Mark buttons as unauthorized
                 $('#deauth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').attr('class', "");
                 $('#deauthorize').prop('disabled', true);

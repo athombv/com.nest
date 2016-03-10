@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "compatibility": ">=0.0.0",
   "name": {
     "en": "Nest",
@@ -92,5 +92,106 @@
         }
       ]
     }
-  ]
+  ],
+  "flow": {
+    "triggers": [
+      {
+        "id": "status_changed_home",
+        "title": {
+          "en": "Status changed to Home",
+          "nl": "Status veranderd naar Home"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      },
+      {
+        "id": "status_changed_away",
+        "title": {
+          "en": "Status changed to Away",
+          "nl": "Status veranderd naar Home"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      },
+      {
+        "id": "status_changed_autoaway",
+        "title": {
+          "en": "Status changed to Auto-Away",
+          "nl": "Status veranderd naar Auto-Away"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "away_status",
+        "title": {
+          "en": "Away status is",
+          "nl": "Away status is"
+        },
+        "args": [
+          {
+            "name": "status",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "home",
+                "label": {
+                  "en": "Home",
+                  "nl": "Home"
+                }
+              },
+              {
+                "id": "away",
+                "label": {
+                  "en": "Away",
+                  "nl": "Away"
+                }
+              },
+              {
+                "id": "auto-away",
+                "label": {
+                  "en": "Auto away",
+                  "nl": "Auto away"
+                }
+              }
+            ]
+          },
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      }
+    ]
+  }
 }

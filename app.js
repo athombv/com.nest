@@ -9,6 +9,12 @@ var _ = require('underscore');
 var events = require('events');
 
 /**
+ * Keep track of all structures
+ * @type {Array}
+ */
+var globalStructures = [];
+
+/**
  * Declare static nest driver variables
  * @type {Object}
  */
@@ -16,6 +22,66 @@ var nestDriver = {
 	socket: new Firebase('wss://developer-api.nest.com'),
 	credentials: {clientID: Homey.env.NEST_CLIENT_ID, clientSecret: Homey.env.NEST_CLIENT_SECRET},
 	events: new events.EventEmitter()
+};
+
+/**
+ * Handle all custom flows of the Nest app
+ */
+nestDriver.init = function () {
+
+	// Provide autocomplete input
+	Homey.manager('flow').on('condition.away_status.structures.autocomplete', function (callback) {
+		callback(null, globalStructures);
+	});
+
+	Homey.manager('flow').on('trigger.status_changed_home.structures.autocomplete', function (callback) {
+		callback(null, globalStructures);
+	});
+
+	Homey.manager('flow').on('trigger.status_changed_away.structures.autocomplete', function (callback) {
+		callback(null, globalStructures);
+	});
+
+	Homey.manager('flow').on('trigger.status_changed_autoaway.structures.autocomplete', function (callback) {
+		callback(null, globalStructures);
+	});
+
+	// When triggered, get latest structure data and check if status is home or not
+	Homey.manager('flow').on('condition.away_status', function (callback, args) {
+		var result = false;
+
+		// Check for proper incoming arguments
+		if (args != null && args.hasOwnProperty("structures") && args.structures.hasOwnProperty("structure_id")) {
+
+			// Loop over all structures to find the one provided by args
+			for (var i = 0; i < globalStructures.length; i++) {
+
+				// Get structure
+				var structure = nestDriver.getStructure(args.structures.structure_id);
+
+				// If found and status is away return true
+				if (structure != null && structure.hasOwnProperty("away") && structure.away == args.status) {
+					result = true;
+				}
+			}
+		}
+		callback(null, result);
+	});
+
+	Homey.manager('flow').on('trigger.status_changed_home', function (callback, args, value) {
+		var result = (args.structures.structure_id == value.structure_id);
+		callback(null, result);
+	});
+
+	Homey.manager('flow').on('trigger.status_changed_away', function (callback, args, value) {
+		var result = (args.structures.structure_id == value.structure_id);
+		callback(null, result);
+	});
+
+	Homey.manager('flow').on('trigger.status_changed_autoaway', function (callback, args, value) {
+		var result = (args.structures.structure_id == value.structure_id);
+		callback(null, result);
+	});
 };
 
 /**
@@ -185,6 +251,35 @@ nestDriver.fetchDeviceData = function (device_type, devices, callback) {
 	nestDriver.socket.child('structures').on('value', function (snapshot) {
 		var structures = snapshot.val();
 
+		// Detect change of away status
+		for (var x in structures) {
+			structures[x].id = structures[x].structure_id;
+
+			// Check for changed status
+			var structure = nestDriver.getStructure(structures[x].id);
+			if (structure != null) {
+				if (structures[x].away != structure.away) {
+
+					// Detected change
+					if (structures[x].away == "home") {
+						Homey.manager('flow').trigger('status_changed_home', {structure_id: structures[x].id}, {structure_id: structures[x].id});
+					}
+					else if (structures[x].away == "away") {
+						Homey.manager('flow').trigger('status_changed_away', {structure_id: structures[x].id}, {structure_id: structures[x].id});
+					}
+					else if (structures[x].away == "auto-away") {
+						Homey.manager('flow').trigger('status_changed_autoaway', {structure_id: structures[x].id}, {structure_id: structures[x].id});
+					}
+				}
+			}
+		}
+
+		// Save structure data globally
+		globalStructures = [];
+		for (var x in structures) {
+			globalStructures.push(structures[x]);
+		}
+
 		// Second fetch device data
 		nestDriver.socket.child('devices/' + device_type).on('value', function (snapshot) {
 			var devices_data = snapshot.val();
@@ -319,6 +414,25 @@ nestDriver.getDevice = function (devices, installedDevices, device_id) {
 	})[0];
 
 	return device;
+};
+
+/**
+ * Util function that returns the structure asked for
+ * @param structure_id
+ * @returns {*}
+ */
+nestDriver.getStructure = function (structure_id) {
+	// Loop over all structures
+	for (var i = 0; i < globalStructures.length; i++) {
+
+		// If found and status is away return true
+		if (globalStructures[i].structure_id == structure_id) {
+			return globalStructures[i];
+		}
+	}
+
+	// Default return
+	return null;
 };
 
 /**
