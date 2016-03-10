@@ -94,6 +94,59 @@
     }
   ],
   "flow": {
+    "triggers": [
+      {
+        "id": "status_changed_home",
+        "title": {
+          "en": "Status changed to Home",
+          "nl": "Status veranderd naar Home"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      },
+      {
+        "id": "status_changed_away",
+        "title": {
+          "en": "Status changed to Away",
+          "nl": "Status veranderd naar Home"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      },
+      {
+        "id": "status_changed_autoaway",
+        "title": {
+          "en": "Status changed to Auto-Away",
+          "nl": "Status veranderd naar Auto-Away"
+        },
+        "args": [
+          {
+            "name": "structures",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          }
+        ]
+      }
+    ],
     "conditions": [
       {
         "id": "away_status",
