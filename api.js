@@ -1,4 +1,3 @@
-var nestDriver = require('./drivers/nest/driver.js');
 module.exports = [
 	{
 		description: 'Authorize Nest',
@@ -7,7 +6,7 @@ module.exports = [
 		fn: function (callback, args) {
 
 			// Trigger authorizations
-			nestDriver.authWithToken(function (authorized) {
+			Homey.app.authWithToken(function (authorized) {
 				clearTimeout(timeout);
 				callback(null, authorized);
 			});
@@ -25,7 +24,7 @@ module.exports = [
 		fn: function (callback, args) {
 
 			// Trigger authorizations
-			nestDriver.removeWWNConnection(function (err, data) {
+			Homey.app.removeWWNConnection(function (err, data) {
 				clearTimeout(timeout);
 				callback(err, data);
 			});
@@ -43,7 +42,7 @@ module.exports = [
 		fn: function (callback, args) {
 
 			// Trigger authorizations
-			nestDriver.fetchAuthorizationURL(function (err, data) {
+			Homey.app.fetchAuthorizationURL(function (err, data) {
 				clearTimeout(timeout);
 				callback(err, data);
 			});
