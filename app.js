@@ -30,12 +30,12 @@ var nestDriver = {
 nestDriver.init = function () {
 
 	// Provide autocomplete input
-	Homey.manager('flow').on('condition.status_home.structures.autocomplete', function (callback) {
+	Homey.manager('flow').on('condition.away_status.structures.autocomplete', function (callback) {
 		callback(null, globalStructures);
 	});
 
 	// When triggered, get latest structure data and check if status is home or not
-	Homey.manager('flow').on('condition.status_home', function (callback, args) {
+	Homey.manager('flow').on('condition.away_status', function (callback, args) {
 		var result = false;
 
 		// Check for proper incoming arguments
@@ -48,34 +48,7 @@ nestDriver.init = function () {
 				var structure = nestDriver.getStructure(args.structures.structure_id);
 
 				// If found and status is away return true
-				if (structure != null && structure.hasOwnProperty("away") && structure.away == "home") {
-					result = true;
-				}
-			}
-		}
-		callback(null, result);
-	});
-
-	// Provide autocomplete input
-	Homey.manager('flow').on('condition.status_away.structures.autocomplete', function (callback) {
-		callback(null, globalStructures);
-	});
-
-	// When triggered, get latest structure data and check if status is home or not
-	Homey.manager('flow').on('condition.status_away', function (callback, args) {
-		var result = false;
-
-		// Check for proper incoming arguments
-		if (args != null && args.hasOwnProperty("structures") && args.structures.hasOwnProperty("structure_id")) {
-
-			// Loop over all structures to find the one provided by args
-			for (var i = 0; i < globalStructures.length; i++) {
-
-				// Get structure
-				var structure = nestDriver.getStructure(args.structures.structure_id);
-
-				// If found and status is away return true
-				if (structure != null && structure.hasOwnProperty("away") && structure.away == "away") {
+				if (structure != null && structure.hasOwnProperty("away") && structure.away == args.status) {
 					result = true;
 				}
 			}
