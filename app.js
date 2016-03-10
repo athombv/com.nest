@@ -65,9 +65,9 @@ nestDriver.init = function () {
 	Homey.manager('flow').on('trigger.away_status_changed', function (callback, args, data) {
 
 		// Check if all needed data is present
-		if (args.structures.hasOwnProperty("structure_id") && args.structures.hasOwnProperty("status")
-			&& data.hasOwnProperty("status") && data.hasOwnProperty("structure_id")) {
-			
+		if (args && args.structures && args.structures.structure_id && args.status
+			&& data && data.status && data.structure_id) {
+
 			// Check if matching structure, and matching status
 			var result = (args.structures.structure_id == data.structure_id && args.status == data.status);
 			callback(null, result);
