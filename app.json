@@ -96,46 +96,39 @@
   "flow": {
     "triggers": [
       {
-        "id": "status_changed_home",
+        "id": "away_status_changed",
         "title": {
-          "en": "Status changed to Home",
-          "nl": "Status veranderd naar Home"
+          "en": "Away status changed to",
+          "nl": "Away status gewijzigd naar"
         },
         "args": [
           {
-            "name": "structures",
-            "type": "autocomplete",
-            "placeholder": {
-              "en": "Which home",
-              "nl": "Welk huis"
-            }
-          }
-        ]
-      },
-      {
-        "id": "status_changed_away",
-        "title": {
-          "en": "Status changed to Away",
-          "nl": "Status veranderd naar Home"
-        },
-        "args": [
-          {
-            "name": "structures",
-            "type": "autocomplete",
-            "placeholder": {
-              "en": "Which home",
-              "nl": "Welk huis"
-            }
-          }
-        ]
-      },
-      {
-        "id": "status_changed_autoaway",
-        "title": {
-          "en": "Status changed to Auto-Away",
-          "nl": "Status veranderd naar Auto-Away"
-        },
-        "args": [
+            "name": "status",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "home",
+                "label": {
+                  "en": "Home",
+                  "nl": "Home"
+                }
+              },
+              {
+                "id": "away",
+                "label": {
+                  "en": "Away",
+                  "nl": "Away"
+                }
+              },
+              {
+                "id": "auto-away",
+                "label": {
+                  "en": "Auto away",
+                  "nl": "Auto away"
+                }
+              }
+            ]
+          },
           {
             "name": "structures",
             "type": "autocomplete",
