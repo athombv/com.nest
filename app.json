@@ -151,8 +151,8 @@
       {
         "id": "away_status",
         "title": {
-          "en": "Away status is",
-          "nl": "Away status is"
+          "en": "Away status !{{is|is not}}",
+          "nl": "Away status !{{is|is niet}}"
         },
         "args": [
           {
