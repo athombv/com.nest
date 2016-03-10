@@ -29,20 +29,13 @@ var nestDriver = {
  */
 nestDriver.init = function () {
 
-	// Provide autocomplete input
+	// Provide autocomplete input for condition card
 	Homey.manager('flow').on('condition.away_status.structures.autocomplete', function (callback) {
 		callback(null, globalStructures);
 	});
 
-	Homey.manager('flow').on('trigger.status_changed_home.structures.autocomplete', function (callback) {
-		callback(null, globalStructures);
-	});
-
-	Homey.manager('flow').on('trigger.status_changed_away.structures.autocomplete', function (callback) {
-		callback(null, globalStructures);
-	});
-
-	Homey.manager('flow').on('trigger.status_changed_autoaway.structures.autocomplete', function (callback) {
+	// Provide autocomplete input for trigger card
+	Homey.manager('flow').on('trigger.away_status_changed.structures.autocomplete', function (callback) {
 		callback(null, globalStructures);
 	});
 
@@ -68,19 +61,21 @@ nestDriver.init = function () {
 		callback(null, result);
 	});
 
-	Homey.manager('flow').on('trigger.status_changed_home', function (callback, args, value) {
-		var result = (args.structures.structure_id == value.structure_id);
-		callback(null, result);
-	});
+	// Parse flow trigger
+	Homey.manager('flow').on('trigger.away_status_changed', function (callback, args, data) {
 
-	Homey.manager('flow').on('trigger.status_changed_away', function (callback, args, value) {
-		var result = (args.structures.structure_id == value.structure_id);
-		callback(null, result);
-	});
-
-	Homey.manager('flow').on('trigger.status_changed_autoaway', function (callback, args, value) {
-		var result = (args.structures.structure_id == value.structure_id);
-		callback(null, result);
+		// Check if all needed data is present
+		if (args.structures.hasOwnProperty("structure_id") && args.structures.hasOwnProperty("status")
+			&& data.hasOwnProperty("status") && data.hasOwnProperty("structure_id")) {
+			
+			// Check if matching structure, and matching status
+			var result = (args.structures.structure_id == data.structure_id && args.status == data.status);
+			callback(null, result);
+		}
+		else {
+			// Return error
+			callback(true, null);
+		}
 	});
 };
 
@@ -261,15 +256,10 @@ nestDriver.fetchDeviceData = function (device_type, devices, callback) {
 				if (structures[x].away != structure.away) {
 
 					// Detected change
-					if (structures[x].away == "home") {
-						Homey.manager('flow').trigger('status_changed_home', {structure_id: structures[x].id}, {structure_id: structures[x].id});
-					}
-					else if (structures[x].away == "away") {
-						Homey.manager('flow').trigger('status_changed_away', {structure_id: structures[x].id}, {structure_id: structures[x].id});
-					}
-					else if (structures[x].away == "auto-away") {
-						Homey.manager('flow').trigger('status_changed_autoaway', {structure_id: structures[x].id}, {structure_id: structures[x].id});
-					}
+					Homey.manager('flow').trigger('away_status_changed', {structure_id: structures[x].id}, {
+						structure_id: structures[x].id,
+						status: structures[x].away
+					});
 				}
 			}
 		}
