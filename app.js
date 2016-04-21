@@ -24,10 +24,62 @@ var nestDriver = {
 	events: new events.EventEmitter()
 };
 
+//TODO this should be removed once more users are available on the main client
+var credentials = [
+	{
+		clientID: Homey.env.NEST_CLIENT_ID,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID_T1,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T1,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID_T2,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T2,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID_T3,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T3,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID__T4,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET__T4,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID__T5,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET__T5,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID__T6,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET__T6,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID__T7,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET__T7,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID__T8,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET__T8,
+	},
+	{
+		clientID: Homey.env.NEST_CLIENT_ID__T9,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET__T9,
+	}
+];
+
+/**
+ * Select on of the clients to use
+ */
+function setRandomCredential() {
+	nestDriver.credentials = credentials[Math.floor((Math.random() * 9))];
+}
+
 /**
  * Handle all custom flows of the Nest app
  */
 nestDriver.init = function () {
+	setRandomCredential();
 
 	// Provide autocomplete input for condition card
 	Homey.manager('flow').on('condition.away_status.structures.autocomplete', function (callback) {
