@@ -1,4 +1,4 @@
-# Nest App for Homey (pilot, maximal 50 users only)
+# Nest App for Homey
 
 This app provides support for the following devices:
 
@@ -11,3 +11,4 @@ You can use this app to:
 - Read the measured temperature
 - Get emergency notifications for smoke, carbonoxide and battery level
 - Use the Nest Away state in your flows
+- Use the HVAC (Heating, Ventilating, and Air Conditioning) mode in your flows

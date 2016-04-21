@@ -20,7 +20,6 @@ var globalStructures = [];
  */
 var nestDriver = {
 	socket: new Firebase('wss://developer-api.nest.com'),
-	credentials: {clientID: Homey.env.NEST_CLIENT_ID, clientSecret: Homey.env.NEST_CLIENT_SECRET},
 	events: new events.EventEmitter()
 };
 
@@ -79,6 +78,8 @@ function setRandomCredential() {
  * Handle all custom flows of the Nest app
  */
 nestDriver.init = function () {
+
+	// Initialize Nest driver with random credential
 	setRandomCredential();
 
 	// Provide autocomplete input for condition card

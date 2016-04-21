@@ -138,6 +138,47 @@
             }
           }
         ]
+      },
+      {
+        "id": "hvac_status_changed",
+        "title": {
+          "en": "HVAC status changed to",
+          "nl": "HVAC status gewijzigd naar"
+        },
+        "args": [
+          {
+            "name": "status",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heating",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarmen"
+                }
+              },
+              {
+                "id": "cooling",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koelen"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=nest_thermostat"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -182,6 +223,47 @@
               "en": "Which home",
               "nl": "Welk huis"
             }
+          }
+        ]
+      },
+      {
+        "id": "hvac_status",
+        "title": {
+          "en": "HVAC status !{{is|is not}}",
+          "nl": "HVAC status !{{is|is niet}}"
+        },
+        "args": [
+          {
+            "name": "status",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heating",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarmen"
+                }
+              },
+              {
+                "id": "cooling",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koelen"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=nest_thermostat"
           }
         ]
       }
