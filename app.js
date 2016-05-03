@@ -71,10 +71,7 @@ var credentials = [
  * Select on of the clients to use
  */
 function setRandomCredential() {
-	console.log(Math.floor((Math.random() * 9)));
-	console.log(credentials);
 	nestDriver.credentials = credentials[Math.floor((Math.random() * 9))];
-	console.log(nestDriver.credentials);
 }
 
 /**
