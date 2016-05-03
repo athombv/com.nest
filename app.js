@@ -27,43 +27,43 @@ var nestDriver = {
 var credentials = [
 	{
 		clientID: Homey.env.NEST_CLIENT_ID,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET
 	},
 	{
 		clientID: Homey.env.NEST_CLIENT_ID_T1,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T1,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T1
 	},
 	{
 		clientID: Homey.env.NEST_CLIENT_ID_T2,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T2,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T2
 	},
 	{
 		clientID: Homey.env.NEST_CLIENT_ID_T3,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T3,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T3
 	},
 	{
-		clientID: Homey.env.NEST_CLIENT_ID__T4,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET__T4,
+		clientID: Homey.env.NEST_CLIENT_ID_T4,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T4
 	},
 	{
-		clientID: Homey.env.NEST_CLIENT_ID__T5,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET__T5,
+		clientID: Homey.env.NEST_CLIENT_ID_T5,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T5
 	},
 	{
-		clientID: Homey.env.NEST_CLIENT_ID__T6,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET__T6,
+		clientID: Homey.env.NEST_CLIENT_ID_T6,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T6
 	},
 	{
-		clientID: Homey.env.NEST_CLIENT_ID__T7,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET__T7,
+		clientID: Homey.env.NEST_CLIENT_ID_T7,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T7
 	},
 	{
-		clientID: Homey.env.NEST_CLIENT_ID__T8,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET__T8,
+		clientID: Homey.env.NEST_CLIENT_ID_T8,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T8
 	},
 	{
-		clientID: Homey.env.NEST_CLIENT_ID__T9,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET__T9,
+		clientID: Homey.env.NEST_CLIENT_ID_T9,
+		clientSecret: Homey.env.NEST_CLIENT_SECRET_T9
 	}
 ];
 
@@ -71,7 +71,10 @@ var credentials = [
  * Select on of the clients to use
  */
 function setRandomCredential() {
+	console.log(Math.floor((Math.random() * 9)));
+	console.log(credentials);
 	nestDriver.credentials = credentials[Math.floor((Math.random() * 9))];
+	console.log(nestDriver.credentials);
 }
 
 /**
