@@ -276,21 +276,21 @@ function listenForSmokeAlarms(device) {
 				if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
 
 					// Update alarm_co2
-					module.exports.realtime(device_data, 'alarm_smoke', true);
+					module.exports.realtime({id:device_data.id}, 'alarm_smoke', true);
 				}
 				break;
 			case 'emergency':
 				if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
 
 					// Update alarm_co2
-					module.exports.realtime(device_data, 'alarm_smoke', true);
+					module.exports.realtime({id:device_data.id}, 'alarm_smoke', true);
 				}
 				break;
 			default:
 				if (deviceState) {
 
 					// Update alarm_co2
-					module.exports.realtime(device_data, 'alarm_smoke', false);
+					module.exports.realtime({id:device_data.id}, 'alarm_smoke', false);
 				}
 		}
 
@@ -318,21 +318,21 @@ function listenForCOAlarms(device) {
 				if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
 
 					// Update alarm_co
-					module.exports.realtime(device_data, 'alarm_co', true);
+					module.exports.realtime({id:device_data.id}, 'alarm_co', true);
 				}
 				break;
 			case 'emergency':
 				if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
 
 					// Update alarm_co
-					module.exports.realtime(device_data, 'alarm_co', true);
+					module.exports.realtime({id:device_data.id}, 'alarm_co', true);
 				}
 				break;
 			default:
 				if (deviceState) {
 
 					// Update alarm_co
-					module.exports.realtime(device_data, 'alarm_co', false);
+					module.exports.realtime({id:device_data.id}, 'alarm_co', false);
 				}
 		}
 
@@ -361,7 +361,7 @@ function listenForBatteryAlarms(device) {
 		) {
 
 			// Update battery_empty
-			module.exports.realtime(device_data, 'alarm_battery', true);
+			module.exports.realtime({id:device_data.id}, 'alarm_battery', true);
 
 			// Update state
 			deviceState = state.val();
@@ -369,7 +369,7 @@ function listenForBatteryAlarms(device) {
 		else if (deviceState) {
 
 			// Update battery_empty
-			module.exports.realtime(device_data, 'alarm_battery', false);
+			module.exports.realtime({id:device_data.id}, 'alarm_battery', false);
 
 			// Update state
 			deviceState = 'good';
