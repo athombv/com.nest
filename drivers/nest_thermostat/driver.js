@@ -269,7 +269,7 @@ module.exports.deleted = function (device_data) {
  * @param device_id
  */
 module.exports.registerAvailable = function (device_id) {
-	module.exports.setAvailable(device_id);
+	module.exports.setAvailable({id: device_id});
 };
 
 /**
@@ -313,7 +313,7 @@ function bindRealtimeUpdates() {
 
 			// Check if device is present, and skip initial event (on device added)
 			if (device && device.data && capability != '' && !init) {
-				module.exports.realtime(device.data, capability, value.val());
+				module.exports.realtime({id: device.data.id}, capability, value.val());
 			}
 			else if (device && device.data && !init) {
 
