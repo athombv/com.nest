@@ -20,7 +20,9 @@ var globalStructures = [];
  */
 var nestDriver = {
 	socket: new Firebase('wss://developer-api.nest.com'),
-	events: new events.EventEmitter()
+	events: new events.EventEmitter(),
+	co_detected: [],
+	smoke_detected: []
 };
 
 //TODO this should be removed once more users are available on the main client
@@ -128,6 +130,72 @@ nestDriver.init = function () {
 		else {
 			// Return error
 			callback(true, null);
+		}
+	});
+
+	// Listen for global co/smoke events
+	nestDriver.events.on("co_detected", function (device_data, status) {
+
+		// If not detected before and trigger is positive
+		if (nestDriver.co_detected.length == 0 && status) {
+
+			// Trigger flow
+			Homey.manager('flow').trigger('co_detected', {device_name: device_data.name});
+		}
+		else if (!status) {
+
+			// If status is negative, remove device id from detected array
+			for (var x in nestDriver.co_detected) {
+				if (nestDriver.co_detected[x] === device_data.id) {
+					nestDriver.co_detected.splice(x, 1);
+
+					// If that was last active co alarm
+					if (nestDriver.co_detected.length == 0) {
+
+						// Trigger flow
+						Homey.manager('flow').trigger('no_co_detected', {device_name: device_data.name});
+					}
+				}
+			}
+		}
+
+		// If status is true and is not in list yet
+		if (status && nestDriver.co_detected.indexOf(device_data.id) == -1) {
+
+			// Push id to detected array
+			nestDriver.co_detected.push(device_data.id);
+		}
+
+	}).on("smoke_detected", function (device_data, status) {
+
+		// If not detected before and trigger is positive
+		if (nestDriver.smoke_detected.length == 0 && status) {
+
+			// Trigger flow
+			Homey.manager('flow').trigger('smoke_detected', {device_name: device_data.name});
+		}
+		else if (!status) {
+
+			// If status is negative, remove device id from detected array
+			for (var x in nestDriver.smoke_detected) {
+				if (nestDriver.smoke_detected[x] === device_data.id) {
+					nestDriver.smoke_detected.splice(x, 1);
+
+					// If that was last active smoke alarm
+					if (nestDriver.smoke_detected.length == 0) {
+
+						// Trigger flow
+						Homey.manager('flow').trigger('no_smoke_detected', {device_name: device_data.name});
+					}
+				}
+			}
+		}
+
+		// If status is true and is not in list yet
+		if (status && nestDriver.smoke_detected.indexOf(device_data.id) == -1) {
+
+			// Push id to detected array
+			nestDriver.smoke_detected.push(device_data.id);
 		}
 	});
 };
