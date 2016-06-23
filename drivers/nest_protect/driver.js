@@ -262,49 +262,60 @@ function listenForAlarms() {
  */
 function listenForSmokeAlarms(device) {
 	var deviceState = null;
-
+	var debouncer = null;
+	
 	// Listen on changes to smoke_alarm_state
 	device.child('smoke_alarm_state').ref().on('value', function (state) {
 
-		// Get device data
-		var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
-		var device_data = (stored_device) ? stored_device.data : null;
-
-		// Act on the state change of the device
-		switch (state.val()) {
-			case 'warning':
-				if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
-
-					// Update alarm_co2
-					module.exports.realtime({id:device_data.id}, 'alarm_smoke', true);
-					
-					// Emit global smoke detected event
-					nestDriver.events.emit("smoke_detected", device_data, true);
-				}
-				break;
-			case 'emergency':
-				if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
-
-					// Update alarm_co2
-					module.exports.realtime({id:device_data.id}, 'alarm_smoke', true);
-
-					// Emit global smoke detected event
-					nestDriver.events.emit("smoke_detected", device_data, true);
-				}
-				break;
-			default:
-				if (deviceState) {
-
-					// Update alarm_co2
-					module.exports.realtime({id:device_data.id}, 'alarm_smoke', false);
-
-					// Emit global smoke detected event
-					nestDriver.events.emit("smoke_detected", device_data, false);
-				}
+		if (debouncer) {
+			clearTimeout(debouncer);
+			debouncer = null;
 		}
+		
+		// Set timeout in debouncer
+		debouncer = setTimeout(()=> {
 
-		// Reset deviceState to prevent multiple events from one change
-		deviceState = state.val();
+			// Get device data
+			var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
+			var device_data = (stored_device) ? stored_device.data : null;
+
+			// Act on the state change of the device
+			switch (state.val()) {
+				case 'warning':
+					if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
+
+						// Update alarm_co2
+						module.exports.realtime({id: device_data.id}, 'alarm_smoke', true);
+
+						console.log("Nest: Protect: emit smoke detected event");
+					}
+					break;
+				case 'emergency':
+					if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
+
+						// Update alarm_co2
+						module.exports.realtime({id: device_data.id}, 'alarm_smoke', true);
+
+						console.log("Nest: Protect: emit smoke detected event");
+					}
+					break;
+				default:
+					if (deviceState) {
+
+						// Update alarm_co2
+						module.exports.realtime({id: device_data.id}, 'alarm_smoke', false);
+
+						console.log("Nest: Protect: emit no smoke detected event");
+					}
+			}
+
+			// Reset deviceState to prevent multiple events from one change
+			deviceState = state.val();
+			
+			// Reset debouncer
+			debouncer = null;
+			
+		}, 500);
 	});
 };
 
@@ -313,49 +324,60 @@ function listenForSmokeAlarms(device) {
  */
 function listenForCOAlarms(device) {
 	var deviceState = null;
+	var debouncer = null;
 
 	// Start listening on co_alarm_state changes
 	device.child('co_alarm_state').ref().on('value', function (state) {
-
-		// Get device data
-		var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
-		var device_data = (stored_device) ? stored_device.data : null;
-
-		// Act on device state change
-		switch (state.val()) {
-			case 'warning':
-				if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
-
-					// Update alarm_co
-					module.exports.realtime({id:device_data.id}, 'alarm_co', true);
-
-					// Emit global CO detected event
-					nestDriver.events.emit("co_detected", device_data, true);
-				}
-				break;
-			case 'emergency':
-				if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
-
-					// Update alarm_co
-					module.exports.realtime({id:device_data.id}, 'alarm_co', true);
-
-					// Emit global CO detected event
-					nestDriver.events.emit("co_detected", device_data, true);
-				}
-				break;
-			default:
-				if (deviceState) {
-
-					// Update alarm_co
-					module.exports.realtime({id:device_data.id}, 'alarm_co', false);
-
-					// Emit global CO detected event
-					nestDriver.events.emit("co_detected", device_data, false);
-				}
+		
+		if (debouncer) {
+			clearTimeout(debouncer);
+			debouncer = null;
 		}
 
-		// Reset deviceState to prevent multiple events from one change
-		deviceState = state.val();
+		// Set timeout in debouncer
+		debouncer = setTimeout(()=> {
+			
+			// Get device data
+			var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
+			var device_data = (stored_device) ? stored_device.data : null;
+
+			// Act on device state change
+			switch (state.val()) {
+				case 'warning':
+					if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
+
+						// Update alarm_co
+						module.exports.realtime({id: device_data.id}, 'alarm_co', true);
+
+						console.log("Nest: Protect: emit CO detected event");
+					}
+					break;
+				case 'emergency':
+					if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
+
+						// Update alarm_co
+						module.exports.realtime({id: device_data.id}, 'alarm_co', true);
+
+						console.log("Nest: Protect: emit CO detected event");
+					}
+					break;
+				default:
+					if (deviceState) {
+
+						// Update alarm_co
+						module.exports.realtime({id: device_data.id}, 'alarm_co', false);
+
+						console.log("Nest: Protect: emit CO detected event");
+					}
+			}
+
+			// Reset deviceState to prevent multiple events from one change
+			deviceState = state.val();
+			
+			// Reset debouncer
+			debouncer = null;
+			
+		}, 500);
 	});
 };
 
@@ -364,36 +386,54 @@ function listenForCOAlarms(device) {
  */
 function listenForBatteryAlarms(device) {
 	var deviceState = null;
+	var debouncer = null;
 
 	// Start listening for changes on battery_health
 	device.child('battery_health').ref().on('value', function (state) {
-
-		// Get device data
-		var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
-		var device_data = (stored_device) ? stored_device.data : null;
-
-		// Don't show battery alerts if a more
-		// important alert is already showing
-		if (state.val() === 'replace' &&
-			device_data && deviceState && deviceState !== 'replace'
-		) {
-
-			// Update battery_empty
-			module.exports.realtime({id:device_data.id}, 'alarm_battery', true);
-
-			// Update state
-			deviceState = state.val();
-		}
-		else if (deviceState) {
-
-			// Update battery_empty
-			module.exports.realtime({id:device_data.id}, 'alarm_battery', false);
-
-			// Update state
-			deviceState = 'good';
+		
+		if (debouncer) {
+			clearTimeout(debouncer);
+			debouncer = null;
 		}
 
-		// Reset deviceState to prevent multiple events from one change
-		if (state.val() != null) deviceState = state.val();
+		// Set timeout in debouncer
+		debouncer = setTimeout(()=> {
+
+			// Get device data
+			var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
+			var device_data = (stored_device) ? stored_device.data : null;
+
+			// Don't show battery alerts if a more
+			// important alert is already showing
+			if (state.val() === 'replace' &&
+				device_data && deviceState && deviceState !== 'replace'
+			) {
+
+				// Update battery_empty
+				module.exports.realtime({id: device_data.id}, 'alarm_battery', true);
+
+				console.log("Nest: Protect: emit alarm battery on event");
+
+				// Update state
+				deviceState = state.val();
+			}
+			else if (deviceState) {
+
+				// Update battery_empty
+				module.exports.realtime({id: device_data.id}, 'alarm_battery', false);
+
+				console.log("Nest: Protect: emit alarm battery off event");
+
+				// Update state
+				deviceState = 'good';
+			}
+
+			// Reset deviceState to prevent multiple events from one change
+			if (state.val() != null) deviceState = state.val();
+			
+			// Reset debouncer
+			debouncer = null;
+			
+		}, 500);
 	});
 };

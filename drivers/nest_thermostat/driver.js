@@ -308,21 +308,31 @@ function bindRealtimeUpdates() {
 
 	var listenForChange = function (device_id, id, attribute, capability) {
 		var init = true;
+		var debouncer = null;
 		nestDriver.socket.child('devices/thermostats/' + id + '/' + attribute).on('value', function (value) {
-			var device = nestDriver.getDevice(devices, installedDevices, device_id);
 
-			// Check if device is present, and skip initial event (on device added)
-			if (device && device.data && capability != '' && !init) {
-				module.exports.realtime({id: device.data.id}, capability, value.val());
+			if (debouncer) {
+				clearTimeout(debouncer);
+				debouncer = null;
 			}
-			else if (device && device.data && !init) {
 
-				// Detected change trigger flow on device
-				Homey.manager('flow').triggerDevice('hvac_status_changed', {}, value.val(), {id: device_id}, function (err, result) {
-					if (err) return Homey.error(err);
-				});
-			}
-			init = false;
+			debouncer = setTimeout(() => {
+				var device = nestDriver.getDevice(devices, installedDevices, device_id);
+
+				// Check if device is present, and skip initial event (on device added)
+				if (device && device.data && capability != '' && !init) {
+					module.exports.realtime({id: device.data.id}, capability, value.val());
+				}
+				else if (device && device.data && !init) {
+
+					// Detected change trigger flow on device
+					Homey.manager('flow').triggerDevice('hvac_status_changed', {}, value.val(), {id: device_id}, function (err, result) {
+						if (err) return Homey.error(err);
+					});
+				}
+				init = false;
+				debouncer = null;
+			}, 500);
 		});
 	};
 };
