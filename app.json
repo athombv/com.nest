@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "compatibility": ">=0.8.25",
   "name": {
     "en": "Nest",
@@ -176,7 +176,7 @@
           {
             "name": "device",
             "type": "device",
-            "filter": "driver_id=nest_thermostat"
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
         ]
       }
@@ -263,7 +263,7 @@
           {
             "name": "device",
             "type": "device",
-            "filter": "driver_id=nest_thermostat"
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
         ]
       }
