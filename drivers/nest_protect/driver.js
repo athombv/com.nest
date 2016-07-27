@@ -300,7 +300,7 @@ function listenForSmokeAlarms(device) {
 					}
 					break;
 				default:
-					if (deviceState) {
+					if (deviceState && device_data) {
 
 						// Update alarm_co2
 						module.exports.realtime({id: device_data.id}, 'alarm_smoke', false);
@@ -362,7 +362,7 @@ function listenForCOAlarms(device) {
 					}
 					break;
 				default:
-					if (deviceState) {
+					if (deviceState && device_data) {
 
 						// Update alarm_co
 						module.exports.realtime({id: device_data.id}, 'alarm_co', false);
@@ -417,7 +417,7 @@ function listenForBatteryAlarms(device) {
 				// Update state
 				deviceState = state.val();
 			}
-			else if (deviceState) {
+			else if (deviceState && device_data) {
 
 				// Update battery_empty
 				module.exports.realtime({id: device_data.id}, 'alarm_battery', false);
