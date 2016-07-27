@@ -52,7 +52,7 @@ module.exports.init = function (devices_data, callback) {
 
 		// Check for each device if unreachable and check if installedDevices contains unreachable device
 		installedDevices.forEach(function (device_id) {
-			nestDriver.registerDeviceReachability(data[0], data[1], installedDevices, device_id);
+			nestDriver.registerDeviceReachability(data[0], data[1], installedDevices, device_id, "nest_protect");
 		});
 
 		// Update to usable installed devices
@@ -64,7 +64,7 @@ module.exports.init = function (devices_data, callback) {
 
 		// Not authenticated with Nest, so no devices in API available
 		installedDevices.forEach(function (device_id) {
-			nestDriver.registerDeviceReachability(devices, [], installedDevices, device_id);
+			nestDriver.registerDeviceReachability(devices, [], installedDevices, device_id, "nest_protect");
 		});
 	});
 
@@ -141,9 +141,11 @@ module.exports.pair = function (socket) {
 
 		// Mark device as installed
 		installedDevices.push(device.data.id);
-
+		
 		// Start listening for alarms
 		listenForAlarms();
+
+		if (callback) callback(null, device.data.id);
 	});
 };
 
@@ -230,6 +232,29 @@ module.exports.deleted = function (device_data) {
 };
 
 /**
+ * Handle enabling a device from app.js, this handles both thermostats and protects
+ * @param device_id
+ */
+module.exports.registerAvailable = function (device_id) {
+	module.exports.setAvailable({id: device_id});
+};
+
+/**
+ * Handles disabling a device from app.js, this handles both thermostats and protects
+ * @param device_id
+ * @param warning
+ * @param callback
+ */
+module.exports.registerUnavailable = function (device_id, warning, callback) {
+	if (typeof callback == "function") {
+		module.exports.setUnavailable({id: device_id}, warning, callback);
+	}
+	else {
+		module.exports.setUnavailable({id: device_id}, warning);
+	}
+};
+
+/**
  * Disables previous connections and creates new listeners on the updated set of installed devices
  */
 function listenForAlarms() {
@@ -263,7 +288,7 @@ function listenForAlarms() {
 function listenForSmokeAlarms(device) {
 	var deviceState = null;
 	var debouncer = null;
-	
+
 	// Listen on changes to smoke_alarm_state
 	device.child('smoke_alarm_state').ref().on('value', function (state) {
 
@@ -271,7 +296,7 @@ function listenForSmokeAlarms(device) {
 			clearTimeout(debouncer);
 			debouncer = null;
 		}
-		
+
 		// Set timeout in debouncer
 		debouncer = setTimeout(()=> {
 
@@ -285,7 +310,7 @@ function listenForSmokeAlarms(device) {
 					if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
 
 						// Update alarm_co2
-						module.exports.realtime({id: device_data.id}, 'alarm_smoke', true);
+						module.exports.realtime({ id: device_data.id }, 'alarm_smoke', true);
 
 						console.log("Nest: Protect: emit smoke detected event");
 					}
@@ -294,7 +319,7 @@ function listenForSmokeAlarms(device) {
 					if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
 
 						// Update alarm_co2
-						module.exports.realtime({id: device_data.id}, 'alarm_smoke', true);
+						module.exports.realtime({ id: device_data.id }, 'alarm_smoke', true);
 
 						console.log("Nest: Protect: emit smoke detected event");
 					}
@@ -303,7 +328,7 @@ function listenForSmokeAlarms(device) {
 					if (deviceState && device_data) {
 
 						// Update alarm_co2
-						module.exports.realtime({id: device_data.id}, 'alarm_smoke', false);
+						module.exports.realtime({ id: device_data.id }, 'alarm_smoke', false);
 
 						console.log("Nest: Protect: emit no smoke detected event");
 					}
@@ -311,10 +336,10 @@ function listenForSmokeAlarms(device) {
 
 			// Reset deviceState to prevent multiple events from one change
 			deviceState = state.val();
-			
+
 			// Reset debouncer
 			debouncer = null;
-			
+
 		}, 500);
 	});
 };
@@ -328,7 +353,7 @@ function listenForCOAlarms(device) {
 
 	// Start listening on co_alarm_state changes
 	device.child('co_alarm_state').ref().on('value', function (state) {
-		
+
 		if (debouncer) {
 			clearTimeout(debouncer);
 			debouncer = null;
@@ -336,7 +361,7 @@ function listenForCOAlarms(device) {
 
 		// Set timeout in debouncer
 		debouncer = setTimeout(()=> {
-			
+
 			// Get device data
 			var stored_device = nestDriver.getDevice(devices, installedDevices, device.child('device_id').val());
 			var device_data = (stored_device) ? stored_device.data : null;
@@ -347,7 +372,7 @@ function listenForCOAlarms(device) {
 					if (deviceState && deviceState !== 'warning' && device_data) { // only alert the first change
 
 						// Update alarm_co
-						module.exports.realtime({id: device_data.id}, 'alarm_co', true);
+						module.exports.realtime({ id: device_data.id }, 'alarm_co', true);
 
 						console.log("Nest: Protect: emit CO detected event");
 					}
@@ -356,7 +381,7 @@ function listenForCOAlarms(device) {
 					if (deviceState && deviceState !== 'emergency' && device_data) { // only alert the first change
 
 						// Update alarm_co
-						module.exports.realtime({id: device_data.id}, 'alarm_co', true);
+						module.exports.realtime({ id: device_data.id }, 'alarm_co', true);
 
 						console.log("Nest: Protect: emit CO detected event");
 					}
@@ -365,7 +390,7 @@ function listenForCOAlarms(device) {
 					if (deviceState && device_data) {
 
 						// Update alarm_co
-						module.exports.realtime({id: device_data.id}, 'alarm_co', false);
+						module.exports.realtime({ id: device_data.id }, 'alarm_co', false);
 
 						console.log("Nest: Protect: emit CO detected event");
 					}
@@ -373,10 +398,10 @@ function listenForCOAlarms(device) {
 
 			// Reset deviceState to prevent multiple events from one change
 			deviceState = state.val();
-			
+
 			// Reset debouncer
 			debouncer = null;
-			
+
 		}, 500);
 	});
 };
@@ -390,7 +415,7 @@ function listenForBatteryAlarms(device) {
 
 	// Start listening for changes on battery_health
 	device.child('battery_health').ref().on('value', function (state) {
-		
+
 		if (debouncer) {
 			clearTimeout(debouncer);
 			debouncer = null;
@@ -410,7 +435,7 @@ function listenForBatteryAlarms(device) {
 			) {
 
 				// Update battery_empty
-				module.exports.realtime({id: device_data.id}, 'alarm_battery', true);
+				module.exports.realtime({ id: device_data.id }, 'alarm_battery', true);
 
 				console.log("Nest: Protect: emit alarm battery on event");
 
@@ -420,7 +445,7 @@ function listenForBatteryAlarms(device) {
 			else if (deviceState && device_data) {
 
 				// Update battery_empty
-				module.exports.realtime({id: device_data.id}, 'alarm_battery', false);
+				module.exports.realtime({ id: device_data.id }, 'alarm_battery', false);
 
 				console.log("Nest: Protect: emit alarm battery off event");
 
@@ -430,10 +455,10 @@ function listenForBatteryAlarms(device) {
 
 			// Reset deviceState to prevent multiple events from one change
 			if (state.val() != null) deviceState = state.val();
-			
+
 			// Reset debouncer
 			debouncer = null;
-			
+
 		}, 500);
 	});
 };

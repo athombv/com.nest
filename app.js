@@ -412,8 +412,9 @@ nestDriver.removeWWNConnection = function (callback, access_tokens) {
  * @param devices
  * @param installedDevices
  * @param device_id
+ * @param driver_name
  */
-nestDriver.registerDeviceReachability = function (devices, api_devices, installedDevices, device_id) {
+nestDriver.registerDeviceReachability = function (devices, api_devices, installedDevices, device_id, driver_name) {
 
 	// Register unreachable devices
 	installedDevices.forEach(function (device_id) {
@@ -422,12 +423,12 @@ nestDriver.registerDeviceReachability = function (devices, api_devices, installe
 		if (_.indexOf(api_devices, device_id) === -1) {
 
 			// Device not present in api, set as unavailable
-			Homey.manager('drivers').getDriver("nest_thermostat").registerUnavailable(device_id, __("removed_externally"), function (err, success) {
+			Homey.manager('drivers').getDriver(driver_name).registerUnavailable(device_id, __("removed_externally"), function (err, success) {
 				if (!err && success) {
 					Homey.log('Disabled Nest device with device_id: ' + device_id);
 				}
 				else {
-					Homey.log('Failed to disable Nest device with device_id: ' + device_id);
+					console.error(err, 'Failed to disable Nest device with device_id: ' + device_id);
 				}
 			});
 		}
@@ -437,10 +438,10 @@ nestDriver.registerDeviceReachability = function (devices, api_devices, installe
 
 			// If it exists, but is not online
 			if (device && !device.data.is_online) {
-				Homey.manager('drivers').getDriver("nest_thermostat").registerUnavailable(device_id, __("offline"));
+				Homey.manager('drivers').getDriver(driver_name).registerUnavailable(device_id, __("offline"));
 			}
 			else {
-				Homey.manager('drivers').getDriver("nest_thermostat").registerAvailable(device_id);
+				Homey.manager('drivers').getDriver(driver_name).registerAvailable(device_id);
 			}
 		}
 	});

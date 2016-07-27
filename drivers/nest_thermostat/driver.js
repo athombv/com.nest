@@ -92,7 +92,7 @@ module.exports.init = function (devices_data, callback) {
 
 		// Check for each device if unreachable and check if installedDevices contains unreachable device
 		installedDevices.forEach(function (device_id) {
-			nestDriver.registerDeviceReachability(data [0], data [1], installedDevices, device_id);
+			nestDriver.registerDeviceReachability(data [0], data [1], installedDevices, device_id, "nest_thermostat");
 		});
 
 		// Update to usable installed devices
@@ -104,7 +104,7 @@ module.exports.init = function (devices_data, callback) {
 
 		// Not authenticated with Nest, so no devices in API available
 		installedDevices.forEach(function (device_id) {
-			nestDriver.registerDeviceReachability(devices, [], installedDevices, device_id);
+			nestDriver.registerDeviceReachability(devices, [], installedDevices, device_id, "nest_thermostat");
 		});
 	});
 
