@@ -277,9 +277,6 @@ function listenForSmokeAlarms(device) {
 
 					// Update alarm_co2
 					module.exports.realtime({id:device_data.id}, 'alarm_smoke', true);
-					
-					// Emit global smoke detected event
-					nestDriver.events.emit("smoke_detected", device_data, true);
 				}
 				break;
 			case 'emergency':
@@ -287,9 +284,6 @@ function listenForSmokeAlarms(device) {
 
 					// Update alarm_co2
 					module.exports.realtime({id:device_data.id}, 'alarm_smoke', true);
-
-					// Emit global smoke detected event
-					nestDriver.events.emit("smoke_detected", device_data, true);
 				}
 				break;
 			default:
@@ -297,9 +291,6 @@ function listenForSmokeAlarms(device) {
 
 					// Update alarm_co2
 					module.exports.realtime({id:device_data.id}, 'alarm_smoke', false);
-
-					// Emit global smoke detected event
-					nestDriver.events.emit("smoke_detected", device_data, false);
 				}
 		}
 
@@ -328,9 +319,6 @@ function listenForCOAlarms(device) {
 
 					// Update alarm_co
 					module.exports.realtime({id:device_data.id}, 'alarm_co', true);
-
-					// Emit global CO detected event
-					nestDriver.events.emit("co_detected", device_data, true);
 				}
 				break;
 			case 'emergency':
@@ -338,9 +326,6 @@ function listenForCOAlarms(device) {
 
 					// Update alarm_co
 					module.exports.realtime({id:device_data.id}, 'alarm_co', true);
-
-					// Emit global CO detected event
-					nestDriver.events.emit("co_detected", device_data, true);
 				}
 				break;
 			default:
@@ -348,9 +333,6 @@ function listenForCOAlarms(device) {
 
 					// Update alarm_co
 					module.exports.realtime({id:device_data.id}, 'alarm_co', false);
-
-					// Emit global CO detected event
-					nestDriver.events.emit("co_detected", device_data, false);
 				}
 		}
 

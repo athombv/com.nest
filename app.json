@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "1.0.5",
+  "version": "1.0.4",
   "compatibility": ">=0.8.25",
   "name": {
     "en": "Nest",
@@ -179,56 +179,6 @@
             "filter": "driver_id=nest_thermostat"
           }
         ]
-      },
-      {
-        "id": "smoke_detected",
-        "title": {
-          "en": "A smoke alarm turned on",
-          "nl": "Een rookmelder gaat aan"
-        },
-        "tokens": [
-          {
-            "name": "device_name",
-            "title": {
-              "en": "device name"
-            },
-            "example": {
-              "en": "Kitchen Protect"
-            }
-          }
-        ]
-      },
-      {
-        "id": "co_detected",
-        "title": {
-          "en": "A CO alarm turned on",
-          "nl": "Een CO alarm gaat aan"
-        },
-        "tokens": [
-          {
-            "name": "device_name",
-            "title": {
-              "en": "device name"
-            },
-            "example": {
-              "en": "Kitchen Protect"
-            }
-          }
-        ]
-      },
-      {
-        "id": "no_smoke_detected",
-        "title": {
-          "en": "All smoke alarms tuned off",
-          "nl": "Alle rookmelders gaan uit"
-        }
-      },
-      {
-        "id": "no_co_detected",
-        "title": {
-          "en": "All CO alarms turned off",
-          "nl": "Het CO alarm gaat uit"
-        }
       }
     ],
     "conditions": [
