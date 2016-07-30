@@ -1,6 +1,8 @@
 {
   "offline": "This device appears to be offline",
   "removed_externally": "This device seems to be removed externally",
+  "unauthenticated": "Authentication has been revoked",
+  "reconnecting": "Reconnecting...",
   "settings": {
     "title": "Nest Settings",
     "authorize_intro": "To give Homey access to your Nest devices, click the button below!",

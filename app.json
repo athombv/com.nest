@@ -174,7 +174,7 @@
             ]
           },
           {
-            "name": "device",
+            "name": "deviceData",
             "type": "device",
             "filter": "driver_id=nest_thermostat"
           }
@@ -261,7 +261,7 @@
             ]
           },
           {
-            "name": "device",
+            "name": "deviceData",
             "type": "device",
             "filter": "driver_id=nest_thermostat"
           }

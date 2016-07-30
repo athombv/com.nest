@@ -1,6 +1,8 @@
 {
   "offline": "Dit apparaat blijkt offline te zijn",
   "removed_externally": "Dit apparaat is extern verwijderd",
+  "unauthenticated": "Geen toegang tot dit apparaat",
+  "reconnecting": "Verbinden...",
   "settings": {
     "title": "Nest Instellingen",
     "authorize_intro": "Om Homey toegang te geven tot je Nest apparaten klik op de knop hieronder!",

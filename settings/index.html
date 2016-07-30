@@ -13,7 +13,7 @@
 
     <fieldset>
         <legend data-i18n="settings.deauth_title"></legend>
-        <button onclick="Homey.api('PUT', '/deauthorize/');" id="deauthorize" data-i18n="settings.deauthorize"></button>
+        <button onclick="Homey.api('POST', '/revokeAuthentication/');" id="deauthorize" data-i18n="settings.deauthorize"></button>
     </fieldset>
 
     <p data-i18n="settings.authorize_intro"></p>
@@ -41,9 +41,9 @@
         $('#deauthorize').prop('disabled', true);
 
         // Make API call to trigger fetchAuthorizationURL in Nest driver to fetch the url
-        Homey.api('PUT', '/authorize/', {}, function (err, data) {
-            if (!err && typeof data === 'object') {
-                authURL = data.url;
+        Homey.api('POST', '/authenticate/', {}, function (err, url) {
+            if (!err && url) {
+                authURL = url;
             }
         });
 
@@ -60,9 +60,9 @@
             $('#deauth_icon').attr('class', "fa fa-cog fa-spin");
 
             // Make API call to trigger fetchAuthorizationURL in Nest driver to update the url
-            Homey.api('PUT', '/authorize/', {}, function (err, data) {
-                if (!err && typeof data === 'object') {
-                    authURL = data.url;
+            Homey.api('POST', '/authenticate/', {}, function (err, url) {
+                if (!err && url) {
+                    authURL = url;
                 }
             });
         });
@@ -78,11 +78,11 @@
             $('#deauth_icon').hide();
         });
 
-        // Listen for incoming changes concerning the authorization state from the app
-        Homey.on('authorized_state', function (authorized) {
-            if (authorized) {
+        // Listen for incoming changes concerning the authentication state from the app
+        Homey.on('authenticated', function (authenticated) {
+            if (authenticated) {
 
-                // Mark buttons as authorized
+                // Mark buttons as authenticated
                 $('#deauth_icon').attr('class', "");
                 $('#auth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').show();
@@ -91,7 +91,7 @@
             }
             else {
 
-                // Mark buttons as unauthorized
+                // Mark buttons as unauthenticated
                 $('#deauth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').attr('class', "");
                 $('#deauthorize').prop('disabled', true);
@@ -100,10 +100,10 @@
         });
 
         // Fetch current authorization state from the app
-        Homey.api('GET', '/authorized/', {}, function (err, authorized) {
-            if (authorized) {
+        Homey.api('GET', '/authenticated/', {}, function (err, authenticated) {
+            if (authenticated) {
 
-                // Mark buttons as authorized
+                // Mark buttons as authenticated
                 $('#deauth_icon').attr('class', "");
                 $('#auth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').show();
@@ -112,7 +112,7 @@
             }
             else {
 
-                // Mark buttons as unauthorized
+                // Mark buttons as unauthenticated
                 $('#deauth_icon').attr('class', "fa fa-check");
                 $('#auth_icon').attr('class', "");
                 $('#deauthorize').prop('disabled', true);
