@@ -65,7 +65,6 @@ module.exports.pair = socket => {
 				}
 			});
 		});
-
 		callback(null, devicesList);
 	});
 };

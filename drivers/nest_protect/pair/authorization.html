@@ -10,7 +10,7 @@
     var top		= (screen.height/2)-(height/2);
 
     var url;
-    Homey.on( 'authorized', function () {
+    Homey.on( 'authenticated', function () {
         Homey.showView( 'list_nests_protects' );
     } );
 
@@ -34,5 +34,5 @@
 
 <p id="authentication_text" data-i18n="pair.authorization.authorization_explanation"></p>
 
-<button class="button" id="authentication_button" onclick="window.open(url, 'auth_dialog', 'width=' + width + ', height=' + height + ', left=' + left + ', top=' + top + ', menubar=no, status=no, toolbar=no');"><p
+<button class="button" id="authentication_button" onclick="Homey.popup(url);"><p
         data-i18n="pair.authorization.start_authentication"></p></button>
