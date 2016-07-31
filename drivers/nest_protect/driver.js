@@ -136,26 +136,35 @@ function initDevice(deviceData) {
 	// Create thermostat
 	const client = Homey.app.nestAccount.createProtect(deviceData.id);
 
+	// If client construction failed, set device unavailable
+	if (!client) return module.exports.setUnavailable(deviceData, __('removed_externally'));
+
 	// Subscribe to events on data change
-	client.on('co_alarm_state', coAlarmState => {
-		if (!((client.co_alarm_state === 'warning' ||
-			client.co_alarm_state === 'emergency') &&
-			(coAlarmState === 'warning' ||
-			coAlarmState === 'emergency'))) {
+	client
+		.on('co_alarm_state', coAlarmState => {
+			if (!((client.co_alarm_state === 'warning' ||
+				client.co_alarm_state === 'emergency') &&
+				(coAlarmState === 'warning' ||
+				coAlarmState === 'emergency'))) {
 
-			module.exports.realtime(deviceData, 'alarm_co', (coAlarmState !== 'ok'));
-		}
-	}).on('smoke_alarm_state', smokeAlarmState => {
-		if (!((client.smoke_alarm_state === 'warning' ||
-			client.smoke_alarm_state === 'emergency') &&
-			(smokeAlarmState === 'warning' ||
-			smokeAlarmState === 'emergency'))) {
+				module.exports.realtime(deviceData, 'alarm_co', (coAlarmState !== 'ok'));
+			}
+		})
+		.on('smoke_alarm_state', smokeAlarmState => {
+			if (!((client.smoke_alarm_state === 'warning' ||
+				client.smoke_alarm_state === 'emergency') &&
+				(smokeAlarmState === 'warning' ||
+				smokeAlarmState === 'emergency'))) {
 
-			module.exports.realtime(deviceData, 'alarm_smoke', (smokeAlarmState !== 'ok'));
-		}
-	}).on('battery_health', batteryHealth => {
-		module.exports.realtime(deviceData, 'alarm_battery', (batteryHealth !== 'ok'));
-	});
+				module.exports.realtime(deviceData, 'alarm_smoke', (smokeAlarmState !== 'ok'));
+			}
+		})
+		.on('battery_health', batteryHealth => {
+			module.exports.realtime(deviceData, 'alarm_battery', (batteryHealth !== 'ok'));
+		})
+		.on('removed', () => {
+			module.exports.setUnavailable(deviceData, __('removed_externally'));
+		});
 
 	// Store it
 	devices.push({ data: deviceData, client: client });

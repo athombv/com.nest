@@ -167,6 +167,8 @@ class NestAccount extends EventEmitter {
 		const devices = snapshot.val();
 		if (devices) {
 
+			const foundDevices = [];
+
 			// Loop over all devices in devices object
 			_.forEach(devices, device => {
 
@@ -176,21 +178,16 @@ class NestAccount extends EventEmitter {
 				// Do not continue if device is invalid
 				if (!device || !device.device_id || !device.name_long || !device.structure_id) return false;
 
-				// Check if device is already registered
-				if (_.findWhere(this[deviceType], { device_id: device.device_id })) {
-
-					// Remove device from array
-					this[deviceType] = this[deviceType].filter(storedDevice => storedDevice.device_id !== device.device_id);
-				}
-
 				// Add device to its array
-				this[deviceType].push({
+				foundDevices.push({
 					device_id: device.device_id,
 					name_long: device.name_long,
 					structure: _.findWhere(this.structures, { structure_id: device.structure_id }),
 					nest_account: this
 				});
 			});
+
+			this[deviceType] = foundDevices;
 		}
 	}
 
@@ -205,26 +202,23 @@ class NestAccount extends EventEmitter {
 		const structures = snapshot.val();
 		if (structures) {
 
+			const foundStructures = [];
+
 			// Loop over all structure in structure object
 			_.forEach(structures, structure => {
 
 				// Extract single structure
 				structure = snapshot.child(structure.structure_id).val();
 
-				// Check if device is already registered
-				if (_.findWhere(this.structures, { structure_id: structure.structure_id })) {
-
-					// Remove device from array
-					this.structures = this.structures.filter(storedStructure => storedStructure.structure_id !== structure.structure_id);
-				}
-
 				// Add structure to its array
-				this.structures.push({
+				foundStructures.push({
 					away: structure.away,
 					name: structure.name,
 					structure_id: structure.structure_id
 				});
 			});
+
+			this.structures = foundStructures;
 		}
 	}
 
@@ -234,7 +228,9 @@ class NestAccount extends EventEmitter {
 	 * @returns {NestThermostat}
 	 */
 	createThermostat(deviceId) {
-		return new NestThermostat(_.findWhere(this.thermostats, { device_id: deviceId }));
+		const thermostat = _.findWhere(this.thermostats, { device_id: deviceId });
+		if (thermostat) return new NestThermostat(thermostat);
+		return undefined;
 	}
 
 	/**
@@ -243,7 +239,9 @@ class NestAccount extends EventEmitter {
 	 * @returns {NestThermostat}
 	 */
 	createProtect(deviceId) {
-		return new NestProtect(_.findWhere(this.smoke_co_alarms, { device_id: deviceId }));
+		const protect = _.findWhere(this.smoke_co_alarms, { device_id: deviceId });
+		if (protect) return new NestProtect(protect);
+		return undefined;
 	}
 
 	/**
@@ -252,7 +250,9 @@ class NestAccount extends EventEmitter {
 	 * @returns {NestThermostat}
 	 */
 	createCamera(deviceId) {
-		return new NestCamera(_.findWhere(this.cameras, { device_id: deviceId }));
+		const camera = _.findWhere(this.cameras, { device_id: deviceId });
+		if (camera) return new NestCamera(camera);
+		return undefined;
 	}
 }
 
@@ -313,6 +313,9 @@ class NestDevice extends EventEmitter {
 	 * @param data
 	 */
 	checkForChanges(data) {
+
+		// If no data in API indicate device is removed
+		if (!data) return this.emit('removed');
 
 		// Check if capabilities are set
 		if (this.capabilities) {

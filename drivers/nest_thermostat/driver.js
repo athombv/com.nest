@@ -172,12 +172,20 @@ function initDevice(deviceData) {
 	// Create thermostat
 	const client = Homey.app.nestAccount.createThermostat(deviceData.id);
 
+	// If client construction failed, set device unavailable
+	if (!client) return module.exports.setUnavailable(deviceData, __('removed_externally'));
+
 	// Subscribe to events on data change
-	client.on('target_temperature_c', targetTemperatureC => {
-		module.exports.realtime(deviceData, 'target_temperature', targetTemperatureC);
-	}).on('ambient_temperature_c', ambientTemperatureC => {
-		module.exports.realtime(deviceData, 'measure_temperature', ambientTemperatureC);
-	});
+	client
+		.on('target_temperature_c', targetTemperatureC => {
+			module.exports.realtime(deviceData, 'target_temperature', targetTemperatureC);
+		})
+		.on('ambient_temperature_c', ambientTemperatureC => {
+			module.exports.realtime(deviceData, 'measure_temperature', ambientTemperatureC);
+		})
+		.on('removed', () => {
+			module.exports.setUnavailable(deviceData, __('removed_externally'));
+		});
 
 	// Store it
 	devices.push({ data: deviceData, client: client });
