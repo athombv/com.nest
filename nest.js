@@ -28,19 +28,26 @@ class NestAccount extends EventEmitter {
 		// Reference to Firebase database
 		this.db = new Firebase('wss://developer-api.nest.com');
 
+		// Attach listener to auth state
+		this.db.onAuth(authData => {
+			if (authData === null) this.emit('unauthenticated');
+			else this.emit('authenticated');
+		});
+
 		// Authenticate NestAccount
-		this.authenticate();
+		this.authenticate()
+			.then(() => this.emit('initialized', true))
+			.catch(() => this.emit('initialized', false));
 
 		// Keep track of devices in Nest API
 		this.thermostats = [];
 		this.smoke_co_alarms = [];
-		this.cameras = [];
+		// this.cameras = [];
 
 		// Keep track of structures in Nest API
 		this.structures = [];
 
-		// Start listening for realtime updates from Nest API
-		this._listenForRealtimeUpdates().then(() => this.emit('initialized'));
+		console.log('NestAccount: construct new nest account');
 	}
 
 	/**
@@ -57,7 +64,12 @@ class NestAccount extends EventEmitter {
 			if (accessToken) this.accessToken = accessToken;
 
 			// Reject if no accessToken is found
-			if (!this.accessToken) return reject('NestAccount: no access token available');
+			if (!this.accessToken) {
+
+				console.error('NestAccount: authentication failed, no access token available');
+
+				return reject('NestAccount: no access token available');
+			}
 
 			// Check if not authenticated yet
 			if (!this.db.getAuth()) {
@@ -66,20 +78,17 @@ class NestAccount extends EventEmitter {
 				this.db.authWithCustomToken(this.accessToken, err => {
 					if (err) {
 
-						console.error(err, 'NestAccount: failed to authenticate');
+						console.error('NestAccount: failed to authenticate', err);
 
 						return reject(err);
 					}
 
-					// Attach listener to auth state
-					this.db.onAuth(authData => {
-						if (authData === null) this.emit('unauthenticated');
-						else this.emit('authenticated');
-					});
-
 					console.log('NestAccount: authentication successful');
 
-					return resolve();
+					// Start listening for realtime updates from Nest API
+					this._listenForRealtimeUpdates().then(() => {
+						return resolve();
+					});
 				});
 			} else return resolve();
 		});
@@ -119,6 +128,8 @@ class NestAccount extends EventEmitter {
 	_listenForRealtimeUpdates() {
 		return new Promise(resolve => {
 
+			console.log('NestAccount: start listening for incoming realtime updates');
+
 			this.db.child('structures').on('value', snapshot => {
 				this.registerStructures(snapshot);
 
@@ -138,14 +149,15 @@ class NestAccount extends EventEmitter {
 							this.registerDevices(smokeCOAlarmsSnapshot, 'smoke_co_alarms');
 							smokeCOAlarmsResolve();
 						});
-					}),
-					new Promise(camerasResolve => {
-
-						this.db.child('devices/cameras').on('value', camerasSnapshot => {
-							this.registerDevices(camerasSnapshot, 'cameras');
-							camerasResolve();
-						});
 					})
+					// ,
+					// new Promise(camerasResolve => {
+					//
+					// 	this.db.child('devices/cameras').on('value', camerasSnapshot => {
+					// 		this.registerDevices(camerasSnapshot, 'cameras');
+					// 		camerasResolve();
+					// 	});
+					// })
 				);
 
 				Promise.all(promises).then(() => {
@@ -228,6 +240,7 @@ class NestAccount extends EventEmitter {
 	 * @returns {NestThermostat}
 	 */
 	createThermostat(deviceId) {
+		console.log(`NestAccount: create NestThermostat (${deviceId})`);
 		const thermostat = _.findWhere(this.thermostats, { device_id: deviceId });
 		if (thermostat) return new NestThermostat(thermostat);
 		return undefined;
@@ -239,21 +252,22 @@ class NestAccount extends EventEmitter {
 	 * @returns {NestThermostat}
 	 */
 	createProtect(deviceId) {
+		console.log(`NestAccount: create NestProtect (${deviceId})`);
 		const protect = _.findWhere(this.smoke_co_alarms, { device_id: deviceId });
 		if (protect) return new NestProtect(protect);
 		return undefined;
 	}
 
-	/**
-	 * Factory method to return NestCamera instance.
-	 * @param deviceId
-	 * @returns {NestThermostat}
-	 */
-	createCamera(deviceId) {
-		const camera = _.findWhere(this.cameras, { device_id: deviceId });
-		if (camera) return new NestCamera(camera);
-		return undefined;
-	}
+	// /**
+	//  * Factory method to return NestCamera instance.
+	//  * @param deviceId
+	//  * @returns {NestThermostat}
+	//  */
+	// createCamera(deviceId) {
+	// 	const camera = _.findWhere(this.cameras, { device_id: deviceId });
+	// 	if (camera) return new NestCamera(camera);
+	// 	return undefined;
+	// }
 }
 
 /**
@@ -299,20 +313,17 @@ class NestDevice extends EventEmitter {
 		this.nest_account.authenticate().then(() => {
 
 			// Listen for changes on this specific device
-			this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).on('value', snapshot => {
-
-				// First process changes
-				this.checkForChanges(snapshot.val());
-			});
+			this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).on('value', this.checkForChanges);
 		});
 	}
 
 	/**
 	 * Check incoming data update for changed values,
 	 * emit corresponding events when data is changed.
-	 * @param data
+	 * @param snapshot
 	 */
-	checkForChanges(data) {
+	checkForChanges(snapshot) {
+		const data = snapshot.val();
 
 		// If no data in API indicate device is removed
 		if (!data) return this.emit('removed');
@@ -336,6 +347,10 @@ class NestDevice extends EventEmitter {
 			// Assign all values from snapshot to this instance
 			Object.assign(this, data);
 		}
+	}
+
+	destroy() {
+		this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).off();
 	}
 }
 
@@ -407,42 +422,42 @@ class NestProtect extends NestDevice {
 	}
 }
 
-/**
- * Class representing NestCamera, extends
- * NestDevice.
- */
-class NestCamera extends NestDevice {
+// /**
+//  * Class representing NestCamera, extends
+//  * NestDevice.
+//  */
+// class NestCamera extends NestDevice {
+//
+// 	/**
+// 	 * Pass options object to NestDevice.
+// 	 * @param options
+// 	 */
+// 	constructor(options) {
+//
+// 		// Set proper device type
+// 		if (options) options.device_type = 'cameras';
+//
+// 		super(options);
+//
+// 		// Store capabilities of camera
+// 		this.capabilities = ['last_event', 'is_streaming'];
+// 	}
+//
+// 	/**
+// 	 * Set streaming capability of camera.
+// 	 * @param onoff Boolean
+// 	 */
+// 	setStreaming(onoff) {
+//
+// 		// Authenticate
+// 		this.nest_account.authenticate().then(() => {
+//
+// 			if (typeof onoff !== 'boolean') console.error('NestCamera: setStreaming parameter "onoff" is not a boolean', onoff);
+//
+// 			// All clear to change the target temperature
+// 			this.nest_account.db.child(`devices/cameras/${this.device_id}/is_streaming`).set(onoff);
+// 		});
+// 	}
+// }
 
-	/**
-	 * Pass options object to NestDevice.
-	 * @param options
-	 */
-	constructor(options) {
-
-		// Set proper device type
-		if (options) options.device_type = 'cameras';
-
-		super(options);
-
-		// Store capabilities of camera
-		this.capabilities = ['last_event', 'is_streaming'];
-	}
-
-	/**
-	 * Set streaming capability of camera.
-	 * @param onoff Boolean
-	 */
-	setStreaming(onoff) {
-
-		// Authenticate
-		this.nest_account.authenticate().then(() => {
-
-			if (typeof onoff !== 'boolean') console.error('NestCamera: setStreaming parameter "onoff" is not a boolean', onoff);
-
-			// All clear to change the target temperature
-			this.nest_account.db.child(`devices/cameras/${this.device_id}/is_streaming`).set(onoff);
-		});
-	}
-}
-
-module.exports = { NestAccount, NestThermostat, NestProtect, NestCamera };
+module.exports = { NestAccount, NestThermostat, NestProtect };

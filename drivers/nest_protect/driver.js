@@ -13,23 +13,40 @@ module.exports.init = (devicesData, callback) => {
 	devicesData.forEach(deviceData => module.exports.setUnavailable(deviceData, __('reconnecting')));
 
 	// Wait for nest account to be initialized
-	Homey.app.nestAccount.on('initialized', () => {
-		devicesData.forEach(deviceData => {
-			initDevice(deviceData);
-		});
+	Homey.app.nestAccount.once('initialized', authenticated => {
+
+		// Listen for authentication events
+		Homey.app.nestAccount
+			.on('authenticated', () => {
+				devices.forEach(device => {
+
+					// Check if devices need re-initialisation
+					if (!device.initialized) {
+						initDevice(device.data);
+					} else module.exports.setAvailable(device.data);
+				});
+			})
+			.on('unauthenticated', () => {
+				devices.forEach(device => module.exports.setUnavailable(device.data, __('unauthenticated')));
+			});
+
+		// Nest account is authenticated, add all devices
+		if (authenticated) {
+			devicesData.forEach(deviceData => {
+				initDevice(deviceData);
+			});
+		} else {
+
+			// Store it as not-initialized
+			devicesData.forEach(deviceData => {
+				devices.push({ data: deviceData, initialized: false });
+				module.exports.setUnavailable(deviceData, __('unauthenticated'));
+			});
+		}
+
+		// Ready
+		callback(true);
 	});
-
-	// Listen for authentication events
-	Homey.app.nestAccount
-		.on('authenticated', () => {
-			devices.forEach(device => module.exports.setAvailable(device.data));
-		})
-		.on('unauthenticated', () => {
-			devices.forEach(device => module.exports.setUnavailable(device.data, __('unauthenticated')));
-		});
-
-	// Ready
-	callback(true);
 };
 
 module.exports.pair = socket => {
@@ -39,14 +56,20 @@ module.exports.pair = socket => {
 	 * gets called when user initiates pairing process
 	 */
 	socket.on('authenticate', (data, callback) => {
-		if (Homey.manager('settings').get('nestAccessToken')) return callback(null, true);
+		if (Homey.manager('settings').get('nestAccesstoken')) return callback(null, true);
 
 		// Start fetching access token flow
 		Homey.app.fetchAccessToken(result => {
 			callback(null, result);
 		}).then(accessToken => {
-			Homey.manager('settings').set('nestAccessToken', accessToken);
-			socket.emit('authenticated');
+
+			// Store access token
+			Homey.manager('settings').set('nestAccesstoken', accessToken);
+
+			// Authenticate nest account
+			Homey.app.nestAccount.authenticate(accessToken).then(() => {
+				socket.emit('authenticated');
+			});
 		});
 	});
 
@@ -116,6 +139,7 @@ module.exports.capabilities = {
  */
 module.exports.added = (deviceData, callback) => {
 
+	if (deviceData) deviceData.initialized = false;
 	initDevice(deviceData);
 
 	callback(null, true);
@@ -128,10 +152,20 @@ module.exports.added = (deviceData, callback) => {
 module.exports.deleted = (deviceData) => {
 
 	// Reset array with device removed and deregister push event subscription
-	devices = devices.filter(device => device.data.id !== deviceData.id);
+	devices = devices.filter(device => {
+
+		// Destroy device
+		if (device.data.id !== deviceData.id) device.client.destroy();
+
+		// Return filtered devices array
+		return device.data.id !== deviceData.id;
+	});
 };
 
 function initDevice(deviceData) {
+
+	// Mark as needing re-pair
+	if (!deviceData.hasOwnProperty('initialized')) return module.exports.setUnavailable(deviceData, __('version_repair'));
 
 	// Create thermostat
 	const client = Homey.app.nestAccount.createProtect(deviceData.id);
@@ -167,7 +201,11 @@ function initDevice(deviceData) {
 		});
 
 	// Store it
-	devices.push({ data: deviceData, client: client });
+	const device = getDevice(deviceData);
+	if (device) {
+		device.client = client;
+		device.initialized = true;
+	} else devices.push({ data: deviceData, client: client, initialized: true });
 
 	module.exports.setAvailable(deviceData);
 }

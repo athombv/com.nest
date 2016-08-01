@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "compatibility": ">=0.8.25",
   "name": {
     "en": "Nest",
@@ -8,7 +8,7 @@
   },
   "description": {
     "en": "This app lets you control your Nest Thermostat and Nest Protect",
-    "nl": "Deze app laat jou je Nest Thermostaat en Nest Protect bedienen"
+    "nl": "Deze app laat jou je Nest Thermostat en Nest Protect bedienen"
   },
   "category": "climate",
   "author": {

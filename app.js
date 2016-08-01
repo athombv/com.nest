@@ -51,8 +51,7 @@ let credentials = [
  * Select one of the clients to use.
  */
 function setRandomCredential() {
-	// credentials = credentials[Math.floor((Math.random() * 9))]; TODO
-	credentials = credentials[9];
+	credentials = credentials[Math.floor((Math.random() * 9))];
 }
 
 /**
@@ -60,18 +59,12 @@ function setRandomCredential() {
  */
 module.exports.init = () => {
 
-	// Create new nest account
+	// Create new nest account from stored token
 	const nestAccount = module.exports.nestAccount = new NestAccount({
-		accessToken: Homey.manager('settings').get('nestAccessToken')
-	}).on('authenticated', () => Homey.manager('api').realtime('authenticated', true))
+		accessToken: Homey.manager('settings').get('nestAccesstoken')
+	})
+		.on('authenticated', () => Homey.manager('api').realtime('authenticated', true))
 		.on('unauthenticated', () => Homey.manager('api').realtime('authenticated', false));
-
-	// Update token in nestAccount when changed
-	Homey.manager('settings').on('set', setting => {
-		if (setting === 'nestAccessToken') {
-			nestAccount.authenticate(Homey.manager('settings').get('nestAccessToken'));
-		}
-	});
 
 	// Initialize Nest driver with random credential
 	setRandomCredential();
