@@ -249,7 +249,7 @@ class NestAccount extends EventEmitter {
 	/**
 	 * Factory method to return NestProtect instance.
 	 * @param deviceId
-	 * @returns {NestThermostat}
+	 * @returns {NestProtect}
 	 */
 	createProtect(deviceId) {
 		console.log(`NestAccount: create NestProtect (${deviceId})`);
@@ -297,6 +297,8 @@ class NestDevice extends EventEmitter {
 		// Store provided options in this
 		Object.assign(this, options);
 
+		console.log(this);
+
 		// Start listening for updates on this device
 		this._listenForRealtimeUpdates();
 	}
@@ -313,7 +315,7 @@ class NestDevice extends EventEmitter {
 		this.nest_account.authenticate().then(() => {
 
 			// Listen for changes on this specific device
-			this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).on('value', this.checkForChanges);
+			this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).on('value', this.checkForChanges.bind(this));
 		});
 	}
 
