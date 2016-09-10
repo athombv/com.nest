@@ -34,20 +34,20 @@ class NestAccount extends EventEmitter {
 			else this.emit('authenticated');
 		});
 
-		// Authenticate NestAccount
-		this.authenticate()
-			.then(() => this.emit('initialized', true))
-			.catch(() => this.emit('initialized', false));
-
 		// Keep track of devices in Nest API
 		this.thermostats = [];
 		this.smoke_co_alarms = [];
-		// this.cameras = [];
+		this.cameras = [];
 
 		// Keep track of structures in Nest API
 		this.structures = [];
 
 		console.log('NestAccount: construct new nest account');
+
+		// Authenticate NestAccount
+		this.authenticate()
+			.then(() => this.emit('initialized', true))
+			.catch(() => this.emit('initialized', false));
 	}
 
 	/**
@@ -194,7 +194,7 @@ class NestAccount extends EventEmitter {
 				foundDevices.push({
 					device_id: device.device_id,
 					name_long: device.name_long,
-					structure: _.findWhere(this.structures, { structure_id: device.structure_id }),
+					structure_id: device.structure_id,
 					nest_account: this
 				});
 			});
@@ -216,7 +216,7 @@ class NestAccount extends EventEmitter {
 
 			const foundStructures = [];
 
-			// Loop over all structure in structure object
+			// Loop over all structures in structure object
 			_.forEach(structures, structure => {
 
 				// Extract single structure
@@ -258,16 +258,16 @@ class NestAccount extends EventEmitter {
 		return undefined;
 	}
 
-	// /**
-	//  * Factory method to return NestCamera instance.
-	//  * @param deviceId
-	//  * @returns {NestThermostat}
-	//  */
-	// createCamera(deviceId) {
-	// 	const camera = _.findWhere(this.cameras, { device_id: deviceId });
-	// 	if (camera) return new NestCamera(camera);
-	// 	return undefined;
-	// }
+	/**
+	 * Factory method to return NestCamera instance.
+	 * @param deviceId
+	 * @returns {NestThermostat}
+	 */
+	createCamera(deviceId) {
+		const camera = _.findWhere(this.cameras, { device_id: deviceId });
+		if (camera) return new NestCamera(camera);
+		return undefined;
+	}
 }
 
 /**
@@ -297,10 +297,12 @@ class NestDevice extends EventEmitter {
 		// Store provided options in this
 		Object.assign(this, options);
 
-		console.log(this);
-
 		// Start listening for updates on this device
 		this._listenForRealtimeUpdates();
+	}
+
+	get structure() {
+		return _.findWhere(this.nest_account.structures, { structure_id: this.structure_id });
 	}
 
 	/**
@@ -351,6 +353,9 @@ class NestDevice extends EventEmitter {
 		}
 	}
 
+	/**
+	 * Clean up the instance.
+	 */
 	destroy() {
 		this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).off();
 	}
@@ -388,10 +393,16 @@ class NestThermostat extends NestDevice {
 			this.nest_account.authenticate().then(() => {
 
 				// Handle cases where temperature could not be set
-				if (this.is_using_emergency_heat) return reject('NestThermostat: can not adjust target temperature while using emergency heat');
-				if (this.is_locked) return reject(`NestThermostat: can not adjust target temperature outside locked range: ${this.locked_temp_min_c} - ${this.locked_temp_max_c}`);
-				if (this.structure.away !== 'home') return reject(`NestThermostat: can not adjust target temperature when structure status is set to ${this.structure.away}`)
-				if (this.hvac_mode === 'heat-cool') return reject('NestThermostat: can not adjust target temperature when hvac_mode is heat-cool');
+				if (this.is_using_emergency_heat) return reject(__('error.emergency_heat', { temp: temperature }));
+				if (this.structure.away !== 'home') return reject(__('error.structure_is_away', { temp: temperature }));
+				if (this.hvac_mode === 'heat-cool') return reject(__('error.hvac_mode_is_cool', { temp: temperature }));
+				if (this.is_locked && (temperature < this.locked_temp_min_c || temperature > this.locked_temp_max_c)) {
+					return reject(__('error.temp_lock', {
+						temp: temperature,
+						min: this.locked_temp_min_c,
+						max: this.locked_temp_max_c
+					}));
+				}
 
 				// All clear to change the target temperature
 				this.nest_account.db.child(`devices/thermostats/${this.device_id}/target_temperature_c`).set(temperature);
@@ -424,42 +435,42 @@ class NestProtect extends NestDevice {
 	}
 }
 
-// /**
-//  * Class representing NestCamera, extends
-//  * NestDevice.
-//  */
-// class NestCamera extends NestDevice {
-//
-// 	/**
-// 	 * Pass options object to NestDevice.
-// 	 * @param options
-// 	 */
-// 	constructor(options) {
-//
-// 		// Set proper device type
-// 		if (options) options.device_type = 'cameras';
-//
-// 		super(options);
-//
-// 		// Store capabilities of camera
-// 		this.capabilities = ['last_event', 'is_streaming'];
-// 	}
-//
-// 	/**
-// 	 * Set streaming capability of camera.
-// 	 * @param onoff Boolean
-// 	 */
-// 	setStreaming(onoff) {
-//
-// 		// Authenticate
-// 		this.nest_account.authenticate().then(() => {
-//
-// 			if (typeof onoff !== 'boolean') console.error('NestCamera: setStreaming parameter "onoff" is not a boolean', onoff);
-//
-// 			// All clear to change the target temperature
-// 			this.nest_account.db.child(`devices/cameras/${this.device_id}/is_streaming`).set(onoff);
-// 		});
-// 	}
-// }
+/**
+ * Class representing NestCamera, extends
+ * NestDevice.
+ */
+class NestCamera extends NestDevice {
+
+	/**
+	 * Pass options object to NestDevice.
+	 * @param options
+	 */
+	constructor(options) {
+
+		// Set proper device type
+		if (options) options.device_type = 'cameras';
+
+		super(options);
+
+		// Store capabilities of camera
+		this.capabilities = ['last_event', 'is_streaming'];
+	}
+
+	/**
+	 * Set streaming capability of camera.
+	 * @param onoff Boolean
+	 */
+	setStreaming(onoff) {
+
+		// Authenticate
+		this.nest_account.authenticate().then(() => {
+
+			if (typeof onoff !== 'boolean') console.error('NestCamera: setStreaming parameter "onoff" is not a boolean', onoff);
+
+			// All clear to change the target temperature
+			this.nest_account.db.child(`devices/cameras/${this.device_id}/is_streaming`).set(onoff);
+		});
+	}
+}
 
 module.exports = { NestAccount, NestThermostat, NestProtect };

@@ -1,138 +1,155 @@
 'use strict';
 
 const request = require('request');
+const fs = require('fs');
 
 const NestAccount = require('./nest').NestAccount;
 
-let credentials = [
-	{
-		clientID: Homey.env.NEST_CLIENT_ID,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T1,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T1
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T2,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T2
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T3,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T3
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T4,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T4
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T5,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T5
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T6,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T6
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T7,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T7
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T8,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T8
-	},
-	{
-		clientID: Homey.env.NEST_CLIENT_ID_T9,
-		clientSecret: Homey.env.NEST_CLIENT_SECRET_T9
-	}
-];
+const logItems = module.exports.logItems = [];
 
 /**
- * Select one of the clients to use.
- */
-function setRandomCredential() {
-	credentials = credentials[Math.floor((Math.random() * 9))];
-}
-
-/**
- * Setup NestAccount, credentials and flows.
+ * Setup NestAccount, listeners and flows.
  */
 module.exports.init = () => {
 
-	// Create new nest account from stored token
-	const nestAccount = module.exports.nestAccount = new NestAccount({
-		accessToken: Homey.manager('settings').get('nestAccesstoken')
-	})
-		.on('authenticated', () => Homey.manager('api').realtime('authenticated', true))
-		.on('unauthenticated', () => Homey.manager('api').realtime('authenticated', false));
+	const storedLogItems = Homey.manager('settings').get('logItems');
+	if (storedLogItems) storedLogItems.forEach(logItem => logItems.push(logItem));
 
-	// Initialize Nest driver with random credential
-	setRandomCredential();
+	// Get app version from json
+	module.exports.appVersion = getAppVersion();
+
+	module.exports.nestAccountInitialization = new Promise(resolve => {
+
+		// Create new nest account from stored token
+		const nestAccount = module.exports.nestAccount = new NestAccount({
+			accessToken: Homey.manager('settings').get('nestAccesstoken')
+		})
+			.on('authenticated', () => Homey.manager('api').realtime('authenticated', true))
+			.on('unauthenticated', () => Homey.manager('api').realtime('authenticated', false))
+			.on('initialized', success => {
+				registerAutoCompleteHandlers(nestAccount);
+				registerFlowConditionHandlers(nestAccount);
+				registerFlowTriggerHandlers(nestAccount);
+				return resolve(success);
+			});
+	});
+};
+
+/**
+ * Bind handlers on autocomplete requests. Returns all structures
+ * from the main Nest account.
+ * @param nestAccount
+ */
+function registerAutoCompleteHandlers(nestAccount) {
 
 	// Provide autocomplete input for condition card
-	Homey.manager('flow').on('condition.away_status.structures.autocomplete', callback => {
+	Homey.manager('flow').on('condition.away_status.structure.autocomplete', callback => {
 		callback(null, nestAccount.structures);
 	});
 
 	// Provide autocomplete input for trigger card
-	Homey.manager('flow').on('trigger.away_status_changed.structures.autocomplete', callback => {
+	Homey.manager('flow').on('trigger.away_status_changed.structure.autocomplete', callback => {
 		callback(null, nestAccount.structures);
 	});
+}
 
-	// When triggered, get latest structure data and check if status is home or not
+/**
+ * Bind handlers on flow condition requests. Checks whether a given
+ * condition regarding a given structure is met.
+ * @param nestAccount
+ */
+function registerFlowConditionHandlers(nestAccount) {
+
 	Homey.manager('flow').on('condition.away_status', (callback, args) => {
-		let result = false;
 
 		// Check for proper incoming arguments
-		if (args && args.hasOwnProperty('structures') && args.structures.hasOwnProperty('structure_id')) {
-			nestAccount.structures.forEach(structure => {
-				if (structure.structure_id === args.structures.structure_id &&
-					structure.away === args.status) {
-					result = true;
-				}
-			});
+		if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')) {
+			return callback(null, !!findWhere(nestAccount.structures, {
+				structure_id: args.structure.structure_id,
+				away: args.status
+			}));
 		}
-		callback(null, result);
 	});
+}
 
-	// Parse flow trigger
+/**
+ * Bind handlers on flow action requests. Checks whether certain conditions
+ * are being met.
+ */
+function registerFlowTriggerHandlers() {
+
 	Homey.manager('flow').on('trigger.away_status_changed', (callback, args, data) => {
 
 		// Check if all needed data is present
-		if (args && args.structures && args.structures.structure_id && args.status
-			&& data && data.status && data.structure_id) {
+		if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')
+			&& data && data.hasOwnProperty('status') && data.hasOwnProperty('structure_id')
+			&& args.hasOwnProperty('status')) {
 
 			// Check if matching structure, and matching status
-			return callback(null, (args.structures.structure_id === data.structure_id && args.status === data.status));
+			return callback(null, (args.structure.structure_id === data.structure_id && args.status === data.status));
 		}
 
 		// Return error
 		return callback(true, null);
 	});
+}
+
+/**
+ * Get app version from app.json.
+ */
+function getAppVersion() {
+	try {
+		return JSON.parse(fs.readFileSync('./app.json')).version;
+	} catch (err) {
+		console.error('Could not parse app version from app.json', err);
+		return null;
+	}
+}
+
+/**
+ * Plain JS implementation of findWhere.
+ * @param array
+ * @param criteria
+ * @returns {*}
+ */
+function findWhere(array, criteria) {
+	return array.find(item => Object.keys(criteria).every(key => item[key] === criteria[key]));
+}
+
+/**
+ * Register a log item, if more than 10 items present
+ * remove first item (oldest item).
+ * @param item
+ */
+module.exports.registerLogItem = item => {
+	logItems.push(item);
+	if (logItems.length > 10) logItems.shift();
+	Homey.manager('settings').set('logItems', logItems);
 };
 
 /**
- * Starts OAuth2 flow with Nest to get authenticated
+ * Fetches OAuth authorization url from Nest. When this url is used it will
+ * callback with an OAuth authorization code which will in turn be exchanged
+ * for a OAuth access token.
  * @param callback
  */
 module.exports.fetchAccessToken = callback => new Promise((resolve, reject) => {
 
-	// Generate OAuth2 callback, this helps to catch the authorization token
-	Homey.manager('cloud').generateOAuth2Callback(`https://home.nest.com/login/oauth2?client_id=${credentials.clientID}&state=NEST`,
+	// Generate OAuth callback, this helps to catch the authorization token
+	Homey.manager('cloud').generateOAuth2Callback(`https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID_T9}&state=NEST`,
 
-		// Before fetching authorization code
 		(err, result) => {
 
-			// Pass needed credentials to front-end
+			// Pass authorization url to front-end
 			callback({ url: result });
 		},
 
-		// After fetching authorization code
 		(err, result) => {
 
-			// Post authorization url with needed credentials
+			// Exchange authorization code for access token
+			// TODO use proper nest client credentials below
 			request.post(
-				`https://api.home.nest.com/oauth2/access_token?client_id=${credentials.clientID}&code=${result}&client_secret=${credentials.clientSecret}&grant_type=authorization_code`, {
+				`https://api.home.nest.com/oauth2/access_token?client_id=${Homey.env.NEST_CLIENT_ID_T9}&code=${result}&client_secret=${Homey.env.NEST_CLIENT_SECRET_T9}&grant_type=authorization_code`, {
 					json: true
 				}, (err, response, body) => {
 					if (err || response.statusCode >= 400 || !body.access_token) {

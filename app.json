@@ -130,7 +130,7 @@
             ]
           },
           {
-            "name": "structures",
+            "name": "structure",
             "type": "autocomplete",
             "placeholder": {
               "en": "Which home",
@@ -217,7 +217,7 @@
             ]
           },
           {
-            "name": "structures",
+            "name": "structure",
             "type": "autocomplete",
             "placeholder": {
               "en": "Which home",

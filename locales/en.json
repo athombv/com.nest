@@ -12,7 +12,27 @@
     "deauthorize_intro": "If you want to disconnect Homey from your Nest account, click the button below.",
     "deauthorize": "Withdraw Homey's authorization",
     "authorize": "Authorize Homey to use your Nest device!",
-    "warning": "Something went wrong, please try again"
+    "warning": "Something went wrong, please try again",
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December",
+    "time": "Time",
+    "msg": "Message"
+  },
+  "error":{
+    "hvac_mode_is_cool": "Failed to set target temperature to __temp__, can not adjust when HVAC mode is heat-cool",
+    "structure_is_away": "Failed to set target temperature to __temp__, can not adjust when structure mode is away",
+    "temp_lock": "Failed to set target temperature to __temp__, can not adjust temperature outside temperature lock (__min__ - __max__)",
+    "emergency_heat": "Failed to set target temperature to __temp__, can not adjust when using emergency heat"
   },
   "pair": {
     "authorization": {

@@ -1,5 +1,7 @@
 'use strict';
 
+const semver = require('semver');
+
 let devices = [];
 
 /**
@@ -10,10 +12,10 @@ let devices = [];
 module.exports.init = (devicesData, callback) => {
 
 	// Mark all devices as unavailable
-	devicesData.forEach(deviceData => module.exports.setUnavailable(deviceData, __('reconnecting')));
+	if (devicesData) devicesData.forEach(deviceData => module.exports.setUnavailable(deviceData, __('reconnecting')));
 
 	// Wait for nest account to be initialized
-	Homey.app.nestAccount.once('initialized', authenticated => {
+	Homey.app.nestAccountInitialization.then(authenticated => {
 
 		// Listen for authentication events
 		Homey.app.nestAccount
@@ -23,7 +25,9 @@ module.exports.init = (devicesData, callback) => {
 					// Check if devices need re-initialisation
 					if (!device.initialized) {
 						initDevice(device.data);
-					} else module.exports.setAvailable(device.data);
+					} else {
+						module.exports.setAvailable(device.data);
+					}
 				});
 			})
 			.on('unauthenticated', () => {
@@ -32,9 +36,7 @@ module.exports.init = (devicesData, callback) => {
 
 		// Nest account is authenticated, add all devices
 		if (authenticated) {
-			devicesData.forEach(deviceData => {
-				initDevice(deviceData);
-			});
+			devicesData.forEach(deviceData => initDevice(deviceData));
 		} else {
 
 			// Store it as not-initialized
@@ -43,10 +45,10 @@ module.exports.init = (devicesData, callback) => {
 				module.exports.setUnavailable(deviceData, __('unauthenticated'));
 			});
 		}
-
-		// Ready
-		callback(true);
 	});
+
+	// Ready
+	callback();
 };
 
 module.exports.pair = socket => {
@@ -84,7 +86,8 @@ module.exports.pair = socket => {
 			devicesList.push({
 				name: thermostat.name_long,
 				data: {
-					id: thermostat.device_id
+					id: thermostat.device_id,
+					appVersion: Homey.app.appVersion
 				}
 			});
 		});
@@ -103,9 +106,13 @@ module.exports.capabilities = {
 
 			// Get device data
 			const protect = getDevice(deviceData);
-			if (protect) return callback(null, protect.client.co_alarm_state !== 'ok');
+			if (protect
+				&& protect.hasOwnProperty('client')
+				&& protect.client.hasOwnProperty('co_alarm_state')) {
+				return callback(null, protect.client.co_alarm_state !== 'ok');
+			}
 			return callback('Could not find device');
-		}
+		},
 	},
 
 	alarm_smoke: {
@@ -114,9 +121,13 @@ module.exports.capabilities = {
 
 			// Get device data
 			const protect = getDevice(deviceData);
-			if (protect) return callback(null, protect.client.smoke_alarm_state !== 'ok');
+			if (protect
+				&& protect.hasOwnProperty('client')
+				&& protect.client.hasOwnProperty('smoke_alarm_state')) {
+				return callback(null, protect.client.smoke_alarm_state !== 'ok');
+			}
 			return callback('Could not find device');
-		}
+		},
 	},
 
 	alarm_battery: {
@@ -125,10 +136,14 @@ module.exports.capabilities = {
 
 			// Get device data
 			const protect = getDevice(deviceData);
-			if (protect) return callback(null, protect.client.battery_health !== 'ok');
+			if (protect
+				&& protect.hasOwnProperty('client')
+				&& protect.client.hasOwnProperty('battery_health')) {
+				return callback(null, protect.client.battery_health !== 'ok');
+			}
 			return callback('Could not find device');
-		}
-	}
+		},
+	},
 };
 
 
@@ -138,15 +153,12 @@ module.exports.capabilities = {
  * @param callback
  */
 module.exports.added = (deviceData, callback) => {
-
-	if (deviceData) deviceData.initialized = false;
 	initDevice(deviceData);
-
 	callback(null, true);
 };
 
 /**
- * Delete devices internally when users removes one
+ * Delete devices internally when users removes one.
  * @param deviceData
  */
 module.exports.deleted = (deviceData) => {
@@ -162,10 +174,15 @@ module.exports.deleted = (deviceData) => {
 	});
 };
 
+/**
+ * Initialize device, setup client, and event listeners.
+ * @param deviceData
+ * @returns {*}
+ */
 function initDevice(deviceData) {
 
-	// Mark as needing re-pair
-	if (!deviceData.hasOwnProperty('initialized')) return module.exports.setUnavailable(deviceData, __('version_repair'));
+	// If device was added below 2.0.0 make sure to re-pair
+	if (!deviceData.hasOwnProperty('appVersion') || !deviceData.appVersion || !semver.gte(deviceData.appVersion, '2.0.0')) return module.exports.setUnavailable(deviceData, __('version_repair'));
 
 	// Create thermostat
 	const client = Homey.app.nestAccount.createProtect(deviceData.id);
@@ -180,6 +197,9 @@ function initDevice(deviceData) {
 				client.co_alarm_state === 'emergency') &&
 				(coAlarmState === 'warning' ||
 				coAlarmState === 'emergency'))) {
+
+				console.log(`realtime alarm_co: ${(coAlarmState !== 'ok')}`);
+
 
 				module.exports.realtime(deviceData, 'alarm_co', (coAlarmState !== 'ok'));
 			}

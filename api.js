@@ -40,5 +40,13 @@ module.exports = [
 				Homey.app.nestAccount.authenticate(accessToken);
 			});
 		}
+	},
+	{
+		description: 'Fetch log items',
+		method: 'GET',
+		path: '/logItems/',
+		fn: callback => {
+			callback(null, Homey.app.logItems);
+		}
 	}
 ];
