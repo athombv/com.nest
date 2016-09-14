@@ -150,14 +150,14 @@
 			}
 		});
 
-		Homey.api('GET', '/logItems/', {}, function (err, items) {
-			console.log(items);
+		Homey.get('logItems', function (err, items) {
+			items.reverse();
 			items.forEach(function (item) {
 				const date = new Date(item.timestamp);
 				const month = monthNames[date.getMonth()];
-				const day = date.getDay();
-				const hours = date.getHours();
-				const minutes = (date.getMinutes() === 0) ? '00' : date.getMinutes();
+				const day = date.getDate();
+				const hours = (date.getHours() <= 9) ? `0${date.getHours()}` : date.getHours();
+				const minutes = (date.getMinutes() <= 9) ? `0${date.getMinutes()}` : date.getMinutes();
 				$('#log tbody').append('<tr><td id="timestamp" style="white-space: nowrap;">' + month + ' ' + day + ', ' + hours + ':' + minutes + '</td><td id="msg">' + item.msg + '</td></tr>');
 			})
 		});

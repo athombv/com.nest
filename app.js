@@ -5,15 +5,10 @@ const fs = require('fs');
 
 const NestAccount = require('./nest').NestAccount;
 
-const logItems = module.exports.logItems = [];
-
 /**
  * Setup NestAccount, listeners and flows.
  */
 module.exports.init = () => {
-
-	const storedLogItems = Homey.manager('settings').get('logItems');
-	if (storedLogItems) storedLogItems.forEach(logItem => logItems.push(logItem));
 
 	// Get app version from json
 	module.exports.appVersion = getAppVersion();
@@ -122,6 +117,8 @@ function findWhere(array, criteria) {
  * @param item
  */
 module.exports.registerLogItem = item => {
+	console.log(`Register new log item: time: ${item.timestamp}, err: ${item.msg}`);
+	let logItems = Homey.manager('settings').get('logItems');
 	logItems.push(item);
 	if (logItems.length > 10) logItems.shift();
 	Homey.manager('settings').set('logItems', logItems);
