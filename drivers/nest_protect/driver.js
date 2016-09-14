@@ -198,8 +198,6 @@ function initDevice(deviceData) {
 				(coAlarmState === 'warning' ||
 				coAlarmState === 'emergency'))) {
 
-				console.log(`realtime alarm_co: ${(coAlarmState !== 'ok')}`);
-
 				module.exports.realtime(deviceData, 'alarm_co', (coAlarmState !== 'ok'));
 			}
 		})

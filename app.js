@@ -26,6 +26,9 @@ module.exports.init = () => {
 				registerFlowConditionHandlers(nestAccount);
 				registerFlowTriggerHandlers(nestAccount);
 				return resolve(success);
+			})
+			.on('away', structure => {
+				Homey.manager('flow').trigger('away_status_changed', {}, structure);
 			});
 	});
 };
@@ -77,11 +80,11 @@ function registerFlowTriggerHandlers() {
 
 		// Check if all needed data is present
 		if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')
-			&& data && data.hasOwnProperty('status') && data.hasOwnProperty('structure_id')
+			&& data && data.hasOwnProperty('away') && data.hasOwnProperty('structure_id')
 			&& args.hasOwnProperty('status')) {
 
 			// Check if matching structure, and matching status
-			return callback(null, (args.structure.structure_id === data.structure_id && args.status === data.status));
+			return callback(null, (args.structure.structure_id === data.structure_id && args.status === data.away));
 		}
 
 		// Return error
@@ -96,8 +99,14 @@ function getAppVersion() {
 	try {
 		return JSON.parse(fs.readFileSync('./app.json')).version;
 	} catch (err) {
-		console.error('Could not parse app version from app.json', err);
-		return null;
+
+		// Retry once
+		try {
+			return JSON.parse(fs.readFileSync('./app.json')).version;
+		} catch (err) {
+			console.error('Could not parse app version from app.json', err);
+			return null;
+		}
 	}
 }
 
@@ -118,7 +127,7 @@ function findWhere(array, criteria) {
  */
 module.exports.registerLogItem = item => {
 	console.log(`Register new log item: time: ${item.timestamp}, err: ${item.msg}`);
-	let logItems = Homey.manager('settings').get('logItems');
+	const logItems = Homey.manager('settings').get('logItems');
 	logItems.push(item);
 	if (logItems.length > 10) logItems.shift();
 	Homey.manager('settings').set('logItems', logItems);
@@ -133,7 +142,7 @@ module.exports.registerLogItem = item => {
 module.exports.fetchAccessToken = callback => new Promise((resolve, reject) => {
 
 	// Generate OAuth callback, this helps to catch the authorization token
-	Homey.manager('cloud').generateOAuth2Callback(`https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID_T9}&state=NEST`,
+	Homey.manager('cloud').generateOAuth2Callback(`https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`,
 
 		(err, result) => {
 
@@ -144,9 +153,8 @@ module.exports.fetchAccessToken = callback => new Promise((resolve, reject) => {
 		(err, result) => {
 
 			// Exchange authorization code for access token
-			// TODO use proper nest client credentials below
 			request.post(
-				`https://api.home.nest.com/oauth2/access_token?client_id=${Homey.env.NEST_CLIENT_ID_T9}&code=${result}&client_secret=${Homey.env.NEST_CLIENT_SECRET_T9}&grant_type=authorization_code`, {
+				`https://api.home.nest.com/oauth2/access_token?client_id=${Homey.env.NEST_CLIENT_ID}&code=${result}&client_secret=${Homey.env.NEST_CLIENT_SECRET}&grant_type=authorization_code`, {
 					json: true
 				}, (err, response, body) => {
 					if (err || response.statusCode >= 400 || !body.access_token) {

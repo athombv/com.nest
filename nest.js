@@ -220,6 +220,24 @@ class NestAccount extends EventEmitter {
 				// Extract single structure
 				structure = snapshot.child(structure.structure_id).val();
 
+				// Get stored structure data
+				const oldStructure = _.findWhere(this.structures, { structure_id: structure.structure_id });
+				if (oldStructure) {
+
+					// Loop over all keys and values in stored data
+					for (const i in oldStructure) {
+
+						// If old value and new value present but are different
+						if (typeof oldStructure[i] !== 'undefined' &&
+							typeof structure[i] !== 'undefined' &&
+							oldStructure[i] !== structure[i]) {
+
+							// Emit change
+							this.emit(i, structure);
+						}
+					}
+				}
+
 				// Add structure to its array
 				foundStructures.push({
 					away: structure.away,
