@@ -25,33 +25,35 @@
 
 	<p data-i18n="settings.warning" id="warning" style="display:none;"></p>
 
-	<h1>Log</h1>
-	<table id="log" style="border-spacing: 20px;">
+	<div id="log_wrapper">
+		<h1>Log</h1>
+		<table id="log" style="border-spacing: 20px;">
 
-		<!-- Table header -->
+			<!-- Table header -->
 
-		<thead>
-		<tr>
-			<th scope="col" id="htimestamp" data-i18n="settings.time"></th>
-			<th scope="col" id="hmsg" data-i18n="settings.msg"></th>
-		</tr>
-		</thead>
+			<thead>
+			<tr>
+				<th scope="col" id="htimestamp" data-i18n="settings.time"></th>
+				<th scope="col" id="hmsg" data-i18n="settings.msg"></th>
+			</tr>
+			</thead>
 
-		<!-- Table footer -->
+			<!-- Table footer -->
 
-		<tfoot>
-		<tr>
-			<td></td>
-		</tr>
-		</tfoot>
+			<tfoot>
+			<tr>
+				<td></td>
+			</tr>
+			</tfoot>
 
-		<!-- Table body -->
+			<!-- Table body -->
 
-		<tbody>
+			<tbody>
 
-		</tbody>
+			</tbody>
 
-	</table>
+		</table>
+	</div>
 </div>
 </body>
 </html>
@@ -65,6 +67,9 @@
 		];
 		// We are ready
 		Homey.ready();
+
+		// Hide log initially
+		$('#log_wrapper').hide();
 
 		// Disable all buttons initially
 		$('#authorize').prop('disabled', true);
@@ -151,15 +156,20 @@
 		});
 
 		Homey.get('logItems', function (err, items) {
-			items.reverse();
-			items.forEach(function (item) {
-				const date = new Date(item.timestamp);
-				const month = monthNames[date.getMonth()];
-				const day = date.getDate();
-				const hours = (date.getHours() <= 9) ? `0${date.getHours()}` : date.getHours();
-				const minutes = (date.getMinutes() <= 9) ? `0${date.getMinutes()}` : date.getMinutes();
-				$('#log tbody').append('<tr><td id="timestamp" style="white-space: nowrap;">' + month + ' ' + day + ', ' + hours + ':' + minutes + '</td><td id="msg">' + item.msg + '</td></tr>');
-			})
+			if (items) {
+				items.reverse();
+				items.forEach(function (item) {
+					const date = new Date(item.timestamp);
+					const month = monthNames[date.getMonth()];
+					const day = date.getDate();
+					const hours = (date.getHours() <= 9) ? `0${date.getHours()}` : date.getHours();
+					const minutes = (date.getMinutes() <= 9) ? `0${date.getMinutes()}` : date.getMinutes();
+					$('#log tbody').append('<tr><td id="timestamp" style="white-space: nowrap;">' + month + ' ' + day + ', ' + hours + ':' + minutes + '</td><td id="msg">' + item.msg + '</td></tr>');
+				});
+				console.log(items.length);
+				if (items.length === 0) $('#log_wrapper').hide();
+				else $('#log_wrapper').show();
+			} else  $('#log_wrapper').hide();
 		});
 	}
 </script>

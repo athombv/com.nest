@@ -127,7 +127,7 @@ function findWhere(array, criteria) {
  */
 module.exports.registerLogItem = item => {
 	console.log(`Register new log item: time: ${item.timestamp}, err: ${item.msg}`);
-	const logItems = Homey.manager('settings').get('logItems');
+	const logItems = Homey.manager('settings').get('logItems') || [];
 	logItems.push(item);
 	if (logItems.length > 10) logItems.shift();
 	Homey.manager('settings').set('logItems', logItems);
