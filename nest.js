@@ -86,9 +86,7 @@ class NestAccount extends EventEmitter {
 					console.log('NestAccount: authentication successful');
 
 					// Start listening for realtime updates from Nest API
-					this._listenForRealtimeUpdates().then(() => {
-						return resolve();
-					});
+					this._listenForRealtimeUpdates().then(() => resolve());
 				});
 			} else return resolve();
 		});
@@ -357,7 +355,8 @@ class NestDevice extends EventEmitter {
 	 * Clean up the instance.
 	 */
 	destroy() {
-		this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).off();
+		this.nest_account.db.child(`devices/${this.device_type}`).child(this.device_id).off('value', this.checkForChanges);
+		console.log(`NestDevice: destroyed device ${this.device_id}`);
 	}
 }
 
@@ -393,14 +392,30 @@ class NestThermostat extends NestDevice {
 			this.nest_account.authenticate().then(() => {
 
 				// Handle cases where temperature could not be set
-				if (this.is_using_emergency_heat) return reject(__('error.emergency_heat', { temp: temperature }));
-				if (this.structure.away !== 'home') return reject(__('error.structure_is_away', { temp: temperature }));
-				if (this.hvac_mode === 'heat-cool') return reject(__('error.hvac_mode_is_cool', { temp: temperature }));
+				if (this.is_using_emergency_heat) {
+					return reject(__('error.emergency_heat', {
+						temp: temperature,
+						name: this.name_long
+					}));
+				}
+				if (this.structure.away !== 'home') {
+					return reject(__('error.structure_is_away', {
+						temp: temperature,
+						name: this.name_long
+					}));
+				}
+				if (this.hvac_mode === 'heat-cool') {
+					return reject(__('error.hvac_mode_is_cool', {
+						temp: temperature,
+						name: this.name_long
+					}));
+				}
 				if (this.is_locked && (temperature < this.locked_temp_min_c || temperature > this.locked_temp_max_c)) {
 					return reject(__('error.temp_lock', {
 						temp: temperature,
 						min: this.locked_temp_min_c,
-						max: this.locked_temp_max_c
+						max: this.locked_temp_max_c,
+						name: this.name_long
 					}));
 				}
 
