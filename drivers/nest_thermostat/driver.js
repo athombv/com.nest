@@ -152,6 +152,22 @@ module.exports.capabilities = {
 				return callback(null, thermostat.client.ambient_temperature_c);
 			} else return callback('Could not find device');
 		}
+	},
+
+	measure_humidity: {
+		get: (deviceData, callback) => {
+			if (deviceData instanceof Error) return callback(deviceData);
+
+			// Get device data
+			const thermostat = getDevice(deviceData);
+			if (thermostat
+				&& thermostat.hasOwnProperty('client')
+				&& thermostat.client.hasOwnProperty('humidity')
+			) {
+				return callback(null, thermostat.client.humidity);
+			}
+			return callback('Could not find device');
+		}
 	}
 };
 
@@ -175,7 +191,7 @@ module.exports.deleted = (deviceData) => {
 	devices = devices.filter(device => {
 
 		// Destroy device
-		if (device.data.id !== deviceData.id) device.client.destroy();
+		if (device.data.id === deviceData.id) device.client.destroy();
 
 		// Return filtered devices array
 		return device.data.id !== deviceData.id;
@@ -205,6 +221,9 @@ function initDevice(deviceData) {
 		})
 		.on('ambient_temperature_c', ambientTemperatureC => {
 			module.exports.realtime(deviceData, 'measure_temperature', ambientTemperatureC);
+		})
+		.on('humidity', humidity => {
+			module.exports.realtime(deviceData, 'measure_humidity', humidity);
 		})
 		.on('hvac_state', hvacState => {
 

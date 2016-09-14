@@ -18,14 +18,6 @@
     "large": "assets/images/large.png",
     "small": "assets/images/small.png"
   },
-  "dependencies": {
-    "firebase": "~2.4.0",
-    "request": "~2.69.0",
-    "underscore": "~1.8.3"
-  },
-  "permissions": [],
-  "speech": [
-  ],
   "drivers": [
     {
       "id": "nest_thermostat",
@@ -40,8 +32,36 @@
       "class": "thermostat",
       "capabilities": [
         "target_temperature",
-        "measure_temperature"
+        "measure_temperature",
+        "measure_humidity"
       ],
+      "mobile": {
+        "components": [
+          {
+            "capabilities": [
+            ],
+            "id": "icon"
+          },
+          {
+            "capabilities": [
+              "measure_humidity"
+            ],
+            "id": "sensor"
+          },
+          {
+            "capabilities": [
+              "measure_temperature"
+            ],
+            "id": "sensor"
+          },
+          {
+            "capabilities": [
+              "target_temperature"
+            ],
+            "id": "thermostat"
+          }
+        ]
+      },
       "pair": [
         {
           "id": "authorization"

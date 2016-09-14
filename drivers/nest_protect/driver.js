@@ -167,7 +167,7 @@ module.exports.deleted = (deviceData) => {
 	devices = devices.filter(device => {
 
 		// Destroy device
-		if (device.data.id !== deviceData.id) device.client.destroy();
+		if (device.data.id === deviceData.id) device.client.destroy();
 
 		// Return filtered devices array
 		return device.data.id !== deviceData.id;
@@ -199,7 +199,6 @@ function initDevice(deviceData) {
 				coAlarmState === 'emergency'))) {
 
 				console.log(`realtime alarm_co: ${(coAlarmState !== 'ok')}`);
-
 
 				module.exports.realtime(deviceData, 'alarm_co', (coAlarmState !== 'ok'));
 			}
