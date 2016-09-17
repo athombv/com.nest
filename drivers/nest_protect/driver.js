@@ -48,7 +48,7 @@ module.exports.init = (devicesData, callback) => {
 	});
 
 	// Ready
-	callback();
+	callback(null, true);
 };
 
 module.exports.pair = socket => {

@@ -50,7 +50,7 @@ module.exports.init = (devicesData, callback) => {
 	registerFlowListeners();
 
 	// Ready
-	callback();
+	callback(null, true);
 };
 
 module.exports.pair = socket => {
