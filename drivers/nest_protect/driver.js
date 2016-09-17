@@ -77,7 +77,7 @@ module.exports.init = function (devices_data, callback) {
 	listenForAlarms();
 
 	// Ready
-	callback(true);
+	callback(null, true);
 };
 
 module.exports.pair = function (socket) {

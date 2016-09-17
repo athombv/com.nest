@@ -117,7 +117,7 @@ module.exports.init = function (devices_data, callback) {
 	bindRealtimeUpdates();
 
 	// Ready
-	callback(true);
+	callback(null, true);
 };
 
 module.exports.pair = function (socket) {
