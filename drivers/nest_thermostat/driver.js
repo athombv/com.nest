@@ -32,7 +32,6 @@ module.exports.init = function (devices_data, callback) {
 			if (device != null && device.data.hvac_state == args.status && args.device.id == device.data.device_id) {
 				result = true;
 			}
-
 		}
 		callback(null, result);
 	});
@@ -42,13 +41,13 @@ module.exports.init = function (devices_data, callback) {
 		var result = false;
 
 		// Check for proper incoming arguments
-		if (args != null && args.hasOwnProperty("status") && args.hasOwnProperty("device") && args.device.id) {
+		if (args != null && data != null && args.hasOwnProperty("status") && data.hasOwnProperty("device_id") && data.device_id) {
 
 			// Get device
-			var device = nestDriver.getDevice(devices, installedDevices, args.device.id);
+			var device = nestDriver.getDevice(devices, installedDevices, data.device_id);
 
 			// If found and status matches
-			if (device != null && device.data.hvac_state == args.status && args.device.id == device.data.device_id) {
+			if (device != null && device.data.hvac_state == args.status && data.device_id == device.data.device_id) {
 				result = true;
 			}
 		}
@@ -326,7 +325,7 @@ function bindRealtimeUpdates() {
 				else if (device && device.data && !init) {
 
 					// Detected change trigger flow on device
-					Homey.manager('flow').triggerDevice('hvac_status_changed', {}, value.val(), {id: device_id}, function (err, result) {
+					Homey.manager('flow').triggerDevice('hvac_status_changed', {}, {value: value.val(), device_id: device_id}, {id: device_id}, function (err, result) {
 						if (err) return Homey.error(err);
 					});
 				}
