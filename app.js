@@ -11,7 +11,7 @@ const NestAccount = require('./nest').NestAccount;
 module.exports.init = () => {
 
 	// Get app version from json
-	module.exports.appVersion = getAppVersion();
+	module.exports.appVersion = Homey.manifest.version;
 
 	module.exports.nestAccountInitialization = new Promise(resolve => {
 
@@ -90,24 +90,6 @@ function registerFlowTriggerHandlers() {
 		// Return error
 		return callback(true, null);
 	});
-}
-
-/**
- * Get app version from app.json.
- */
-function getAppVersion() {
-	try {
-		return JSON.parse(fs.readFileSync('./app.json')).version;
-	} catch (err) {
-
-		// Retry once
-		try {
-			return JSON.parse(fs.readFileSync('./app.json')).version;
-		} catch (err) {
-			console.error('Could not parse app version from app.json', err);
-			return null;
-		}
-	}
 }
 
 /**
