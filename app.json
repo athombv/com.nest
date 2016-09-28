@@ -35,6 +35,19 @@
         "measure_temperature",
         "measure_humidity"
       ],
+      "capabilitiesOptions": {
+        "target_temperature": {
+          "preventInsights": true,
+          "min": 9,
+          "max": 32
+        },
+        "measure_temperature": {
+          "preventInsights": true
+        },
+        "measure_humidity": {
+          "preventInsights": true
+        }
+      },
       "mobile": {
         "components": [
           {
@@ -95,6 +108,17 @@
         "alarm_smoke",
         "alarm_battery"
       ],
+      "capabilitiesOptions": {
+        "alarm_co": {
+          "preventInsights": true
+        },
+        "alarm_smoke": {
+          "preventInsights": true
+        },
+        "alarm_battery": {
+          "preventInsights": true
+        }
+      },
       "pair": [
         {
           "id": "authorization"
