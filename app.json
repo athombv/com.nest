@@ -1,7 +1,7 @@
 {
   "id": "com.nest",
-  "version": "2.0.0",
-  "compatibility": ">=0.8.39",
+  "version": "2.1.0",
+  "compatibility": ">=0.10.1",
   "name": {
     "en": "Nest",
     "nl": "Nest"
