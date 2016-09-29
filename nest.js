@@ -396,7 +396,7 @@ class NestThermostat extends NestDevice {
 		super(options);
 
 		// Store capabilities of thermostat
-		this.capabilities = ['target_temperature_c', 'ambient_temperature_c', 'hvac_state'];
+		this.capabilities = ['target_temperature_c', 'ambient_temperature_c', 'humidity', 'hvac_state'];
 	}
 
 	/**
