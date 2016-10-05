@@ -212,7 +212,7 @@ class NestAccount extends EventEmitter {
 			});
 
 			this[deviceType] = foundDevices;
-		}
+		} else this[deviceType] = [];
 	}
 
 	/**
@@ -261,7 +261,7 @@ class NestAccount extends EventEmitter {
 			});
 
 			this.structures = foundStructures;
-		}
+		} else this.structures = [];
 	}
 
 	/**
