@@ -82,11 +82,11 @@ module.exports.pair = socket => {
 	 */
 	socket.on('list_devices', (data, callback) => {
 		const devicesList = [];
-		Homey.app.nestAccount.smoke_co_alarms.forEach(thermostat => {
+		Homey.app.nestAccount.smoke_co_alarms.forEach(smoke_co_alarm => {
 			devicesList.push({
-				name: thermostat.name_long,
+				name: (Homey.app.nestAccount.structures.length > 1 && smoke_co_alarm.structure_name) ? `${smoke_co_alarm.name_long} - ${smoke_co_alarm.structure_name}` : smoke_co_alarm.name_long,
 				data: {
-					id: thermostat.device_id,
+					id: smoke_co_alarm.device_id,
 					appVersion: Homey.app.appVersion
 				}
 			});

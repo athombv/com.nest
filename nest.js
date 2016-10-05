@@ -102,6 +102,17 @@ class NestAccount extends EventEmitter {
 			// Unauth Firebase reference
 			this.db.unauth();
 
+			// Remove stored access token
+			Homey.manager('settings').unset('nestAccesstoken');
+
+			// Reset list of devices in NestAccount
+			this.thermostats = [];
+			this.smoke_co_alarms = [];
+			this.cameras = [];
+
+			// Reset list of of structures in NestAccount
+			this.structures = [];
+
 			// Post authorization url with needed credentials
 			request.del(
 				`https://api.home.nest.com/oauth2/access_tokens/${this.accessToken}`, {}, (err, response) => {
@@ -176,7 +187,6 @@ class NestAccount extends EventEmitter {
 	registerDevices(snapshot, deviceType) {
 		const devices = snapshot.val();
 		if (devices) {
-
 			const foundDevices = [];
 
 			// Loop over all devices in devices object
@@ -188,11 +198,15 @@ class NestAccount extends EventEmitter {
 				// Do not continue if device is invalid
 				if (!device || !device.device_id || !device.name_long || !device.structure_id) return false;
 
+				// Find structure
+				const structure = _.findWhere(this.structures, { structure_id: device.structure_id });
+
 				// Add device to its array
 				foundDevices.push({
 					device_id: device.device_id,
 					name_long: device.name_long,
 					structure_id: device.structure_id,
+					structure_name: (structure) ? structure.name : null,
 					nest_account: this
 				});
 			});
@@ -280,6 +294,7 @@ class NestAccount extends EventEmitter {
 	 * @returns {NestThermostat}
 	 */
 	createCamera(deviceId) {
+		console.log(`NestAccount: create NestCamera (${deviceId})`);
 		const camera = _.findWhere(this.cameras, { device_id: deviceId });
 		if (camera) return new NestCamera(camera);
 		return undefined;

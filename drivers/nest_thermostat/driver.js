@@ -82,9 +82,10 @@ module.exports.pair = socket => {
 	 */
 	socket.on('list_devices', (data, callback) => {
 		const devicesList = [];
+
 		Homey.app.nestAccount.thermostats.forEach(thermostat => {
 			devicesList.push({
-				name: thermostat.name_long,
+				name: (Homey.app.nestAccount.structures.length > 1 && thermostat.structure_name) ? `${thermostat.name_long} - ${thermostat.structure_name}` : thermostat.name_long,
 				data: {
 					id: thermostat.device_id,
 					appVersion: Homey.app.appVersion
