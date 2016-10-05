@@ -192,7 +192,7 @@ module.exports.deleted = (deviceData) => {
 	devices = devices.filter(device => {
 
 		// Destroy device
-		if (device.data.id === deviceData.id) device.client.destroy();
+		if (device.data.id === deviceData.id && device.client) device.client.destroy();
 
 		// Return filtered devices array
 		return device.data.id !== deviceData.id;
