@@ -45,10 +45,10 @@ module.exports.init = (devicesData, callback) => {
 				module.exports.setUnavailable(deviceData, __('unauthenticated'));
 			});
 		}
-	});
 
-	// Ready
-	callback(null, true);
+		// Ready
+		callback(null, true);
+	});
 };
 
 module.exports.pair = socket => {

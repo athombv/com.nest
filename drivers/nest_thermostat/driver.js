@@ -45,12 +45,12 @@ module.exports.init = (devicesData, callback) => {
 				module.exports.setUnavailable(deviceData, __('unauthenticated'));
 			});
 		}
+
+		// Ready
+		callback(null, true);
 	});
 
 	registerFlowListeners();
-
-	// Ready
-	callback(null, true);
 };
 
 module.exports.pair = socket => {
