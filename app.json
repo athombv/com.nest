@@ -1,7 +1,7 @@
 {
   "id": "com.nest",
   "version": "2.1.0",
-  "compatibility": ">=0.10.1",
+  "compatibility": ">=0.10.3",
   "name": {
     "en": "Nest",
     "nl": "Nest"
@@ -56,13 +56,8 @@
             "id": "icon"
           },
           {
-            "capabilities": [
-              "measure_humidity"
-            ],
-            "id": "sensor"
-          },
-          {
-            "capabilities": [
+            "capabilities": [ 
+              "measure_humidity",
               "measure_temperature"
             ],
             "id": "sensor"
