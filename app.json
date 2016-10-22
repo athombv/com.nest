@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "compatibility": ">=0.10.3",
   "name": {
     "en": "Nest",
@@ -158,13 +158,6 @@
                   "en": "Away",
                   "nl": "Away"
                 }
-              },
-              {
-                "id": "auto-away",
-                "label": {
-                  "en": "Auto away",
-                  "nl": "Auto away"
-                }
               }
             ]
           },
@@ -244,13 +237,6 @@
                 "label": {
                   "en": "Away",
                   "nl": "Away"
-                }
-              },
-              {
-                "id": "auto-away",
-                "label": {
-                  "en": "Auto away",
-                  "nl": "Auto away"
                 }
               }
             ]
