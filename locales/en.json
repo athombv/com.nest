@@ -32,7 +32,8 @@
     "hvac_mode_is_cool": "(__name__) Failed to set target temperature to __temp__, can not adjust when HVAC mode is heat-cool",
     "structure_is_away": "(__name__) Failed to set target temperature to __temp__, can not adjust when structure mode is away",
     "temp_lock": "(__name__) Failed to set target temperature to __temp__, can not adjust temperature outside temperature lock (__min__ - __max__)",
-    "emergency_heat": "(__name__) Failed to set target temperature to __temp__, can not adjust when using emergency heat"
+    "emergency_heat": "(__name__) Failed to set target temperature to __temp__, can not adjust when using emergency heat",
+    "unknown": "(__name__) Failed to set target temperature to __temp__, error: __error__"
   },
   "pair": {
     "authorization": {

@@ -453,9 +453,17 @@ class NestThermostat extends NestDevice {
 				}
 
 				// All clear to change the target temperature
-				this.nest_account.db.child(`devices/thermostats/${this.device_id}/target_temperature_c`).set(temperature);
-
-				return resolve(temperature);
+				this.nest_account.db.child(`devices/thermostats/${this.device_id}/target_temperature_c`).set(temperature, error => {
+					if (error) {
+						return reject(__('error.unknown', {
+							temp: temperature,
+							name: this.name_long,
+							error: error
+						}));
+					} else {
+						return resolve(temperature);
+					}
+				});
 			}).catch(err => console.error(err));
 		});
 	}
