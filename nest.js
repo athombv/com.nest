@@ -438,7 +438,13 @@ class NestThermostat extends NestDevice {
 					}));
 				}
 				if (this.hvac_mode === 'heat-cool') {
-					return reject(__('error.hvac_mode_is_cool', {
+					return reject(__('error.hvac_mode_is_heat_cool', {
+						temp: temperature,
+						name: this.name_long
+					}));
+				}
+				if (this.hvac_mode === 'eco') {
+					return reject(__('error.hvac_mode_is_eco', {
 						temp: temperature,
 						name: this.name_long
 					}));
@@ -460,9 +466,8 @@ class NestThermostat extends NestDevice {
 							name: this.name_long,
 							error: error
 						}));
-					} else {
-						return resolve(temperature);
 					}
+					return resolve(temperature);
 				});
 			}).catch(err => console.error(err));
 		});
