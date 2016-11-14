@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "compatibility": ">=0.10.7",
   "name": {
     "en": "Nest",
@@ -142,6 +142,14 @@
         },
         "args": [
           {
+            "name": "structure",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          },
+          {
             "name": "status",
             "type": "dropdown",
             "values": [
@@ -160,14 +168,6 @@
                 }
               }
             ]
-          },
-          {
-            "name": "structure",
-            "type": "autocomplete",
-            "placeholder": {
-              "en": "Which home",
-              "nl": "Welk huis"
-            }
           }
         ]
       },
@@ -222,6 +222,14 @@
         },
         "args": [
           {
+            "name": "structure",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis"
+            }
+          },
+          {
             "name": "status",
             "type": "dropdown",
             "values": [
@@ -240,14 +248,6 @@
                 }
               }
             ]
-          },
-          {
-            "name": "structure",
-            "type": "autocomplete",
-            "placeholder": {
-              "en": "Which home",
-              "nl": "Welk huis"
-            }
           }
         ]
       },
