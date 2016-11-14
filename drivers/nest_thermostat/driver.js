@@ -12,7 +12,9 @@ let devices = [];
 module.exports.init = (devicesData, callback) => {
 
 	// Mark all devices as unavailable
-	if (devicesData) devicesData.forEach(deviceData => module.exports.setUnavailable(deviceData, __('reconnecting')));
+	if (devicesData) devicesData.forEach(deviceData => {
+		module.exports.setUnavailable(deviceData, __('reconnecting'))
+	});
 
 	// Wait for nest account to be initialized
 	Homey.app.nestAccountInitialization.then(authenticated => {
@@ -229,8 +231,8 @@ function initDevice(deviceData) {
 		.on('hvac_state', hvacState => {
 
 			// Trigger the hvac_status_changed flow
-			Homey.manager('flow').triggerDevice('hvac_status_changed', {}, hvacState, deviceData, err => {
-				if (err) return Homey.error(err);
+			Homey.manager('flow').triggerDevice('hvac_status_changed', {}, deviceData, deviceData, (err) => {
+				if (err) return Homey.error('Error triggeringDevice:', err);
 			});
 		})
 		.on('removed', () => {
@@ -254,27 +256,27 @@ function initDevice(deviceData) {
 function registerFlowListeners() {
 
 	// When triggered, get latest structure data and check status
-	Homey.manager('flow').on('condition.hvac_status', (callback, args) => {
+	Homey.manager('flow').on('condition.hvac_status', (callback, args, state) => {
 
 		// Check for proper incoming arguments
-		if (args && args.hasOwnProperty('status') && args.hasOwnProperty('deviceData')) {
+		if (args && args.hasOwnProperty('status') && state) {
 
 			// Get device
-			const device = getDevice(args.deviceData);
+			const device = getDevice(state);
 			callback(null, device && device.client.hvac_state === args.status);
-		} else callback(true);
+		} else callback('invalid arguments and or state provided');
 	});
 
 	// Parse flow trigger when hvac status changed
-	Homey.manager('flow').on('trigger.hvac_status_changed', (callback, args) => {
+	Homey.manager('flow').on('trigger.hvac_status_changed', (callback, args, state) => {
 
 		// Check for proper incoming arguments
-		if (args && args.hasOwnProperty('status') && args.hasOwnProperty('deviceData')) {
+		if (args && args.hasOwnProperty('status') && state) {
 
 			// Get device
-			const device = getDevice(args.deviceData);
+			const device = getDevice(state);
 			callback(null, device && device.client.hvac_state === args.status);
-		} else callback(true);
+		} else callback('invalid arguments and or state provided');
 	});
 }
 
