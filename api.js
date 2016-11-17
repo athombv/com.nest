@@ -1,56 +1,44 @@
+'use strict';
+
 module.exports = [
 	{
-		description: 'Authorize Nest',
+		description: 'Authenticate Nest',
 		method: 'GET',
-		path: '/authorized/',
-		fn: function (callback, args) {
-
-			// Trigger authorizations
-			Homey.app.authWithToken(function (authorized) {
-				clearTimeout(timeout);
-				callback(null, authorized);
-			});
-
-			// Create timeout
-			var timeout = setTimeout(function () {
-				callback(true, null);
-			}, 10000);
+		path: '/authenticated/',
+		fn: callback => {
+			if (Homey.app.nestAccount && Homey.app.nestAccount.db) callback(null, Homey.app.nestAccount.db.getAuth());
+			else (callback('No nest account found'));
 		}
 	},
 	{
-		description: 'Deauthorize Nest',
-		method: 'PUT',
-		path: '/deauthorize/',
-		fn: function (callback, args) {
+		description: 'Revoke authentication Nest',
+		method: 'POST',
+		path: '/revokeAuthentication/',
+		fn: callback => {
 
-			// Trigger authorizations
-			Homey.app.removeWWNConnection(function (err, data) {
-				clearTimeout(timeout);
-				callback(err, data);
-			});
-
-			// Create timeout
-			var timeout = setTimeout(function () {
-				callback(true, null);
-			}, 3000);
+			// Revoke authentication on nest account
+			Homey.app.nestAccount.revokeAuthentication()
+				.then(() => callback(null, true))
+				.catch(err => callback(err));
 		}
 	},
 	{
-		description: 'Authorize Nest',
-		method: 'PUT',
-		path: '/authorize/',
-		fn: function (callback, args) {
+		description: 'Authenticate Nest',
+		method: 'POST',
+		path: '/authenticate/',
+		fn: callback => {
 
-			// Trigger authorizations
-			Homey.app.fetchAuthorizationURL(function (err, data) {
-				clearTimeout(timeout);
-				callback(err, data);
+			// Fetch access token
+			Homey.app.fetchAccessToken(data => {
+				callback(null, data.url);
+			}).then(accessToken => {
+
+				// Save token
+				Homey.manager('settings').set('nestAccesstoken', accessToken);
+
+				// Authenticate nest account with new token
+				Homey.app.nestAccount.authenticate(accessToken);
 			});
-
-			// Create timeout
-			var timeout = setTimeout(function () {
-				callback(true, null);
-			}, 3000);
 		}
 	}
 ];

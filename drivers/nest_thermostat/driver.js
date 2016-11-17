@@ -1,434 +1,296 @@
-/**
- * Import nest driver and underscore
- */
-var nestDriver = require('./../../app.js');
-var _ = require('underscore');
+'use strict';
+
+const semver = require('semver');
+
+let devices = [];
 
 /**
- * devices stores all devices registered on the users nest account
- * installedDevices is an array holding the ID's of installed devices
- */
-var devices = [];
-var installedDevices = [];
-
-/**
- * Initially store devices present on Homey, and try to authenticate
- * @param devices_data
+ * Initially store devices present on Homey, and try to authenticate.
+ * @param devicesData
  * @param callback
  */
-module.exports.init = function (devices_data, callback) {
 
-	// When triggered, get latest structure data and check status
-	Homey.manager('flow').on('condition.hvac_status', function (callback, args) {
-		var result = false;
+module.exports.init = (devicesData, callback) => {
 
-		// Check for proper incoming arguments
-		if (args != null && args.hasOwnProperty("status") && args.hasOwnProperty("device") && args.device.id) {
-
-			// Get device
-			var device = nestDriver.getDevice(devices, installedDevices, args.device.id);
-
-			// If found and status is away return true
-			if (device != null && device.data.hvac_state == args.status && args.device.id == device.data.device_id) {
-				result = true;
-			}
-		}
-		callback(null, result);
+	// Mark all devices as unavailable
+	if (devicesData) devicesData.forEach(deviceData => {
+		module.exports.setUnavailable(deviceData, __('reconnecting'))
 	});
 
-	// Parse flow trigger when hvac status changed
-	Homey.manager('flow').on('trigger.hvac_status_changed', function (callback, args, data) {
-		var result = false;
+	// Wait for nest account to be initialized
+	Homey.app.nestAccountInitialization.then(authenticated => {
 
-		// Check for proper incoming arguments
-		if (args != null && data != null && args.hasOwnProperty("status") && data.hasOwnProperty("device_id") && data.device_id) {
+		// Listen for authentication events
+		Homey.app.nestAccount
+			.on('authenticated', () => {
+				devices.forEach(device => {
 
-			// Get device
-			var device = nestDriver.getDevice(devices, installedDevices, data.device_id);
-
-			// If found and status matches
-			if (device != null && device.data.hvac_state == args.status && data.device_id == device.data.device_id) {
-				result = true;
-			}
-		}
-		callback(null, result);
-	});
-
-	// Pass already installed devices to nestDriver
-	devices_data.forEach(function (device_data) {
-
-		// Register installed devices
-		installedDevices.push(device_data.id);
-	});
-
-	// Authenticate using access_token
-	nestDriver.authWithToken(function (success) {
-		if (success) {
-
-			// Already authorized
-			Homey.log('Authorization with Nest successful');
-		}
-		else {
-			// Get new access_token and authenticate with Nest
-			Homey.log('Initializing driver failed, try adding devices.');
-		}
-	});
-
-	// Fetch data
-	nestDriver.fetchDeviceData('thermostats', devices);
-
-	// And keep listening for updated data
-	nestDriver.events.on('thermostats_devices', function (data) {
-
-		devices = _.filter(data [0], function (val) {
-			return _.some(this, function (val2) {
-				return val2 === val.data.id;
+					// If device is not yet initialized
+					if (!device.initialized) {
+						initDevice(device.data);
+					} else {
+						module.exports.setAvailable(device.data);
+					}
+				});
+			})
+			.on('unauthenticated', () => {
+				devices.forEach(device => module.exports.setUnavailable(device.data, __('unauthenticated')));
 			});
-		}, data [1]);
 
-		// Store latest devices + data internally
-		//devices = data[ 0 ];
+		// Nest account authenticated
+		if (authenticated) {
+			devicesData.forEach(deviceData => initDevice(deviceData));
+		} else {
+			devicesData.forEach(deviceData => {
 
-		// Check for each device if unreachable and check if installedDevices contains unreachable device
-		installedDevices.forEach(function (device_id) {
-			nestDriver.registerDeviceReachability(data [0], data [1], installedDevices, device_id, "nest_thermostat");
-		});
+				// Store device and mark as not initialized
+				devices.push({ data: deviceData, initialized: false });
+				module.exports.setUnavailable(deviceData, __('unauthenticated'));
+			});
+		}
 
-		// Update to usable installed devices
-		installedDevices = _.intersection(installedDevices, data[1]);
+		// Ready
+		callback(null, true);
 	});
 
-	// Handle not authenticated by disabling devices
-	nestDriver.events.on('not_authenticated', function () {
-
-		// Not authenticated with Nest, so no devices in API available
-		installedDevices.forEach(function (device_id) {
-			nestDriver.registerDeviceReachability(devices, [], installedDevices, device_id, "nest_thermostat");
-		});
-	});
-
-	// Handle authenticated, to re-enable devices
-	nestDriver.events.on('authenticated', function () {
-		nestDriver.fetchDeviceData('thermostats', devices);
-	});
-
-	// Bind realtime updates to changes in devices
-	bindRealtimeUpdates();
-
-	// Ready
-	callback(null, true);
+	registerFlowListeners();
 };
 
-module.exports.pair = function (socket) {
+module.exports.pair = socket => {
 
 	/**
 	 * Passes credentials to front-end, to be used to construct the authorization url,
-	 * gets called when user initiates pairing process
+	 * gets called when user initiates pairing process.
 	 */
-	socket.on("authenticate", function (data, callback) {
-		// Authenticate using access_token
-		nestDriver.authWithToken(function (success) {
-			if (success) {
-				Homey.log('Authorization with Nest successful');
+	socket.on('authenticate', (data, callback) => {
+		if (Homey.manager('settings').get('nestAccesstoken')) return callback(null, true);
 
-				// Fetch data
-				nestDriver.fetchDeviceData('thermostats', devices);
+		// Start fetching access token flow
+		Homey.app.fetchAccessToken(result => {
+			callback(null, result);
+		}).then(accessToken => {
 
-				// Continue to list devices
-				callback(null, true);
-			}
-			else {
-				// Get new access_token and authenticate with Nest
-				nestDriver.fetchAccessToken(function (result) {
-					callback(null, result);
-				}, socket);
-			}
+			// Store new token
+			Homey.manager('settings').set('nestAccesstoken', accessToken);
+
+			// Authenticate nest account
+			Homey.app.nestAccount.authenticate(accessToken).then(() => socket.emit('authenticated'));
 		});
 	});
 
 	/**
 	 * Called when user is presented the list_devices template,
 	 * this function fetches relevant data from devices and passes
-	 * it to the front-end
+	 * it to the front-end.
 	 */
-	socket.on('list_devices', function (data, callback) {
+	socket.on('list_devices', (data, callback) => {
+		const devicesList = [];
 
-		// Fetch data
-		nestDriver.fetchDeviceData('thermostats', devices, function () {
-
-			// Create device list from found devices
-			var devices_list = [];
-			devices.forEach(function (device) {
-				devices_list.push({
-					data: {
-						id: device.data.id
-					},
-					name: device.name
-				});
+		Homey.app.nestAccount.thermostats.forEach(thermostat => {
+			devicesList.push({
+				name: (Homey.app.nestAccount.structures.length > 1 && thermostat.structure_name) ? `${thermostat.name_long} - ${thermostat.structure_name}` : thermostat.name_long,
+				data: {
+					id: thermostat.device_id,
+					appVersion: Homey.app.appVersion
+				}
 			});
-
-			// Return list to front-end
-			callback(null, devices_list);
 		});
+		callback(null, devicesList);
 	});
-
-	/**
-	 * When a user adds a device, make sure the driver knows about it
-	 */
-	socket.on('add_device', function (device, callback) {
-
-		// Mark device as installed
-		installedDevices.push(device.data.id);
-
-		if (callback) callback(null, device.data.id);
-	});
-}
+};
 
 /**
- * These represent the capabilities of the Nest Thermostat
+ * These represent the capabilities of the Nest Thermostat.
  */
 module.exports.capabilities = {
 
 	target_temperature: {
-		get: function (device, callback) {
-			if (device instanceof Error) return callback(device);
-
-			// Make sure we are authenticated
-			nestDriver.authWithToken();
+		get: (deviceData, callback) => {
+			if (deviceData instanceof Error) return callback(deviceData);
 
 			// Get device data
-			var thermostat = nestDriver.getDevice(devices, installedDevices, device.id);
-			if (!thermostat) return callback(device);
-
-			callback(null, thermostat.data.target_temperature_c);
+			const thermostat = getDevice(deviceData);
+			if (thermostat
+				&& thermostat.hasOwnProperty('client')
+				&& thermostat.client.hasOwnProperty('target_temperature_c')) {
+				return callback(null, thermostat.client.target_temperature_c);
+			}
+			return callback('Could not find device');
 		},
-		set: function (device, temperature, callback) {
-			if (device instanceof Error) return callback(device);
+		set: (deviceData, temperature, callback) => {
+			if (deviceData instanceof Error) return callback(deviceData);
 
-			// Make sure we are authenticated
-			nestDriver.authWithToken();
-
-			// Catch faulty trigger
-			if (!temperature) {
-				callback();
-				return false;
-			}
-			else if (temperature < 9) {
-				temperature = 9;
-			}
-			else if (temperature > 32) {
-				temperature = 32;
-			}
+			// Fix temperature range
+			// TODO remove this once custom temperature range can be set
+			if (temperature < 9) temperature = 9;
+			else if (temperature > 32) temperature = 32;
+			temperature = Math.round(temperature * 2) / 2;
 
 			// Get device data
-			var thermostat = nestDriver.getDevice(devices, installedDevices, device.id);
-			if (!thermostat) return callback(device);
+			const thermostat = getDevice(deviceData);
+			if (thermostat
+				&& thermostat.hasOwnProperty('client')) {
+				thermostat.client.setTargetTemperature(temperature)
+					.then(() => callback(null, temperature))
+					.catch(err => {
+						console.error(err);
+						Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
+						return callback(err);
+					});
+			}
 
-			// Perform api call
-			setTemperature(thermostat.data, Math.round(temperature * 2) / 2, 'c');
-
-			if (callback) callback(null, Math.round(temperature * 2) / 2);
+			return callback(true);
 		}
 	},
 
 	measure_temperature: {
-		get: function (device, callback) {
-			if (device instanceof Error) return callback(device);
-
-			// Make sure we are authenticated
-			nestDriver.authWithToken();
+		get: (deviceData, callback) => {
+			if (deviceData instanceof Error) return callback(deviceData);
 
 			// Get device data
-			var thermostat = nestDriver.getDevice(devices, installedDevices, device.id);
-			if (!thermostat) return callback(device);
+			const thermostat = getDevice(deviceData);
+			if (thermostat
+				&& thermostat.hasOwnProperty('client')
+				&& thermostat.client.hasOwnProperty('ambient_temperature_c')
+			) {
+				return callback(null, thermostat.client.ambient_temperature_c);
+			} else return callback('Could not find device');
+		}
+	},
 
-			// Callback ambient temperature
-			callback(null, thermostat.data.ambient_temperature_c);
+	measure_humidity: {
+		get: (deviceData, callback) => {
+			if (deviceData instanceof Error) return callback(deviceData);
+
+			// Get device data
+			const thermostat = getDevice(deviceData);
+			if (thermostat
+				&& thermostat.hasOwnProperty('client')
+				&& thermostat.client.hasOwnProperty('humidity')
+			) {
+				return callback(null, thermostat.client.humidity);
+			}
+			return callback('Could not find device');
 		}
 	}
 };
 
 /**
- * When a device gets deleted, make sure to clean up
- */
-module.exports.deleted = function (device_data) {
-
-	// Remove ID from installed devices array
-	for (var x = 0; x < installedDevices.length; x++) {
-		if (installedDevices[x] === device_data.id) {
-			installedDevices = _.reject(installedDevices, function (id) {
-				return id === device_data.id;
-			});
-		}
-	}
-};
-
-/**
- * Handle enabling a device from app.js, this handles both thermostats and protects
- * @param device_id
- */
-module.exports.registerAvailable = function (device_id) {
-	module.exports.setAvailable({id: device_id});
-};
-
-/**
- * Handles disabling a device from app.js, this handles both thermostats and protects
- * @param device_id
- * @param warning
+ * Added a device, store it internally.
+ * @param deviceData
  * @param callback
  */
-module.exports.registerUnavailable = function (device_id, warning, callback) {
-	if (typeof callback == "function") {
-		module.exports.setUnavailable({id: device_id}, warning, callback);
-	}
-	else {
-		module.exports.setUnavailable({id: device_id}, warning);
-	}
+module.exports.added = (deviceData, callback) => {
+	initDevice(deviceData);
+	callback(null, true);
 };
 
 /**
- * Listens for specific changes on thermostats, and triggers
- * realtime updates if necessary
+ * Delete devices internally when users removes one
+ * @param deviceData
  */
-function bindRealtimeUpdates() {
+module.exports.deleted = (deviceData) => {
 
-	// Listen for incoming value events
-	nestDriver.socket.child('devices/thermostats').once('value', function (snapshot) {
+	// Reset array with device removed and deregister push event subscription
+	devices = devices.filter(device => {
 
-		for (var id in snapshot.val()) {
-			var device_id = snapshot.child(id).child('device_id').val();
+		// Destroy device
+		if (device.data.id === deviceData.id && device.client) device.client.destroy();
 
-			// Listen for specific changes
-			listenForChange(device_id, id, 'target_temperature_c', 'target_temperature');
-			listenForChange(device_id, id, 'ambient_temperature_c', 'measure_temperature');
-			listenForChange(device_id, id, 'hvac_state', '');
-		}
+		// Return filtered devices array
+		return device.data.id !== deviceData.id;
 	});
+};
 
-	var listenForChange = function (device_id, id, attribute, capability) {
-		var init = true;
-		var debouncer = null;
-		nestDriver.socket.child('devices/thermostats/' + id + '/' + attribute).on('value', function (value) {
+/**
+ * Initialize device, setup client, and event listeners.
+ * @param deviceData
+ * @returns {*}
+ */
+function initDevice(deviceData) {
 
-			if (debouncer) {
-				clearTimeout(debouncer);
-				debouncer = null;
-			}
+	// If device was added below 2.0.0 make sure to re-pair
+	if (!deviceData.hasOwnProperty('appVersion') || !deviceData.appVersion || !semver.gte(deviceData.appVersion, '2.0.0')) return module.exports.setUnavailable(deviceData, __('version_repair'));
 
-			debouncer = setTimeout(() => {
-				var device = nestDriver.getDevice(devices, installedDevices, device_id);
+	// Create thermostat
+	const client = Homey.app.nestAccount.createThermostat(deviceData.id);
 
-				// Check if device is present, and skip initial event (on device added)
-				if (device && device.data && capability != '' && !init) {
-					module.exports.realtime({id: device.data.id}, capability, value.val());
-				}
-				else if (device && device.data && !init) {
+	// If client construction failed, set device unavailable
+	if (!client) return module.exports.setUnavailable(deviceData, __('removed_externally'));
 
-					// Detected change trigger flow on device
-					Homey.manager('flow').triggerDevice('hvac_status_changed', {}, {value: value.val(), device_id: device_id}, {id: device_id}, function (err, result) {
-						if (err) return Homey.error(err);
-					});
-				}
-				init = false;
-				debouncer = null;
-			}, 500);
+	// Subscribe to events on data change
+	client
+		.on('target_temperature_c', targetTemperatureC => {
+			module.exports.realtime(deviceData, 'target_temperature', targetTemperatureC);
+		})
+		.on('ambient_temperature_c', ambientTemperatureC => {
+			module.exports.realtime(deviceData, 'measure_temperature', ambientTemperatureC);
+		})
+		.on('humidity', humidity => {
+			module.exports.realtime(deviceData, 'measure_humidity', humidity);
+		})
+		.on('hvac_state', hvacState => {
+
+			// Trigger the hvac_status_changed flow
+			Homey.manager('flow').triggerDevice('hvac_status_changed', {}, deviceData, deviceData, (err) => {
+				if (err) return Homey.error('Error triggeringDevice:', err);
+			});
+		})
+		.on('removed', () => {
+			module.exports.setUnavailable(deviceData, __('removed_externally'));
 		});
-	};
-};
+
+	// Store it
+	const device = getDevice(deviceData);
+	if (device) {
+		device.client = client;
+		device.initialized = true;
+	} else devices.push({ data: deviceData, client: client, initialized: true });
+
+	module.exports.setAvailable(deviceData);
+}
 
 /**
- * Function that connects to the Nest API and performs a temperature update if possible
- * @param thermostat
- * @param degrees
- * @param scale
- * @param type
+ * Registers flow listeners in order to parse incoming
+ * flow events.
  */
-function setTemperature(thermostat, degrees, scale, type) {
+function registerFlowListeners() {
 
-	// Make sure connection is set-up
-	nestDriver.authWithToken(function (success) {
-		if (success) {
-			Homey.log('Set Temperature to: ' + degrees);
+	// When triggered, get latest structure data and check status
+	Homey.manager('flow').on('condition.hvac_status', (callback, args, state) => {
 
-			scale = scale.toLowerCase();
-			type = type ? type + '_' : '';
+		// Check for proper incoming arguments
+		if (args && args.hasOwnProperty('status') && state) {
 
-			var path = getApiPath(thermostat) + '/target_temperature_' + type + scale;
+			// Get device
+			const device = getDevice(state);
+			callback(null, device && device.client.hvac_state === args.status);
+		} else callback('invalid arguments and or state provided');
+	});
 
-			// Get structure of device
-			var structure = nestDriver.getStructure(thermostat.structure_id);
+	// Parse flow trigger when hvac status changed
+	Homey.manager('flow').on('trigger.hvac_status_changed', (callback, args, state) => {
 
-			// Check for blocking events
-			if (thermostat.is_using_emergency_heat) {
-				Homey.log("Can't adjust target temperature while using emergency heat.");
-			}
-			else if (thermostat.hvac_mode === 'heat-cool' && !type) {
-				// Set correct hvac mode for desired temperature
-				setHvacMode(thermostat, (thermostat.ambient_temperature_c > degrees) ? 'cool' : 'heat', function (err, result) {
-					if (!err && result) {
-						// All clear to change the target temperature
-						nestDriver.socket.child(path).set(degrees);
-					}
-				});
-			}
-			else if (type && thermostat.hvac_mode !== 'heat-cool') {
-				// Set correct hvac mode for desired temperature
-				setHvacMode(thermostat, (thermostat.ambient_temperature_c > degrees) ? 'cool' : 'heat', function (err, result) {
-					if (!err && result) {
-						// All clear to change the target temperature
-						nestDriver.socket.child(path).set(degrees);
-					}
-				});
-			}
-			else if (structure != null && structure.hasOwnProperty("away") && structure.away != "home") {
-				Homey.log("Can't adjust target temperature while structure is set to Away or Auto-away.");
-				//TODO this could cause problems as the users gets no feedback when it fails, and we can't set it to "Home" programatically
-			}
-			else {
+		// Check for proper incoming arguments
+		if (args && args.hasOwnProperty('status') && state) {
 
-				// All clear to change the target temperature
-				nestDriver.socket.child(path).set(degrees);
-			}
-		}
-		else {
-			Homey.log('Error, not authenticated');
-		}
+			// Get device
+			const device = getDevice(state);
+			callback(null, device && device.client.hvac_state === args.status);
+		} else callback('invalid arguments and or state provided');
 	});
 }
 
 /**
- * Set thermostat to heating or cooling mode
- * @param thermostat
- * @param mode (String: 'heat'/'cool'/'heat-cool')
+ * Gets a device based on an id
+ * @param deviceData
+ * @returns {*}
  */
-function setHvacMode(thermostat, mode, callback) {
-	Homey.log('setHvacMode ' + mode);
+function getDevice(deviceData) {
 
-	// Construct API path
-	var path = getApiPath(thermostat) + '/hvac_mode';
+	// If only id provided
+	if (typeof deviceData !== 'object') deviceData = { id: deviceData };
 
-	// Make sure connection is set-up
-	nestDriver.authWithToken(function (success) {
-		if (success) {
-
-			// Set updated mode
-			nestDriver.socket.child(path).set(mode);
-
-			callback(false, true)
-		}
-		else {
-			Homey.log('Error, not authenticated');
-
-			callback(true, false);
-		}
-	});
-}
-
-/**
- * Create API path for communication with Nest
- * @param thermostat
- * @returns {string} API path
- */
-function getApiPath(thermostat) {
-	return 'devices/thermostats/' + thermostat.device_id;
+	// Loop over devices
+	return devices.find(device => device.data.id === deviceData.id);
 }
