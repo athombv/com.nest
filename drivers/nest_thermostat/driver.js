@@ -121,9 +121,6 @@ module.exports.capabilities = {
 			if (deviceData instanceof Error) return callback(deviceData);
 
 			// Fix temperature range
-			// TODO remove this once custom temperature range can be set
-			if (temperature < 9) temperature = 9;
-			else if (temperature > 32) temperature = 32;
 			temperature = Math.round(temperature * 2) / 2;
 
 			// Get device data
@@ -137,9 +134,7 @@ module.exports.capabilities = {
 						Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
 						return callback(err);
 					});
-			}
-
-			return callback(true);
+			} else return callback('No Nest client found');
 		}
 	},
 
