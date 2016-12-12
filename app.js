@@ -1,5 +1,7 @@
 'use strict';
 
+const Log = require('homey-log').Log;
+
 const request = require('request');
 const fs = require('fs');
 
