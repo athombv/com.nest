@@ -12,6 +12,8 @@ const NestAccount = require('./nest').NestAccount;
  */
 module.exports.init = () => {
 
+	console.log(`${Homey.manifest.id} running...`);
+
 	// Get app version from json
 	module.exports.appVersion = Homey.manifest.version;
 
@@ -19,7 +21,7 @@ module.exports.init = () => {
 
 		// Create new nest account from stored token
 		const nestAccount = module.exports.nestAccount = new NestAccount({
-			accessToken: Homey.manager('settings').get('nestAccesstoken')
+			accessToken: Homey.manager('settings').get('nestAccesstoken'),
 		})
 			.on('authenticated', () => Homey.manager('api').realtime('authenticated', true))
 			.on('unauthenticated', () => Homey.manager('api').realtime('authenticated', false))
@@ -43,13 +45,17 @@ module.exports.init = () => {
 function registerAutoCompleteHandlers(nestAccount) {
 
 	// Provide autocomplete input for condition card
-	Homey.manager('flow').on('condition.away_status.structure.autocomplete', callback => {
-		callback(null, nestAccount.structures);
+	Homey.manager('flow').on('condition.away_status.structure.autocomplete', (callback, args) => {
+		if (nestAccount.hasOwnProperty('structures') && Array.isArray(nestAccount.structures)) {
+			return callback(null, nestAccount.structures.filter(item => item.name.toLowerCase().includes(args.query.toLowerCase())));
+		} return callback(null, []);
 	});
 
 	// Provide autocomplete input for trigger card
-	Homey.manager('flow').on('trigger.away_status_changed.structure.autocomplete', callback => {
-		callback(null, nestAccount.structures);
+	Homey.manager('flow').on('trigger.away_status_changed.structure.autocomplete', (callback, args) => {
+		if (nestAccount.hasOwnProperty('structures') && Array.isArray(nestAccount.structures)) {
+			return callback(null, nestAccount.structures.filter(item => item.name.toLowerCase().includes(args.query.toLowerCase())));
+		} return callback(null, []);
 	});
 }
 
@@ -66,7 +72,7 @@ function registerFlowConditionHandlers(nestAccount) {
 		if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')) {
 			return callback(null, !!findWhere(nestAccount.structures, {
 				structure_id: args.structure.structure_id,
-				away: args.status
+				away: args.status,
 			}));
 		}
 	});
@@ -139,7 +145,7 @@ module.exports.fetchAccessToken = callback => new Promise((resolve, reject) => {
 			// Exchange authorization code for access token
 			request.post(
 				`https://api.home.nest.com/oauth2/access_token?client_id=${Homey.env.NEST_CLIENT_ID}&code=${result}&client_secret=${Homey.env.NEST_CLIENT_SECRET}&grant_type=authorization_code`, {
-					json: true
+					json: true,
 				}, (err, response, body) => {
 					if (err || response.statusCode >= 400 || !body.access_token) {
 

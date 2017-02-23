@@ -8,7 +8,7 @@ module.exports = [
 		fn: callback => {
 			if (Homey.app.nestAccount && Homey.app.nestAccount.db) callback(null, Homey.app.nestAccount.db.getAuth());
 			else (callback('No nest account found'));
-		}
+		},
 	},
 	{
 		description: 'Revoke authentication Nest',
@@ -20,7 +20,7 @@ module.exports = [
 			Homey.app.nestAccount.revokeAuthentication()
 				.then(() => callback(null, true))
 				.catch(err => callback(err));
-		}
+		},
 	},
 	{
 		description: 'Authenticate Nest',
@@ -39,6 +39,6 @@ module.exports = [
 				// Authenticate nest account with new token
 				Homey.app.nestAccount.authenticate(accessToken);
 			});
-		}
-	}
+		},
+	},
 ];

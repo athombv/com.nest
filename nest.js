@@ -207,7 +207,7 @@ class NestAccount extends EventEmitter {
 					name_long: device.name_long,
 					structure_id: device.structure_id,
 					structure_name: (structure) ? structure.name : null,
-					nest_account: this
+					nest_account: this,
 				});
 			});
 
@@ -256,7 +256,7 @@ class NestAccount extends EventEmitter {
 				foundStructures.push({
 					away: structure.away,
 					name: structure.name,
-					structure_id: structure.structure_id
+					structure_id: structure.structure_id,
 				});
 			});
 
@@ -428,25 +428,25 @@ class NestThermostat extends NestDevice {
 				if (this.is_using_emergency_heat) {
 					return reject(__('error.emergency_heat', {
 						temp: temperature,
-						name: this.name_long
+						name: this.name_long,
 					}));
 				}
 				if (this.structure.away !== 'home') {
 					return reject(__('error.structure_is_away', {
 						temp: temperature,
-						name: this.name_long
+						name: this.name_long,
 					}));
 				}
 				if (this.hvac_mode === 'heat-cool') {
 					return reject(__('error.hvac_mode_is_heat_cool', {
 						temp: temperature,
-						name: this.name_long
+						name: this.name_long,
 					}));
 				}
 				if (this.hvac_mode === 'eco') {
 					return reject(__('error.hvac_mode_is_eco', {
 						temp: temperature,
-						name: this.name_long
+						name: this.name_long,
 					}));
 				}
 				if (this.is_locked && (temperature < this.locked_temp_min_c || temperature > this.locked_temp_max_c)) {
@@ -454,7 +454,7 @@ class NestThermostat extends NestDevice {
 						temp: temperature,
 						min: this.locked_temp_min_c,
 						max: this.locked_temp_max_c,
-						name: this.name_long
+						name: this.name_long,
 					}));
 				}
 
@@ -464,7 +464,7 @@ class NestThermostat extends NestDevice {
 						return reject(__('error.unknown', {
 							temp: temperature,
 							name: this.name_long,
-							error: error
+							error,
 						}));
 					}
 					return resolve(temperature);

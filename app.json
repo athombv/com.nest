@@ -51,12 +51,11 @@
       "mobile": {
         "components": [
           {
-            "capabilities": [
-            ],
+            "capabilities": [],
             "id": "icon"
           },
           {
-            "capabilities": [ 
+            "capabilities": [
               "measure_humidity",
               "measure_temperature"
             ],
@@ -221,6 +220,7 @@
         "tokens": [
           {
             "name": "measure_humidity",
+            "type": "number",
             "title": {
               "en": "Humidity",
               "nl": "Luchtvochtigheid"

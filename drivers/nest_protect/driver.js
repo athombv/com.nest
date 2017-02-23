@@ -87,8 +87,8 @@ module.exports.pair = socket => {
 				name: (Homey.app.nestAccount.structures.length > 1 && smoke_co_alarm.structure_name) ? `${smoke_co_alarm.name_long} - ${smoke_co_alarm.structure_name}` : smoke_co_alarm.name_long,
 				data: {
 					id: smoke_co_alarm.device_id,
-					appVersion: Homey.app.appVersion
-				}
+					appVersion: Homey.app.appVersion,
+				},
 			});
 		});
 		callback(null, devicesList);
@@ -222,7 +222,7 @@ function initDevice(deviceData) {
 	if (device) {
 		device.client = client;
 		device.initialized = true;
-	} else devices.push({ data: deviceData, client: client, initialized: true });
+	} else devices.push({ data: deviceData, client, initialized: true });
 
 	module.exports.setAvailable(deviceData);
 }

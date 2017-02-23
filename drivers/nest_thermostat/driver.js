@@ -13,9 +13,11 @@ let devices = [];
 module.exports.init = (devicesData, callback) => {
 
 	// Mark all devices as unavailable
-	if (devicesData) devicesData.forEach(deviceData => {
-		module.exports.setUnavailable(deviceData, __('reconnecting'))
-	});
+	if (devicesData) {
+		devicesData.forEach(deviceData => {
+			module.exports.setUnavailable(deviceData, __('reconnecting'));
+		});
+	}
 
 	// Wait for nest account to be initialized
 	Homey.app.nestAccountInitialization.then(authenticated => {
@@ -91,8 +93,8 @@ module.exports.pair = socket => {
 				name: (Homey.app.nestAccount.structures.length > 1 && thermostat.structure_name) ? `${thermostat.name_long} - ${thermostat.structure_name}` : thermostat.name_long,
 				data: {
 					id: thermostat.device_id,
-					appVersion: Homey.app.appVersion
-				}
+					appVersion: Homey.app.appVersion,
+				},
 			});
 		});
 		callback(null, devicesList);
@@ -135,7 +137,7 @@ module.exports.capabilities = {
 						return callback(err);
 					});
 			} else return callback('No Nest client found');
-		}
+		},
 	},
 
 	measure_temperature: {
@@ -149,8 +151,8 @@ module.exports.capabilities = {
 				&& thermostat.client.hasOwnProperty('ambient_temperature_c')
 			) {
 				return callback(null, thermostat.client.ambient_temperature_c);
-			} else return callback('Could not find device');
-		}
+			} return callback('Could not find device');
+		},
 	},
 
 	measure_humidity: {
@@ -166,8 +168,8 @@ module.exports.capabilities = {
 				return callback(null, thermostat.client.humidity);
 			}
 			return callback('Could not find device');
-		}
-	}
+		},
+	},
 };
 
 /**
@@ -240,7 +242,7 @@ function initDevice(deviceData) {
 	if (device) {
 		device.client = client;
 		device.initialized = true;
-	} else devices.push({ data: deviceData, client: client, initialized: true });
+	} else devices.push({ data: deviceData, client, initialized: true });
 
 	module.exports.setAvailable(deviceData);
 }
