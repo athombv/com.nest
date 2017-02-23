@@ -86,7 +86,7 @@ module.exports.pair = socket => {
 	 * it to the front-end.
 	 */
 	socket.on('list_devices', (data, callback) => {
-		const devicesList = [];
+		let devicesList = [];
 
 		Homey.app.nestAccount.thermostats.forEach(thermostat => {
 			devicesList.push({
@@ -97,7 +97,8 @@ module.exports.pair = socket => {
 				},
 			});
 		});
-		callback(null, devicesList);
+		if (devicesList.length === 0) return callback(__('pair.no_devices_found'));
+		return callback(null, devicesList);
 	});
 };
 
@@ -151,7 +152,8 @@ module.exports.capabilities = {
 				&& thermostat.client.hasOwnProperty('ambient_temperature_c')
 			) {
 				return callback(null, thermostat.client.ambient_temperature_c);
-			} return callback('Could not find device');
+			}
+			return callback('Could not find device');
 		},
 	},
 

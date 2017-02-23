@@ -1,46 +1,47 @@
 {
-  "offline": "Dit apparaat blijkt offline te zijn",
-  "removed_externally": "Dit apparaat kon niet worden gevonden, voeg opnieuw toe",
-  "unauthenticated": "Geen toegang tot dit apparaat",
-  "reconnecting": "Verbinden...",
-  "version_repair": "Vanwege een update moet dit apparaat opnieuw worden toegevoegd",
-  "settings": {
-    "title": "Nest Instellingen",
-    "authorize_intro": "Om Homey toegang te geven tot je Nest apparaten klik op de knop hieronder!",
-    "auth_title": "Geef Homey toegang tot je Nest apparaten",
-    "deauth_title": "Trek Homey's permissies in",
-    "deauthorize_intro": "Wil je Homey ontkoppelen van je Nest account, klik dan op de knop hieronder!",
-    "deauthorize": "Trek Homey's toestemming terug",
-    "authorize": "Geef Homey toestemming voor het gebruik van je Nest apparaten!",
-    "warning": "Er ging iets fout, probeer het opnieuw",
-    "january": "Januari",
-    "february": "Februari",
-    "march": "Maart",
-    "april": "April",
-    "may": "Mei",
-    "june": "Juni",
-    "july": "Juli",
-    "august": "Augustus",
-    "september": "September",
-    "october": "October",
-    "november": "November",
-    "december": "December",
-    "time": "Moment",
-    "msg": "Bericht"
-  },
-  "error":{
-    "hvac_mode_is_heat_cool": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op 'heat-cool'",
-    "hvac_mode_is_eco": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op Eco",
-    "structure_is_away": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl structure op away modus stond ingesteld",
-    "temp_lock": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl temperatuur slot actief was (__min__ - __max__)",
-    "emergency_heat": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl nood verwarming actief was",
-    "unknown": "(__name__) Kon doeltemperatuur niet aanpassen naar __temp__, error: __error__"
-  },
-  "pair": {
-    "authorization": {
-      "authenticate": "Authenticatie met Nest",
-      "authorization_explanation": "Geef Homey toegang tot je Nest devices!",
-      "start_authentication": "Authentiseer"
-    }
-  }
+	"offline": "Dit apparaat blijkt offline te zijn",
+	"removed_externally": "Dit apparaat kon niet worden gevonden, voeg opnieuw toe",
+	"unauthenticated": "Geen toegang tot dit apparaat",
+	"reconnecting": "Verbinden...",
+	"version_repair": "Vanwege een update moet dit apparaat opnieuw worden toegevoegd",
+	"settings": {
+		"title": "Nest Instellingen",
+		"authorize_intro": "Om Homey toegang te geven tot je Nest apparaten klik op de knop hieronder!",
+		"auth_title": "Geef Homey toegang tot je Nest apparaten",
+		"deauth_title": "Trek Homey's permissies in",
+		"deauthorize_intro": "Wil je Homey ontkoppelen van je Nest account, klik dan op de knop hieronder!",
+		"deauthorize": "Trek Homey's toestemming terug",
+		"authorize": "Geef Homey toestemming voor het gebruik van je Nest apparaten!",
+		"warning": "Er ging iets fout, probeer het opnieuw",
+		"january": "Januari",
+		"february": "Februari",
+		"march": "Maart",
+		"april": "April",
+		"may": "Mei",
+		"june": "Juni",
+		"july": "Juli",
+		"august": "Augustus",
+		"september": "September",
+		"october": "October",
+		"november": "November",
+		"december": "December",
+		"time": "Moment",
+		"msg": "Bericht"
+	},
+	"error": {
+		"hvac_mode_is_heat_cool": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op 'heat-cool'",
+		"hvac_mode_is_eco": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op Eco",
+		"structure_is_away": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl structure op away modus stond ingesteld",
+		"temp_lock": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl temperatuur slot actief was (__min__ - __max__)",
+		"emergency_heat": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl nood verwarming actief was",
+		"unknown": "(__name__) Kon doeltemperatuur niet aanpassen naar __temp__, error: __error__"
+	},
+	"pair": {
+		"no_devices_found": "Het kan tot 30 minuten duren voordat een nieuw Nest apparaat beschikbaar is na het toevoegen aan je Nest account.",
+		"authorization": {
+			"authenticate": "Authenticatie met Nest",
+			"authorization_explanation": "Geef Homey toegang tot je Nest devices!",
+			"start_authentication": "Authentiseer"
+		}
+	}
 }

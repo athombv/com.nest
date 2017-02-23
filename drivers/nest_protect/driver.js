@@ -81,7 +81,7 @@ module.exports.pair = socket => {
 	 * it to the front-end
 	 */
 	socket.on('list_devices', (data, callback) => {
-		const devicesList = [];
+		let devicesList = [];
 		Homey.app.nestAccount.smoke_co_alarms.forEach(smoke_co_alarm => {
 			devicesList.push({
 				name: (Homey.app.nestAccount.structures.length > 1 && smoke_co_alarm.structure_name) ? `${smoke_co_alarm.name_long} - ${smoke_co_alarm.structure_name}` : smoke_co_alarm.name_long,
@@ -91,7 +91,8 @@ module.exports.pair = socket => {
 				},
 			});
 		});
-		callback(null, devicesList);
+		if (devicesList.length === 0) return callback(__('pair.no_devices_found'));
+		return callback(null, devicesList);
 	});
 };
 

@@ -37,6 +37,7 @@
     "unknown": "(__name__) Failed to set target temperature to __temp__, error: __error__"
   },
   "pair": {
+    "no_devices_found": "It might take up to 30 minutes before a new Nest device is available after adding it to your Nest account.",
     "authorization": {
       "authenticate": "Authenticate with Nest",
       "authorization_explanation": "Give Homey access to your Nest devices!",
