@@ -440,7 +440,7 @@
     ],
     "actions": [
       {
-        "id": "hvac_mode_set",
+        "id": "hvac_mode",
         "title": {
           "en": "Set HVAC mode to",
           "nl": "HVAC stand instellen op"
@@ -487,24 +487,6 @@
               }
             ]
           },
-          {
-            "name": "deviceData",
-            "type": "device",
-            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
-          }
-        ]
-      },
-      {
-        "id": "hvac_mode_toggle",
-        "title": {
-          "en": "Toggle HVAC mode",
-          "nl": "HVAC stand omschakelen"
-        },
-        "hint": {
-          "en": "Toggle between Eco and the previously active HVAC mode",
-          "nl": "Schakelen tussen Eco en de laatst actieve HVAC stand"
-        },
-        "args": [
           {
             "name": "deviceData",
             "type": "device",

@@ -1,5 +1,6 @@
 'use strict';
 
+const semver = require('semver');
 const EventEmitter = require('events');
 const Firebase = require('firebase');
 const request = require('request');
@@ -411,7 +412,7 @@ class NestThermostat extends NestDevice {
 		super(options);
 
 		// Store capabilities of thermostat
-		this.capabilities = ['target_temperature_c', 'ambient_temperature_c', 'humidity', 'hvac_state'];
+		this.capabilities = ['target_temperature_c', 'ambient_temperature_c', 'humidity', 'hvac_state', 'hvac_mode'];
 	}
 
 	/**
@@ -468,6 +469,54 @@ class NestThermostat extends NestDevice {
 						}));
 					}
 					return resolve(temperature);
+				});
+			}).catch(err => console.error(err));
+		});
+	}
+
+	/**
+	 * Set the target HVAC mode of this Nest Thermostat.
+	 * @param mode
+	 */
+	setHvacMode(mode) {
+		return new Promise((resolve, reject) => {
+
+			// Authenticate
+			this.nest_account.authenticate().then(() => {
+
+				// Handle cases where mode is unsupported
+				if (this.is_using_emergency_heat) {
+					return reject(__('error.hvac_emergency_heat', {
+						name: this.name_long,
+					}));
+				} else if (mode === 'heat-cool' && !(this.can_cool && this.can_heat)) {
+					return reject(__('error.hvac_mode_heat-cool_unsupported', {
+						name: this.name_long,
+					}));
+				} else if (mode === 'cool' && !this.can_cool) {
+					return reject(__('error.hvac_mode_cool_unsupported', {
+						name: this.name_long,
+					}));
+				} else if (mode === 'heat' && !this.can_heat) {
+					return reject(__('error.hvac_mode_heat_unsupported', {
+						name: this.name_long,
+					}));
+				} else if (mode === 'eco' && (!semver.gte(this.software_version, '5.6.0') || !(this.can_cool || this.can_heat))) {
+					return reject(__('error.hvac_mode_eco_unsupported', {
+						name: this.name_long,
+					}));
+				}
+
+				// All clear to change the HVAC mode
+				this.nest_account.db.child(`devices/thermostats/${this.device_id}/hvac_mode`).set(mode, error => {
+					if (error) {
+						return reject(__('error.unknown', {
+							hvac_mode: mode,
+							name: this.name_long,
+							error,
+						}));
+					}
+					return resolve(mode);
 				});
 			}).catch(err => console.error(err));
 		});
