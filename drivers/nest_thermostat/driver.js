@@ -266,10 +266,10 @@ function registerFlowListeners() {
 	Homey.manager('flow').on('condition.hvac_status', (callback, args, state) => {
 
 		// Check for proper incoming arguments
-		if (args && args.hasOwnProperty('status') && state) {
+		if (args && args.hasOwnProperty('status') && args.hasOwnProperty('deviceData')) {
 
 			// Get device
-			const device = getDevice(state);
+			const device = getDevice(args.deviceData);
 			callback(null, device && device.client.hvac_state === args.status);
 		} else callback('invalid arguments and or state provided');
 	});
@@ -278,10 +278,10 @@ function registerFlowListeners() {
     Homey.manager('flow').on('condition.hvac_mode', (callback, args, state) => {
 
         // Check for proper incoming arguments
-        if (args && args.hasOwnProperty('mode') && state) {
+        if (args && args.hasOwnProperty('mode') && args.hasOwnProperty('deviceData')) {
 
         	// Get device
-        	const device = getDevice(state);
+        	const device = getDevice(args.deviceData)
         	callback(null, device && device.client.hvac_mode === args.mode);
     	} else callback('invalid arguments and or state provided');
 	});
@@ -314,10 +314,10 @@ function registerFlowListeners() {
     Homey.manager('flow').on('action.hvac_mode', (callback, args, state) => {
 
         // Check for proper incoming arguments
-        if (args && args.hasOwnProperty('mode') && state) {
+        if (args && args.hasOwnProperty('mode') && args.hasOwnProperty('deviceData')) {
 
         	// Get device
-        	const thermostat = getDevice(state);
+        	const thermostat = getDevice(args.deviceData);
 
 			if (thermostat
 				&& thermostat.hasOwnProperty('client')) {

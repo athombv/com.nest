@@ -390,7 +390,7 @@
         },
         "args": [
           {
-            "name": "status",
+            "name": "mode",
             "type": "dropdown",
             "values": [
               {
