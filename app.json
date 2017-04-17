@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "compatibility": ">=1.0.0",
   "name": {
     "en": "Nest",
@@ -12,7 +12,16 @@
   },
   "category": "climate",
   "author": {
-    "name": "Athom B.V."
+    "name": "Athom B.V.",
+    "email": "info@athom.com"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "François Raeven",
+        "email": "f.raeven@gmail.com"
+      }
+    ]
   },
   "images": {
     "large": "assets/images/large.png",
@@ -212,6 +221,61 @@
         ]
       },
       {
+        "id": "hvac_mode_changed",
+        "title": {
+          "en": "HVAC mode changed to",
+          "nl": "HVAC stand gewijzigd naar"
+        },
+        "args": [
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarm"
+                }
+              },
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koel"
+                }
+              },
+              {
+                "id": "heat-cool",
+                "label": {
+                  "en": "Heating and cooling",
+                  "nl": "Verwarm en koel"
+                }
+              },
+              {
+                "id": "eco",
+                "label": {
+                  "en": "Eco",
+                  "nl": "Eco"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "deviceData",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+          }
+        ]
+      },
+      {
         "id": "measure_humidity_changed",
         "title": {
           "en": "The humidity changed",
@@ -311,6 +375,136 @@
               }
             ]
           },
+          {
+            "name": "deviceData",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+          }
+        ]
+      },
+      {
+        "id": "hvac_mode",
+        "title": {
+          "en": "HVAC mode !{{is|is not}}",
+          "nl": "HVAC stand !{{is|is niet}}"
+        },
+        "args": [
+          {
+            "name": "status",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarm"
+                }
+              },
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koel"
+                }
+              },
+              {
+                "id": "heat-cool",
+                "label": {
+                  "en": "Heating and cooling",
+                  "nl": "Verwarm en koel"
+                }
+              },
+              {
+                "id": "eco",
+                "label": {
+                  "en": "Eco",
+                  "nl": "Eco"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "deviceData",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "hvac_mode_set",
+        "title": {
+          "en": "Set HVAC mode to",
+          "nl": "HVAC stand instellen op"
+        },
+        "args": [
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarm"
+                }
+              },
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koel"
+                }
+              },
+              {
+                "id": "heat-cool",
+                "label": {
+                  "en": "Heating and cooling",
+                  "nl": "Verwarm en koel"
+                }
+              },
+              {
+                "id": "eco",
+                "label": {
+                  "en": "Eco",
+                  "nl": "Eco"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "deviceData",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+          }
+        ]
+      },
+      {
+        "id": "hvac_mode_toggle",
+        "title": {
+          "en": "Toggle HVAC mode",
+          "nl": "HVAC stand omschakelen"
+        },
+        "hint": {
+          "en": "Toggle between Eco and the previously active HVAC mode",
+          "nl": "Schakelen tussen Eco en de laatst actieve HVAC stand"
+        },
+        "args": [
           {
             "name": "deviceData",
             "type": "device",
