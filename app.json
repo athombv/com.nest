@@ -27,6 +27,58 @@
     "large": "assets/images/large.png",
     "small": "assets/images/small.png"
   },
+  "capabilities": {
+    "hvac_mode": {
+      "type": "enum",
+      "title": {
+        "en": "HVAC mode",
+        "nl": "HVAC stand"
+      },
+      "desc": {
+        "en": "HVAC mode",
+        "nl": "HVAC stand"
+      },
+      "values": [
+        {
+          "id": "heat",
+          "title": {
+            "en": "Heating",
+            "nl": "Verwarm"
+          }
+        },
+        {
+          "id": "cool",
+          "title": {
+            "en": "Cooling",
+            "nl": "Koel"
+          }
+        },
+        {
+          "id": "heat-cool",
+          "title": {
+            "en": "Heating and cooling",
+            "nl": "Verwarm en koel"
+          }
+        },
+        {
+          "id": "eco",
+          "title": {
+            "en": "Eco",
+            "nl": "Eco"
+          }
+        },
+        {
+          "id": "off",
+          "title": {
+            "en": "Off",
+            "nl": "Uit"
+          }
+        }
+      ],
+      "getable": true,
+      "setable": true
+    }
+  },
   "drivers": [
     {
       "id": "nest_thermostat",
@@ -42,7 +94,8 @@
       "capabilities": [
         "target_temperature",
         "measure_temperature",
-        "measure_humidity"
+        "measure_humidity",
+        "hvac_mode"
       ],
       "capabilitiesOptions": {
         "target_temperature": {
@@ -54,6 +107,9 @@
           "preventInsights": true
         },
         "measure_humidity": {
+          "preventInsights": true
+        },
+        "hvac_mode": {
           "preventInsights": true
         }
       },
