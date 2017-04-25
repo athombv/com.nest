@@ -475,6 +475,18 @@ class NestThermostat extends NestDevice {
 	}
 
 	/**
+	 * Check if devce software version is greater than or
+	 * equal to the provided version parameter.
+	 * @param version
+	 * @returns {boolean}
+	 */
+	checkSoftwareVersionGTE(version) {
+		let major = this.software_version.split(".")[0];
+		let minor = this.software_version.split(".")[1];
+		return (major >= version.split(".")[0] && minor >= version.split(".")[1]);
+	}
+
+	/**
 	 * Set the target HVAC mode of this Nest Thermostat.
 	 * @param mode
 	 */
@@ -501,7 +513,7 @@ class NestThermostat extends NestDevice {
 					return reject(__('error.hvac_mode_heat_unsupported', {
 						name: this.name_long,
 					}));
-				} else if (mode === 'eco' && (!semver.gte(this.software_version, '5.6.0') || !(this.can_cool || this.can_heat))) {
+				} else if (mode === 'eco' && (!this.checkSoftwareVersionGTE("5.6.0") || !(this.can_cool || this.can_heat))) {
 					return reject(__('error.hvac_mode_eco_unsupported', {
 						name: this.name_long,
 					}));
