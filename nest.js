@@ -470,7 +470,9 @@ class NestThermostat extends NestDevice {
 					}
 					return resolve(temperature);
 				});
-			}).catch(err => console.error(err));
+			}).catch(err => {
+				return reject(err);
+			});
 		});
 	}
 
@@ -530,7 +532,9 @@ class NestThermostat extends NestDevice {
 					}
 					return resolve(mode);
 				});
-			}).catch(err => console.error(err));
+			}).catch(err => {
+				return reject(err);
+			});
 		});
 	}
 }
