@@ -196,7 +196,6 @@ module.exports.capabilities = {
 				thermostat.client.setHvacMode(mode)
 					.then(() => callback(null, mode))
 					.catch(err => {
-						console.error(err);
 						Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
 						return callback(err);
 					});
@@ -294,7 +293,7 @@ function initDevice(deviceData) {
 function registerFlowListeners() {
 
 	// When triggered, get latest structure data and check status
-	Homey.manager('flow').on('condition.hvac_status', (callback, args, state) => {
+	Homey.manager('flow').on('condition.hvac_status', (callback, args) => {
 
 		// Check for proper incoming arguments
 		if (args && args.hasOwnProperty('status') && args.hasOwnProperty('deviceData')) {
@@ -306,37 +305,37 @@ function registerFlowListeners() {
 	});
 
     // When triggered, get latest structure data and check status
-    Homey.manager('flow').on('condition.hvac_mode', (callback, args, state) => {
+    Homey.manager('flow').on('condition.hvac_mode', (callback, args) => {
 
         // Check for proper incoming arguments
         if (args && args.hasOwnProperty('mode') && args.hasOwnProperty('deviceData')) {
 
         	// Get device
-        	const device = getDevice(args.deviceData)
+        	const device = getDevice(args.deviceData);
         	callback(null, device && device.client.hvac_mode === args.mode);
     	} else callback('invalid arguments and or state provided');
 	});
 
 	// Parse flow trigger when hvac status changed
-	Homey.manager('flow').on('trigger.hvac_status_changed', (callback, args, state) => {
+	Homey.manager('flow').on('trigger.hvac_status_changed', (callback, args, deviceData) => {
 
 		// Check for proper incoming arguments
-		if (args && args.hasOwnProperty('status') && state) {
+		if (args && args.hasOwnProperty('status') && deviceData) {
 
 			// Get device
-			const device = getDevice(state);
+			const device = getDevice(deviceData);
 			callback(null, device && device.client.hvac_state === args.status);
 		} else callback('invalid arguments and or state provided');
 	});
 
     // Parse flow trigger when hvac mode changed
-    Homey.manager('flow').on('trigger.hvac_mode_changed', (callback, args, state) => {
+    Homey.manager('flow').on('trigger.hvac_mode_changed', (callback, args, deviceData) => {
 
         // Check for proper incoming arguments
-        if (args && args.hasOwnProperty('mode') && state) {
+        if (args && args.hasOwnProperty('mode') && deviceData) {
 
         	// Get device
-        	const device = getDevice(state);
+        	const device = getDevice(deviceData);
         	callback(null, device && device.client.hvac_mode === args.mode);
     	} else callback('invalid arguments and or state provided');
 	});

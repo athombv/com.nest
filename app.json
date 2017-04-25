@@ -241,10 +241,10 @@
           "en": "HVAC status changed to",
           "nl": "HVAC status gewijzigd naar"
         },
-		"hint": {
-		  "en": "HVAC status indicates whether the system is now actively heating, cooling or is off. This is in contrast to HVAC mode, which indicates what the thermostat may do.",
-		  "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat. Dit in tegenstelling tot HVAC modus, welke aangeeft wat de thermostaat mogelijk mag doen."
-		},
+        "hint": {
+          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off. This is in contrast to HVAC mode, which indicates what the thermostat may do.",
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat. Dit in tegenstelling tot HVAC modus, welke aangeeft wat de thermostaat mogelijk mag doen."
+        },
         "args": [
           {
             "name": "status",
@@ -286,10 +286,10 @@
           "en": "HVAC mode changed to",
           "nl": "HVAC modus gewijzigd naar"
         },
-		"hint": {
-		  "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
-		  "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
-		},
+        "hint": {
+          "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
+        },
         "args": [
           {
             "name": "mode",
@@ -411,10 +411,10 @@
           "en": "HVAC status !{{is|is not}}",
           "nl": "HVAC status !{{is|is niet}}"
         },
-		"hint": {
-		  "en": "HVAC status indicates whether the system is now actively heating, cooling or is off. This is in contrast to HVAC mode, which indicates what the thermostat may do.",
-		  "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat. Dit in tegenstelling tot HVAC modus, welke aangeeft wat de thermostaat mogelijk mag doen."
-		},
+        "hint": {
+          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off. This is in contrast to HVAC mode, which indicates what the thermostat may do.",
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat. Dit in tegenstelling tot HVAC modus, welke aangeeft wat de thermostaat mogelijk mag doen."
+        },
         "args": [
           {
             "name": "status",
@@ -456,10 +456,10 @@
           "en": "HVAC mode !{{is|is not}}",
           "nl": "HVAC modus !{{is|is niet}}"
         },
-		"hint": {
-		  "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
-		  "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
-		},
+        "hint": {
+          "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
+        },
         "args": [
           {
             "name": "mode",
@@ -517,10 +517,10 @@
           "en": "Set HVAC mode to",
           "nl": "HVAC modus instellen op"
         },
-		"hint": {
-		  "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature.",
-		  "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken."
-		},
+        "hint": {
+          "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature.",
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken."
+        },
         "args": [
           {
             "name": "mode",
