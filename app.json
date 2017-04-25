@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "compatibility": ">=1.0.0",
   "name": {
     "en": "Nest",
@@ -12,7 +12,16 @@
   },
   "category": "climate",
   "author": {
-    "name": "Athom B.V."
+    "name": "Athom B.V.",
+    "email": "info@athom.com"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "François Raeven",
+        "email": "f.raeven@gmail.com"
+      }
+    ]
   },
   "images": {
     "large": "assets/images/large.png",
@@ -45,6 +54,9 @@
           "preventInsights": true
         },
         "measure_humidity": {
+          "preventInsights": true
+        },
+        "hvac_mode": {
           "preventInsights": true
         }
       },
@@ -176,6 +188,10 @@
           "en": "HVAC status changed to",
           "nl": "HVAC status gewijzigd naar"
         },
+        "hint": {
+          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat."
+        },
         "args": [
           {
             "name": "status",
@@ -193,6 +209,65 @@
                 "label": {
                   "en": "Cooling",
                   "nl": "Koelen"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "deviceData",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+          }
+        ]
+      },
+      {
+        "id": "hvac_mode_changed",
+        "title": {
+          "en": "HVAC mode changed to",
+          "nl": "HVAC modus gewijzigd naar"
+        },
+        "hint": {
+          "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
+        },
+        "args": [
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarm"
+                }
+              },
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koel"
+                }
+              },
+              {
+                "id": "heat-cool",
+                "label": {
+                  "en": "Heating and cooling",
+                  "nl": "Verwarm en koel"
+                }
+              },
+              {
+                "id": "eco",
+                "label": {
+                  "en": "Eco",
+                  "nl": "Eco"
                 }
               },
               {
@@ -283,6 +358,10 @@
           "en": "HVAC status !{{is|is not}}",
           "nl": "HVAC status !{{is|is niet}}"
         },
+        "hint": {
+          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat."
+        },
         "args": [
           {
             "name": "status",
@@ -300,6 +379,126 @@
                 "label": {
                   "en": "Cooling",
                   "nl": "Koelen"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "deviceData",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+          }
+        ]
+      },
+      {
+        "id": "hvac_mode",
+        "title": {
+          "en": "HVAC mode !{{is|is not}}",
+          "nl": "HVAC modus !{{is|is niet}}"
+        },
+        "hint": {
+          "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
+        },
+        "args": [
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarm"
+                }
+              },
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koel"
+                }
+              },
+              {
+                "id": "heat-cool",
+                "label": {
+                  "en": "Heating and cooling",
+                  "nl": "Verwarm en koel"
+                }
+              },
+              {
+                "id": "eco",
+                "label": {
+                  "en": "Eco",
+                  "nl": "Eco"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "Off",
+                  "nl": "Uit"
+                }
+              }
+            ]
+          },
+          {
+            "name": "deviceData",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "hvac_mode",
+        "title": {
+          "en": "Set HVAC mode to",
+          "nl": "HVAC modus instellen op"
+        },
+        "hint": {
+          "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature.",
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken."
+        },
+        "args": [
+          {
+            "name": "mode",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "heat",
+                "label": {
+                  "en": "Heating",
+                  "nl": "Verwarm"
+                }
+              },
+              {
+                "id": "cool",
+                "label": {
+                  "en": "Cooling",
+                  "nl": "Koel"
+                }
+              },
+              {
+                "id": "heat-cool",
+                "label": {
+                  "en": "Heating and cooling",
+                  "nl": "Verwarm en koel"
+                }
+              },
+              {
+                "id": "eco",
+                "label": {
+                  "en": "Eco",
+                  "nl": "Eco"
                 }
               },
               {

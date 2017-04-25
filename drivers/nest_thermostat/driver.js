@@ -235,6 +235,13 @@ function initDevice(deviceData) {
 				if (err) return Homey.error('Error triggeringDevice:', err);
 			});
 		})
+		.on('hvac_mode', hvacMode => {
+
+        	// Trigger the hvac_mode_changed flow
+        	Homey.manager('flow').triggerDevice('hvac_mode_changed', {}, deviceData, deviceData, (err) => {
+        		if (err) return Homey.error('Error triggeringDevice:', err);
+			});
+		})
 		.on('removed', () => {
 			module.exports.setUnavailable(deviceData, __('removed_externally'));
 		});
@@ -256,26 +263,70 @@ function initDevice(deviceData) {
 function registerFlowListeners() {
 
 	// When triggered, get latest structure data and check status
-	Homey.manager('flow').on('condition.hvac_status', (callback, args, state) => {
+	Homey.manager('flow').on('condition.hvac_status', (callback, args) => {
 
 		// Check for proper incoming arguments
-		if (args && args.hasOwnProperty('status') && state) {
+		if (args && args.hasOwnProperty('status') && args.hasOwnProperty('deviceData')) {
 
 			// Get device
-			const device = getDevice(state);
+			const device = getDevice(args.deviceData);
 			callback(null, device && device.client.hvac_state === args.status);
 		} else callback('invalid arguments and or state provided');
 	});
 
+    // When triggered, get latest structure data and check status
+    Homey.manager('flow').on('condition.hvac_mode', (callback, args) => {
+
+        // Check for proper incoming arguments
+        if (args && args.hasOwnProperty('mode') && args.hasOwnProperty('deviceData')) {
+
+        	// Get device
+        	const device = getDevice(args.deviceData);
+        	callback(null, device && device.client.hvac_mode === args.mode);
+    	} else callback('invalid arguments and or state provided');
+	});
+
 	// Parse flow trigger when hvac status changed
-	Homey.manager('flow').on('trigger.hvac_status_changed', (callback, args, state) => {
+	Homey.manager('flow').on('trigger.hvac_status_changed', (callback, args, deviceData) => {
 
 		// Check for proper incoming arguments
-		if (args && args.hasOwnProperty('status') && state) {
+		if (args && args.hasOwnProperty('status') && deviceData) {
 
 			// Get device
-			const device = getDevice(state);
+			const device = getDevice(deviceData);
 			callback(null, device && device.client.hvac_state === args.status);
+		} else callback('invalid arguments and or state provided');
+	});
+
+    // Parse flow trigger when hvac mode changed
+    Homey.manager('flow').on('trigger.hvac_mode_changed', (callback, args, deviceData) => {
+
+        // Check for proper incoming arguments
+        if (args && args.hasOwnProperty('mode') && deviceData) {
+
+        	// Get device
+        	const device = getDevice(deviceData);
+        	callback(null, device && device.client.hvac_mode === args.mode);
+    	} else callback('invalid arguments and or state provided');
+	});
+
+    // Set hvac mode
+    Homey.manager('flow').on('action.hvac_mode', (callback, args, state) => {
+
+        // Check for proper incoming arguments and if okay: set HVAC mode
+        if (args && args.hasOwnProperty('mode') && args.hasOwnProperty('deviceData')) {
+
+	        // Get device
+	        const device = getDevice(args.deviceData);
+	        if (device
+		        && device.hasOwnProperty('client')) {
+		        device.client.setHvacMode(args.mode)
+			        .then(() => callback(null, args.mode))
+			        .catch(err => {
+				        Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
+				        return callback(err);
+			        });
+	        } else return callback('No Nest client found');
 		} else callback('invalid arguments and or state provided');
 	});
 }

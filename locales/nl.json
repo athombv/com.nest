@@ -34,6 +34,11 @@
 		"structure_is_away": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl structure op away modus stond ingesteld",
 		"temp_lock": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl temperatuur slot actief was (__min__ - __max__)",
 		"emergency_heat": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl nood verwarming actief was",
+		"hvac_emergency_heat": "Kon HVAC modus niet aanpassen terwijl nood verwarming actief was",
+		"hvac_mode_heat-cool_unsupported": "HVAC verwarm en koel modus was niet beschikbaar",
+		"hvac_mode_cool_unsupported": "HVAC koel modus was niet beschikbaar",
+		"hvac_mode_heat_unsupported": "HVAC verwarm modus was niet beschikbaar",
+		"hvac_mode_eco_unsupported": "HVAC eco modus was niet beschikbaar",
 		"unknown": "(__name__) Kon doeltemperatuur niet aanpassen naar __temp__, error: __error__"
 	},
 	"pair": {
