@@ -172,36 +172,6 @@ module.exports.capabilities = {
 			return callback('Could not find device');
 		},
 	},
-
-	hvac_mode: {
-		get: (deviceData, callback) => {
-			if (deviceData instanceof Error) return callback(deviceData);
-
-			// Get device data
-			const thermostat = getDevice(deviceData);
-			if (thermostat
-				&& thermostat.hasOwnProperty('client')
-				&& thermostat.client.hasOwnProperty('hvac_mode')) {
-				return callback(null, thermostat.client.hvac_mode);
-			}
-			return callback('Could not find device');
-		},
-		set: (deviceData, mode, callback) => {
-			if (deviceData instanceof Error) return callback(deviceData);
-
-			// Get device data
-			const thermostat = getDevice(deviceData);
-			if (thermostat
-				&& thermostat.hasOwnProperty('client')) {
-				thermostat.client.setHvacMode(mode)
-					.then(() => callback(null, mode))
-					.catch(err => {
-						Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
-						return callback(err);
-					});
-			} else return callback('No Nest client found');
-		},
-	},
 };
 
 /**
@@ -345,11 +315,18 @@ function registerFlowListeners() {
 
         // Check for proper incoming arguments and if okay: set HVAC mode
         if (args && args.hasOwnProperty('mode') && args.hasOwnProperty('deviceData')) {
-			module.exports.capabilities.hvac_mode.set(
-				args.deviceData,
-				args.mode,
-				callback
-			);
+
+	        // Get device
+	        const device = getDevice(args.deviceData);
+	        if (device
+		        && device.hasOwnProperty('client')) {
+		        device.client.setHvacMode(args.mode)
+			        .then(() => callback(null, args.mode))
+			        .catch(err => {
+				        Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
+				        return callback(err);
+			        });
+	        } else return callback('No Nest client found');
 		} else callback('invalid arguments and or state provided');
 	});
 }

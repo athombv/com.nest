@@ -27,58 +27,6 @@
     "large": "assets/images/large.png",
     "small": "assets/images/small.png"
   },
-  "capabilities": {
-    "hvac_mode": {
-      "type": "enum",
-      "title": {
-        "en": "HVAC mode",
-        "nl": "HVAC modus"
-      },
-      "desc": {
-        "en": "HVAC mode",
-        "nl": "HVAC modus"
-      },
-      "values": [
-        {
-          "id": "heat",
-          "title": {
-            "en": "Heating",
-            "nl": "Verwarm"
-          }
-        },
-        {
-          "id": "cool",
-          "title": {
-            "en": "Cooling",
-            "nl": "Koel"
-          }
-        },
-        {
-          "id": "heat-cool",
-          "title": {
-            "en": "Heating and cooling",
-            "nl": "Verwarm en koel"
-          }
-        },
-        {
-          "id": "eco",
-          "title": {
-            "en": "Eco",
-            "nl": "Eco"
-          }
-        },
-        {
-          "id": "off",
-          "title": {
-            "en": "Off",
-            "nl": "Uit"
-          }
-        }
-      ],
-      "getable": true,
-      "setable": true
-    }
-  },
   "drivers": [
     {
       "id": "nest_thermostat",
@@ -94,8 +42,7 @@
       "capabilities": [
         "target_temperature",
         "measure_temperature",
-        "measure_humidity",
-        "hvac_mode"
+        "measure_humidity"
       ],
       "capabilitiesOptions": {
         "target_temperature": {
@@ -335,7 +282,7 @@
           {
             "name": "deviceData",
             "type": "device",
-            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat&capabilities=hvac_mode"
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
         ]
       },
@@ -505,7 +452,7 @@
           {
             "name": "deviceData",
             "type": "device",
-            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat&capabilities=hvac_mode"
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
         ]
       }
@@ -566,7 +513,7 @@
           {
             "name": "deviceData",
             "type": "device",
-            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat&capabilities=hvac_mode"
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
         ]
       }

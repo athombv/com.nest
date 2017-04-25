@@ -13,4 +13,4 @@ You can use this app to:
 - Use the Nest Away state in your Flows
 - Use HVAC _(Heating, Ventilating, and Air Conditioning)_ in your Flows:
     - HVAC state _(actively heating, actively cooling or not active)_ trigger and condition;
-    - HVAC mode _(heating mode, cooling mode, heating and cooling mode, eco mode or system is off)_ trigger, condition and action _(re-pair is needed to use these Flow cards)_.
+    - HVAC mode _(heating mode, cooling mode, heating and cooling mode, eco mode or system is off)_ trigger, condition and action.
