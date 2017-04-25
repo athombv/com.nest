@@ -242,8 +242,8 @@
           "nl": "HVAC status gewijzigd naar"
         },
         "hint": {
-          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off. This is in contrast to HVAC mode, which indicates what the thermostat may do.",
-          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat. Dit in tegenstelling tot HVAC modus, welke aangeeft wat de thermostaat mogelijk mag doen."
+          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat."
         },
         "args": [
           {
@@ -412,8 +412,8 @@
           "nl": "HVAC status !{{is|is niet}}"
         },
         "hint": {
-          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off. This is in contrast to HVAC mode, which indicates what the thermostat may do.",
-          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat. Dit in tegenstelling tot HVAC modus, welke aangeeft wat de thermostaat mogelijk mag doen."
+          "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat."
         },
         "args": [
           {
