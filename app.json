@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "compatibility": ">=1.0.0",
   "name": {
     "en": "Nest",
@@ -96,7 +96,67 @@
           "id": "add_nest_thermostats",
           "template": "add_devices"
         }
-      ]
+      ],
+	  "settings": [
+		{
+		  "type": "group",
+		  "label": {
+			"en": "HVAC Eco mode override",
+			"nl": "HVAC Eco modus overschrijven"
+		  },
+		  "children": [
+			{
+			  "id": "eco_override_allow",
+			  "type": "checkbox",
+			  "value": false,
+			  "label": {
+				"en": "Allow HVAC Eco mode override?",
+				"nl": "HVAC Eco modus overschrijven toestaan?"
+			  },
+			  "hint": {
+				"en": "If HVAC Eco Mode is active, setting a target temperature is not allowed.\n\nIf HVAC Eco Mode is active, can it be overridden so that the temperature can still be set?",
+				"nl": "Indien HVAC Eco modus actief is, is het instellen van een doel temperatuur niet toegestaan.\n\nIndien HVAC Eco modus actief is, kan deze dan vooraf worden overschreven zodat de temperatuur toch kan worden ingesteld?"
+			  }
+			},
+			{
+			  "id": "eco_override_by",
+			  "type": "dropdown",
+			  "value": "heat",
+			  "label": {
+				"en": "Always override with mode",
+				"nl": "Altijd overschrijven met modus"
+			  },
+			  "hint": {
+				"en": "Caution: All HVAC modes are displayed, but thermostat settings may not support some modes!",
+				"nl": "Let op: alle HVAC modi worden weergegeven, maar thermostaat instellingen ondersteunen wellicht sommige modi niet!"
+			  },
+			  "values": [
+				{
+				  "id": "heat",
+				  "label": {
+					"en": "Heat",
+					"nl": "Verwarm"
+				  }
+				},
+				{
+				  "id": "cool",
+				  "label": {
+					"en": "Cool",
+					"nl": "Koel"
+				  }
+				},
+				{
+				  "id": "heat-cool",
+				  "label": {
+					"en": "Heating and cooling",
+					"nl": "Verwarm en koel"
+				  }
+				}
+			  ]
+			}
+		  ]
+		}
+	  ]
     },
     {
       "id": "nest_protect",

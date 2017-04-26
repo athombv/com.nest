@@ -39,6 +39,7 @@
 		"hvac_mode_cool_unsupported": "HVAC koel modus was niet beschikbaar",
 		"hvac_mode_heat_unsupported": "HVAC verwarm modus was niet beschikbaar",
 		"hvac_mode_eco_unsupported": "HVAC eco modus was niet beschikbaar",
+		"hvac_mode_eco_override_failed": "HVAC eco modus overschrijven was mislukt: ",
 		"unknown": "(__name__) Kon doeltemperatuur niet aanpassen naar __temp__, error: __error__"
 	},
 	"pair": {

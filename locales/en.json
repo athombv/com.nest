@@ -39,6 +39,7 @@
     "hvac_mode_cool_unsupported": "(__name__) HVAC mode cooling is unsupported",
     "hvac_mode_heat_unsupported": "(__name__) HVAC mode heating is unsupported",
     "hvac_mode_eco_unsupported": "(__name__) HVAC mode eco is unsupported",
+    "hvac_mode_eco_override_failed": "(__name__) HVAC mode eco override failed: ",
     "unknown": "(__name__) Failed to set target temperature to __temp__, error: __error__"
   },
   "pair": {
