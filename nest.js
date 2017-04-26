@@ -1,6 +1,5 @@
 'use strict';
 
-const semver = require('semver');
 const EventEmitter = require('events');
 const Firebase = require('firebase');
 const request = require('request');
