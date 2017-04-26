@@ -123,21 +123,47 @@ module.exports.capabilities = {
 		set: (deviceData, temperature, callback) => {
 			if (deviceData instanceof Error) return callback(deviceData);
 
-			// Fix temperature range
-			temperature = Math.round(temperature * 2) / 2;
+			module.exports.getSettings(deviceData, function(err, settings) {
+				if (err) {
+					// Fallback to defaults
+					settings = { eco_override_allow: false,	eco_override_by: 'heat' };
+				}
 
-			// Get device data
-			const thermostat = getDevice(deviceData);
-			if (thermostat
-				&& thermostat.hasOwnProperty('client')) {
-				thermostat.client.setTargetTemperature(temperature)
-					.then(() => callback(null, temperature))
-					.catch(err => {
-						console.error(err);
-						Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
-						return callback(err);
-					});
-			} else return callback('No Nest client found');
+				// Get device data
+				const thermostat = getDevice(deviceData);
+				if (thermostat && thermostat.hasOwnProperty('client')) {
+
+					// Determine if mode is Eco and if it may be overridden
+					if (thermostat.client.hasOwnProperty('hvac_mode') &&
+						thermostat.client.hvac_mode === 'eco' &&
+						settings.eco_override_allow === true &&
+						['heat', 'cool', 'heat-cool'].indexOf(settings.eco_override_by) >= 0) {
+
+						thermostat.client.setHvacMode(settings.eco_override_by)
+							.then(() => {
+								// Override succeeded: re-attempt to set target temperature
+								return module.exports.capabilities.target_temperature.set(deviceData, temperature, callback);
+							})
+							.catch((err) => {
+								// Override failed
+								const errOverride = __('error.hvac_mode_eco_override_failed', { name: thermostat.client.name_long || '' }) + err;
+								Homey.app.registerLogItem({ msg: errOverride, timestamp: new Date() });
+								return callback(errOverride);
+							});
+					} else {
+						// Fix temperature range
+						temperature = Math.round(temperature * 2) / 2;
+
+						thermostat.client.setTargetTemperature(temperature)
+							.then(() => callback(null, temperature))
+							.catch(err => {
+								console.error(err);
+								Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
+								return callback(err);
+							});
+					}
+				} else return callback('No Nest client found');
+			});
 		},
 	},
 
