@@ -123,20 +123,40 @@ module.exports.capabilities = {
 		set: (deviceData, temperature, callback) => {
 			if (deviceData instanceof Error) return callback(deviceData);
 
-			// Fix temperature range
-			temperature = Math.round(temperature * 2) / 2;
-
 			// Get device data
 			const thermostat = getDevice(deviceData);
-			if (thermostat
-				&& thermostat.hasOwnProperty('client')) {
-				thermostat.client.setTargetTemperature(temperature)
-					.then(() => callback(null, temperature))
-					.catch(err => {
-						console.error(err);
-						Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
-						return callback(err);
-					});
+			if (thermostat && thermostat.hasOwnProperty('client')) {
+
+				// Determine if mode is Eco and if it may be overridden
+				if (thermostat.client.hasOwnProperty('hvac_mode') &&
+					thermostat.client.hvac_mode === 'eco' &&
+					thermostat.hasOwnProperty('settings') &&
+					thermostat.settings.eco_override_allow === true &&
+					['heat', 'cool', 'heat-cool'].indexOf(thermostat.settings.eco_override_by) >= 0) {
+
+					thermostat.client.setHvacMode(thermostat.settings.eco_override_by)
+						.then(() => {
+							// Override succeeded: re-attempt to set target temperature
+							return module.exports.capabilities.target_temperature.set(deviceData, temperature, callback);
+						})
+						.catch((err) => {
+							// Override failed
+							const errOverride = __('error.hvac_mode_eco_override_failed', { name: thermostat.client.name_long || '' }) + err;
+							Homey.app.registerLogItem({ msg: errOverride, timestamp: new Date() });
+							return callback(errOverride);
+						});
+				} else {
+					// Fix temperature range
+					temperature = Math.round(temperature * 2) / 2;
+
+					thermostat.client.setTargetTemperature(temperature)
+						.then(() => callback(null, temperature))
+						.catch(err => {
+							console.error(err);
+							Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
+							return callback(err);
+						});
+				}
 			} else return callback('No Nest client found');
 		},
 	},
@@ -202,6 +222,24 @@ module.exports.deleted = (deviceData) => {
 };
 
 /**
+ * Store new settings in device object when the user has changed the device's settings in Homey
+ * @param deviceData
+ * @param newSettings
+ * @param oldSettings
+ * @param changedKeys
+ * @param callback
+ */
+module.exports.settings = function(deviceData, newSettings, oldSettings, changedKeys, callback) {
+	// Get device data
+	const thermostat = getDevice(deviceData);
+	if (thermostat) {
+		thermostat.settings = newSettings;
+		return callback(null, true);
+	}
+	return callback('Could not find device');
+};
+
+/**
  * Initialize device, setup client, and event listeners.
  * @param deviceData
  * @returns {*}
@@ -246,14 +284,22 @@ function initDevice(deviceData) {
 			module.exports.setUnavailable(deviceData, __('removed_externally'));
 		});
 
-	// Store it
-	const device = getDevice(deviceData);
-	if (device) {
-		device.client = client;
-		device.initialized = true;
-	} else devices.push({ data: deviceData, client, initialized: true });
+	module.exports.getSettings(deviceData, (err, settings) => {
+		if (err) {
+			// Fallback to defaults
+			settings = { eco_override_allow: false, eco_override_by: 'heat' };
+		}
 
-	module.exports.setAvailable(deviceData);
+		// Store it
+		const device = getDevice(deviceData);
+		if (device) {
+			device.client = client;
+			device.initialized = true;
+			device.settings = settings;
+		} else devices.push({ data: deviceData, client, initialized: true, settings });
+
+		module.exports.setAvailable(deviceData);
+	});
 }
 
 /**
