@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+	<script type="text/javascript" src="/homey.js" data-origin="settings"></script>
 	<link rel="stylesheet" href="/manager/webserver/assets/css/font.awesome.css">
 	<script type="application/javascript">var authURL;</script>
 	<script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
@@ -13,14 +14,14 @@
 
 	<fieldset>
 		<legend data-i18n="settings.deauth_title"></legend>
-		<button onclick="Homey.api('POST', '/revokeAuthentication/');" id="deauthorize" data-i18n="settings.deauthorize"></button>
+		<button id="deauthorize" data-i18n="settings.deauthorize"></button>
 	</fieldset>
 
 	<p data-i18n="settings.authorize_intro"></p>
 
 	<fieldset>
 		<legend data-i18n="settings.auth_title"></legend>
-		<button onclick="window.open(authURL);" id="authorize" data-i18n="settings.authorize"></button>
+		<button id="authorize" data-i18n="settings.authorize"></button>
 	</fieldset>
 
 	<p data-i18n="settings.warning" id="warning" style="display:none;"></p>
@@ -61,12 +62,20 @@
 <script type="text/javascript">
 
 	// Wait for Homey to be available
-	function onHomeyReady() {
-		var monthNames = [__("settings.january"), __("settings.february"), __("settings.march"), __("settings.april"), __("settings.may"), __("settings.june"),
-			__("settings.july"), __("settings.august"), __("settings.september"), __("settings.october"), __("settings.november"), __("settings.december")
+	function onHomeyReady(Homey) {
+		var monthNames = [Homey.__("settings.january"), Homey.__("settings.february"), Homey.__("settings.march"), Homey.__("settings.april"), Homey.__("settings.may"), Homey.__("settings.june"),
+			Homey.__("settings.july"), Homey.__("settings.august"), Homey.__("settings.september"), Homey.__("settings.october"), Homey.__("settings.november"), Homey.__("settings.december")
 		];
-		// We are ready
-		Homey.ready();
+
+		var deauthorizeButton = document.getElementById('deauthorize');
+		deauthorizeButton.addEventListener('click', function() {
+			Homey.api('POST', '/revokeAuthentication/');
+		});
+
+		var authorizeButton = document.getElementById('authorize');
+		authorizeButton.addEventListener('click', function() {
+			Homey.popup(authURL);
+		});
 
 		// Hide log initially
 		$('#log_wrapper').hide();
@@ -166,10 +175,12 @@
 					const minutes = (date.getMinutes() <= 9) ? `0${date.getMinutes()}` : date.getMinutes();
 					$('#log tbody').append('<tr><td id="timestamp" style="white-space: nowrap;">' + month + ' ' + day + ', ' + hours + ':' + minutes + '</td><td id="msg">' + item.msg + '</td></tr>');
 				});
-				console.log(items.length);
 				if (items.length === 0) $('#log_wrapper').hide();
 				else $('#log_wrapper').show();
 			} else  $('#log_wrapper').hide();
 		});
+
+		// We are ready
+		Homey.ready();
 	}
 </script>

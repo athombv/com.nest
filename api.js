@@ -1,20 +1,22 @@
 'use strict';
 
+const Homey = require('homey');
+
 module.exports = [
 	{
 		description: 'Authenticate Nest',
 		method: 'GET',
 		path: '/authenticated/',
-		fn: callback => {
-			if (Homey.app.nestAccount && Homey.app.nestAccount.db) callback(null, Homey.app.nestAccount.db.getAuth());
-			else (callback('No nest account found'));
+		fn: (args, callback) => {
+			if (Homey.app.nestAccount && Homey.app.nestAccount.db) return callback(null, Homey.app.nestAccount.db.getAuth());
+			return callback('No nest account found');
 		},
 	},
 	{
 		description: 'Revoke authentication Nest',
 		method: 'POST',
 		path: '/revokeAuthentication/',
-		fn: callback => {
+		fn: (args, callback) => {
 
 			// Revoke authentication on nest account
 			Homey.app.nestAccount.revokeAuthentication()
@@ -26,15 +28,14 @@ module.exports = [
 		description: 'Authenticate Nest',
 		method: 'POST',
 		path: '/authenticate/',
-		fn: callback => {
+		fn: (args, callback) => {
 
 			// Fetch access token
-			Homey.app.fetchAccessToken(data => {
-				callback(null, data.url);
-			}).then(accessToken => {
+			Homey.app.fetchAccessToken(data => callback(null, data.url))
+				.then(accessToken => {
 
 				// Save token
-				Homey.manager('settings').set('nestAccesstoken', accessToken);
+				Homey.ManagerSettings.set('nestAccesstoken', accessToken);
 
 				// Authenticate nest account with new token
 				Homey.app.nestAccount.authenticate(accessToken);
