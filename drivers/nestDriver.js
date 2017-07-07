@@ -1,43 +1,50 @@
 'use strict';
 
 const Homey = require('homey');
+const WifiDriver = require('homey-wifidriver').Driver;
 
-class NestDriver extends Homey.Driver {
+const oauth2ClientConfig = {
+	url: `https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`,
+	tokenEndpoint: 'https://api.home.nest.com/oauth2/access_token',
+	key: Homey.env.NEST_CLIENT_ID,
+	secret: Homey.env.NEST_CLIENT_SECRET,
+	allowMultipleAccounts: false,
+	refreshingEnabled: false,
+};
 
-	onPair(socket) {
+class NestDriver extends WifiDriver {
 
-		// Start fetching access token flow
-		Homey.app.fetchAccessToken(result => {
-			socket.emit('url', result.url);
-		}).then(accessToken => {
-
-			// Store new token
-			Homey.ManagerSettings.set('nestAccesstoken', accessToken);
-
-			// Authenticate nest account
-			Homey.app.nestAccount.authenticate(accessToken).then(() => socket.emit('authorized'));
+	onInit() {
+		// Start OAuth2Client
+		super.onInit({
+			oauth2ClientConfig,
 		});
+	}
 
-		/**
-		 * Called when user is presented the list_devices template,
-		 * this function fetches relevant data from devices and passes
-		 * it to the front-end.
-		 */
-		socket.on('list_devices', (data, callback) => {
-			let devicesList = [];
+	/**
+	 * The method will be called during pairing when a list of devices is needed. Only when this class
+	 * extends WifiDriver and provides a oauth2ClientConfig onInit. The data parameter contains an
+	 * temporary OAuth2 account that can be used to fetch the devices from the users account.
+	 * @param data {Object}
+	 * @returns {Promise}
+	 */
+	onPairOAuth2ListDevices(data) {
 
-			Homey.app.nestAccount[this.driverType].forEach(device => {
-				devicesList.push({
-					name: (Homey.app.nestAccount.structures.length > 1 && device.structure_name) ? `${device.name_long} - ${device.structure_name}` : device.name_long,
-					data: {
-						id: device.device_id,
-						appVersion: Homey.manifest.version,
-					},
+		// Authenticate nest account
+		return Homey.app.nestAccount.authenticate(data.oauth2Account.accessToken)
+			.then(() => {
+				let devicesList = [];
+				Homey.app.nestAccount[this.driverType].forEach(device => {
+					devicesList.push({
+						name: (Homey.app.nestAccount.structures.length > 1 && device.structure_name) ? `${device.name_long} - ${device.structure_name}` : device.name_long,
+						data: {
+							id: device.device_id,
+							appVersion: Homey.manifest.version,
+						},
+					});
 				});
+				return devicesList;
 			});
-			if (devicesList.length === 0) return callback(Homey.__('pair.no_devices_found'));
-			return callback(null, devicesList);
-		});
 	}
 }
 

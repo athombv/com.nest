@@ -58,7 +58,7 @@ class NestAccount extends EventEmitter {
 	 * @param accessToken
 	 * @returns {Promise}
 	 */
-	authenticate(accessToken) {
+	authenticate(accessToken, force) {
 		return new Promise((resolve, reject) => {
 
 			// Store provided accessToken
@@ -73,7 +73,7 @@ class NestAccount extends EventEmitter {
 			}
 
 			// Check if not authenticated yet
-			if (!this.db.getAuth()) {
+			if (force || !this.db.getAuth()) {
 
 				// Authenticate using accessToken
 				this.db.authWithCustomToken(this.accessToken, err => {

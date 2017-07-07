@@ -2,8 +2,9 @@
 
 const Homey = require('homey');
 const semver = require('semver');
+const WifiDevice = require('homey-wifidriver').Device;
 
-class NestDevice extends Homey.Device {
+class NestDevice extends WifiDevice {
 
 	onInit() {
 		this.setUnavailable(Homey.__('reconnecting'));
@@ -25,12 +26,16 @@ class NestDevice extends Homey.Device {
 				});
 
 			// Nest account authenticated
-			if (!authenticated) this.setUnavailable(Homey.__('unauthenticated'));
+			if (!authenticated) {
+				this.setUnavailable(Homey.__('unauthenticated'));
+			}
 			else {
 				this.createClient();
 				this.setAvailable();
 			}
 		});
+
+		Homey.app.nestAccount.authenticate(this.getOAuth2Account().accessToken, true);
 	}
 
 	onDeleted() {

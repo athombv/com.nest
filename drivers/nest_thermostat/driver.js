@@ -7,8 +7,9 @@ const NestDriver = require('./../nestDriver');
 class NestThermostatDriver extends NestDriver {
 
 	onInit() {
+		super.onInit();
 
-		this.deviceType = 'thermostats';
+		this.driverType = 'thermostats';
 
 		new Homey.FlowCardCondition('hvac_status')
 			.on('run', (args, state, callback) => {

@@ -1,10 +1,12 @@
 'use strict';
 
+// TODO: app settings authentication
+// TODO: homey-wifidriver -> revoke authentication
+// TODO: test
+
 const Homey = require('homey');
-
-const Log = require('homey-log').Log;
-
 const request = require('request');
+const Log = require('homey-log').Log;
 
 const NestAccount = require('./nest').NestAccount;
 
