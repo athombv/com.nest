@@ -8,8 +8,6 @@ class NestThermostat extends NestDevice {
 	onInit() {
 		super.onInit();
 
-		this.registerCapabilityListener('target_temperature', this.onCapabilityTargetTemperature.bind(this));
-
 		// Set default settings
 		if (this.getSetting('eco_override_allow') === null) this.setSettings({ eco_override_allow: false })
 		if (this.getSetting('eco_override_by')) this.setSettings({ eco_override_by: 'heat' })
@@ -29,7 +27,12 @@ class NestThermostat extends NestDevice {
 			.register()
 	}
 
+	/**
+	 * Create client and bind event listeners.
+	 * @returns {*}
+	 */
 	createClient() {
+
 		// Create thermostat
 		this.client = Homey.app.nestAccount.createThermostat(this.getData().id);
 
@@ -66,6 +69,9 @@ class NestThermostat extends NestDevice {
 			.on('removed', () => {
 				this.setUnavailable(Homey.__('removed_externally'));
 			});
+
+		// Register capability
+		this.registerCapabilityListener('target_temperature', this.onCapabilityTargetTemperature.bind(this));
 	}
 
 	/**

@@ -22,7 +22,7 @@ class NestDriver extends WifiDriver {
 	onPairOAuth2ListDevices(data) {
 
 		// Authenticate nest account
-		return Homey.app.nestAccount.authenticate(data.oauth2Account)
+		return Homey.app.nestAccount.authenticate()
 			.then(() => {
 				let devicesList = [];
 				Homey.app.nestAccount[this.driverType].forEach(device => {

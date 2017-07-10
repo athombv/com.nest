@@ -4,10 +4,11 @@
   "description": "This app provides support for the following devices:",
   "main": "app.js",
   "dependencies": {
+    "firebase": "^2.4.2",
     "homey-log": "^1.0.1",
     "homey-wifidriver": "file:../../node-homey-wifidriver",
+    "mime-types": "^2.1.15",
     "request": "^2.69.0",
-    "firebase": "^2.4.2",
     "semver": "^5.3.0",
     "underscore": "^1.8.3"
   },

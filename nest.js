@@ -5,6 +5,9 @@ const Firebase = require('firebase');
 const request = require('request');
 const _ = require('underscore');
 const Homey = require('homey');
+const path = require('path');
+const fs = require('fs');
+const mime = require('mime-types');
 
 /**
  * Class that represents a single Nest account. It requires an
@@ -58,32 +61,32 @@ class NestAccount extends EventEmitter {
 	}
 
 	/**
+	 * Get authenticated state of this nest account.
+	 * @returns {boolean}
+	 */
+	isAuthenticated() {
+		return !!this.db.getAuth();
+	}
+
+	/**
 	 * Authenticate with Nest API using accessToken
 	 * stored in this instance or if provided
 	 * the parameter accessToken.
-	 * @param oauth2Account
 	 * @returns {Promise}
 	 */
-	authenticate(oauth2Account, force) {
+	authenticate() {
 		return new Promise((resolve, reject) => {
 
 			// Reject if no oauth2Account is found
-			if (!this.oauth2Account && !oauth2Account) {
+			if (!this.oauth2Account) {
 
 				console.error('NestAccount: authentication failed, no oauth2Account available');
 
 				return reject('NestAccount: no oauth2Account available');
 			}
 
-			if (typeof this.oauth2Account === 'undefined' ||
-				typeof this.oauth2Account.accessToken === 'undefined') {
-				this.oauth2Account = oauth2Account;
-			}
-
-			console.log('AUTHORIZE', this.oauth2Account.accessToken, force || !this.db.getAuth())
-
 			// Check if not authenticated yet
-			if (force || !this.db.getAuth()) {
+			if (!this.db.getAuth()) {
 
 				// Authenticate using accessToken
 				this.db.authWithCustomToken(this.oauth2Account.accessToken, err => {
@@ -96,11 +99,12 @@ class NestAccount extends EventEmitter {
 
 					console.log('NestAccount: authentication successful');
 
+					// Make sure account is saved in persistent storage
+					Homey.ManagerSettings.set('oauth2Account', this.oauth2Account);
+
 					// Start listening for realtime updates from Nest API
-					this._listenForRealtimeUpdates().then(() => {
-						console.log('LISTEN FOR REALTIME UPDATES PROMISE')
-						resolve()
-					});
+					this._listenForRealtimeUpdates()
+						.then(() => resolve());
 				});
 			} else return resolve();
 		});
@@ -116,8 +120,7 @@ class NestAccount extends EventEmitter {
 			// Unauth Firebase reference
 			this.db.unauth();
 
-			// TODO something with OAuth2Account
-			Homey.ManagerSettings.unset('oauth2Acount');
+			Homey.ManagerSettings.unset('oauth2Account');
 
 			// Reset list of devices in NestAccount
 			this.thermostats = [];
@@ -154,37 +157,29 @@ class NestAccount extends EventEmitter {
 			console.log('NestAccount: start listening for incoming realtime updates');
 
 			this.db.child('structures').on('value', snapshot => {
-				console.log(snapshot)
 				this.registerStructures(snapshot);
 
 				const promises = [];
 
 				promises.push(
 					new Promise(thermostatsResolve => {
-
 						this.db.child('devices/thermostats').on('value', thermostatsSnapshot => {
-							console.log('thermostats', thermostatsSnapshot)
 							this.registerDevices(thermostatsSnapshot, 'thermostats');
 							thermostatsResolve();
 						});
 					}),
 					new Promise(smokeCOAlarmsResolve => {
-
 						this.db.child('devices/smoke_co_alarms').on('value', smokeCOAlarmsSnapshot => {
-							console.log('smoke_co_alarms', smokeCOAlarmsSnapshot)
-
 							this.registerDevices(smokeCOAlarmsSnapshot, 'smoke_co_alarms');
 							smokeCOAlarmsResolve();
 						});
+					}),
+					new Promise(camerasResolve => {
+						this.db.child('devices/cameras').on('value', camerasSnapshot => {
+							this.registerDevices(camerasSnapshot, 'cameras');
+							camerasResolve();
+						});
 					})
-					// ,
-					// new Promise(camerasResolve => {
-					//
-					// 	this.db.child('devices/cameras').on('value', camerasSnapshot => {
-					// 		this.registerDevices(camerasSnapshot, 'cameras');
-					// 		camerasResolve();
-					// 	});
-					// })
 				);
 
 				Promise.all(promises).then(() => {
@@ -289,6 +284,7 @@ class NestAccount extends EventEmitter {
 	 */
 	createThermostat(deviceId) {
 		console.log(`NestAccount: create NestThermostat (${deviceId})`);
+		console.log(this.thermostats)
 		const thermostat = _.findWhere(this.thermostats, { device_id: deviceId });
 		if (thermostat) return new NestThermostat(thermostat);
 		return undefined;
@@ -310,9 +306,9 @@ class NestAccount extends EventEmitter {
 	/**
 	 * Factory method to return NestCamera instance.
 	 * @param deviceId
-	 * @returns {NestThermostat}
+	 * @returns {NestCamera}
 	 */
-	createCamera(deviceId) {
+	createCam(deviceId) {
 		console.log(`NestAccount: create NestCamera (${deviceId})`);
 		const camera = _.findWhere(this.cameras, { device_id: deviceId });
 		if (camera) return new NestCamera(camera);
@@ -387,15 +383,8 @@ class NestDevice extends EventEmitter {
 
 			// Loop all registered capabilities
 			this.capabilities.forEach(capability => {
-
-				// Detect change in value and emit it
-				if (typeof this[capability] !== 'undefined' &&
-					typeof data.hasOwnProperty(capability) !== 'undefined' &&
-					this[capability] !== data[capability]) {
-
-					// Emit change
-					this.emit(capability, data[capability]);
-				}
+				// Emit change
+				this.emit(capability, data[capability]);
 			});
 
 			// Assign all values from snapshot to this instance
@@ -613,6 +602,34 @@ class NestCamera extends NestDevice {
 
 			// All clear to change the target temperature
 			this.nest_account.db.child(`devices/cameras/${this.device_id}/is_streaming`).set(onoff);
+		});
+	}
+
+	/**
+	 * Fetch image from snapshot url.
+	 * @returns {Promise}
+	 */
+	getSnapshotUrl() {
+		return new Promise((resolve, reject) => {
+
+			// Can not fetch screenshot if not streaming
+			if (!this.is_streaming) {
+				return reject(Homey.__('error.not_streaming', {
+					name: this.name_long,
+				}));
+			}
+
+			this.nest_account.db.child(`devices/cameras/${this.device_id}/snapshot_url`).on('value', url => {
+
+				// TODO test with cam url
+				const uri = 'https://image.slidesharecdn.com/streams-151026152822-lva1-app6891/95/streams-in-nodejs-26-638.jpg?cb=1445873412';
+
+				request.head(uri, (err, res) => {
+					if (err) return reject('Downloading snapshot failed', err);
+					const filename = `${this.device_id}_snapshot.${mime.extension(res.headers['content-type'])}`;
+					request(uri).pipe(fs.createWriteStream(path.join(__dirname, 'userdata', filename))).on('close', () => resolve(filename));
+				});
+			});
 		});
 	}
 }

@@ -9,7 +9,12 @@ class NestProtect extends NestDevice {
 		super.onInit();
 	}
 
+	/**
+	 * Create client and bind event listeners.
+	 * @returns {*}
+	 */
 	createClient() {
+
 		// Create thermostat
 		this.client = Homey.app.nestAccount.createProtect(this.getData().id);
 

@@ -30,13 +30,14 @@ module.exports = [
 		method: 'POST',
 		path: '/authenticate/',
 		fn: (args, callback) => {
-			// Only one account and one client allowed for this app, get it
-			const oauth2Account = Homey.app.OAuth2ClientManager.getClient().getAccount();
-			WifiUtil.generateOAuth2Callback(oauth2Account)
+
+			// Start OAuth2 flow
+			WifiUtil.generateOAuth2Callback(Homey.app.nestAccount.oauth2Account)
 				.on('url', url => callback(null, url))
 				.on('authorized', () => {
-					console.log('api.authenticate', oauth2Account.accessToken);
-					Homey.app.nestAccount.authenticate(oauth2Account)
+					Homey.app.nestAccount.authenticate().then(() => {
+						Homey.ManagerSettings.set('oauth2Account', Homey.app.nestAccount.oauth2Account);
+					})
 				})
 				.on('error', error => callback(error));
 		},

@@ -29,6 +29,7 @@
 		"msg": "Bericht"
 	},
 	"error": {
+		"not_streaming": "(__name__) Kon geen snapshot maken, apparaat is niet aan het streamen",
 		"hvac_mode_is_heat_cool": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op 'heat-cool'",
 		"hvac_mode_is_eco": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op Eco",
 		"structure_is_away": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl structure op away modus stond ingesteld",

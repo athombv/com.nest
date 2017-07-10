@@ -211,7 +211,7 @@
           }
         },
         {
-          "id": "list_nests_protects",
+          "id": "list_nest_protects",
           "template": "list_devices",
           "navigation": {
             "next": "add_nest_protects"
@@ -222,10 +222,65 @@
           "template": "add_devices"
         }
       ]
+    },
+    {
+      "id": "nest_cam",
+      "name": {
+        "en": "Nest Cam",
+        "nl": "Nest Cam"
+      },
+      "images": {
+        "large": "drivers/nest_cam/assets/images/large.jpg",
+        "small": "drivers/nest_cam/assets/images/small.jpg"
+      },
+      "class": "other",
+      "capabilities": [],
+      "pair": [
+        {
+          "id": "authorization",
+          "template": "login_oauth2",
+          "options": {
+            "hint": {
+              "en": "Give Homey access to your Nest devices!",
+              "nl": "Geef Homey toegang tot je Nest devices!"
+            },
+            "button": {
+              "en": "Login"
+            }
+          }
+        },
+        {
+          "id": "list_nest_cams",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_nest_cams"
+          }
+        },
+        {
+          "id": "add_nest_cams",
+          "template": "add_devices"
+        }
+      ]
     }
   ],
   "flow": {
     "triggers": [
+      {
+        "id": "new_snapshot",
+        "title": {
+          "en": "New snapshot",
+          "nl": "Nieuw snapshot"
+        },
+        "tokens": [
+          {
+            "name": "snapshot",
+            "type": "image",
+            "title": {
+              "en": "snapshot"
+            }
+          }
+        ]
+      },
       {
         "id": "away_status_changed",
         "title": {
