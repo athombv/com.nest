@@ -51,11 +51,11 @@ class NestAccount extends EventEmitter {
 		// Authenticate NestAccount
 		this.authenticate()
 			.then(() => {
-				console.log('--> initialized', true)
+				console.log('NestAccount: initialized', true)
 				this.emit('initialized', true)
 			})
 			.catch(() => {
-				console.log('--> initialized', false)
+				console.log('NestAccount: initialized', false)
 				this.emit('initialized', false)
 			});
 	}
@@ -284,7 +284,6 @@ class NestAccount extends EventEmitter {
 	 */
 	createThermostat(deviceId) {
 		console.log(`NestAccount: create NestThermostat (${deviceId})`);
-		console.log(this.thermostats)
 		const thermostat = _.findWhere(this.thermostats, { device_id: deviceId });
 		if (thermostat) return new NestThermostat(thermostat);
 		return undefined;
@@ -297,7 +296,6 @@ class NestAccount extends EventEmitter {
 	 */
 	createProtect(deviceId) {
 		console.log(`NestAccount: create NestProtect (${deviceId})`);
-		console.log(this.smoke_co_alarms)
 		const protect = _.findWhere(this.smoke_co_alarms, { device_id: deviceId });
 		if (protect) return new NestProtect(protect);
 		return undefined;

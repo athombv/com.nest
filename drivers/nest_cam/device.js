@@ -37,7 +37,7 @@ class NestCam extends NestDevice {
 				this.myImageFlow = new Homey.FlowCardTrigger('new_snapshot')
 				this.myImageFlow.register()
 				this.registerPollInterval({
-					id: 'snapshot', fn: this.fetchSnapshot.bind(this), interval: 20000,
+					id: 'snapshot', fn: this.fetchSnapshot.bind(this), interval: 60000,
 				})
 			});
 	}
