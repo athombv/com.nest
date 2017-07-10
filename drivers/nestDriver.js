@@ -3,21 +3,12 @@
 const Homey = require('homey');
 const WifiDriver = require('homey-wifidriver').Driver;
 
-const oauth2ClientConfig = {
-	url: `https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`,
-	tokenEndpoint: 'https://api.home.nest.com/oauth2/access_token',
-	key: Homey.env.NEST_CLIENT_ID,
-	secret: Homey.env.NEST_CLIENT_SECRET,
-	allowMultipleAccounts: false,
-	refreshingEnabled: false,
-};
-
 class NestDriver extends WifiDriver {
 
 	onInit() {
 		// Start OAuth2Client
 		super.onInit({
-			oauth2ClientConfig,
+			oauth2ClientConfig: Homey.app.oauth2ClientConfig,
 		});
 	}
 
@@ -31,7 +22,7 @@ class NestDriver extends WifiDriver {
 	onPairOAuth2ListDevices(data) {
 
 		// Authenticate nest account
-		return Homey.app.nestAccount.authenticate(data.oauth2Account.accessToken)
+		return Homey.app.nestAccount.authenticate(data.oauth2Account)
 			.then(() => {
 				let devicesList = [];
 				Homey.app.nestAccount[this.driverType].forEach(device => {
@@ -40,6 +31,12 @@ class NestDriver extends WifiDriver {
 						data: {
 							id: device.device_id,
 							appVersion: Homey.manifest.version,
+						},
+						store: {
+							tempOAuth2Account: Object.assign({
+								accessToken: data.oauth2Account.accessToken,
+								refreshToken: data.oauth2Account.refreshToken,
+							}, Homey.app.oauth2ClientConfig),
 						},
 					});
 				});

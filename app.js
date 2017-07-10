@@ -3,69 +3,101 @@
 // TODO: app settings authentication
 // TODO: homey-wifidriver -> revoke authentication
 // TODO: test
+// TODO: empty data bug
 
 const Homey = require('homey');
 const request = require('request');
 const Log = require('homey-log').Log;
+const WifiApp = require('homey-wifidriver').App;
 
 const NestAccount = require('./nest').NestAccount;
 
-class NestApp extends Homey.App {
+const oauth2ClientConfig = {
+	url: `https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`,
+	tokenEndpoint: 'https://api.home.nest.com/oauth2/access_token',
+	key: Homey.env.NEST_CLIENT_ID,
+	secret: Homey.env.NEST_CLIENT_SECRET,
+	allowMultipleAccounts: false,
+	refreshingEnabled: false,
+};
+
+class NestApp extends WifiApp {
 	onInit() {
+		super.onInit();
 		this.log(`${this.id} running...`);
+
+		this.oauth2ClientConfig = oauth2ClientConfig;
+		const oauth2Client = this.OAuth2ClientManager.createClient(oauth2ClientConfig);
+		const oauth2Account = oauth2Client.createAccount(Homey.ManagerSettings.get('oauth2Account') || {});
+		Homey.ManagerSettings.set('oauth2Account', oauth2Account);
+
+		console.log('initialize Nest with', oauth2Account);
 
 		this.nestAccountInitialization = new Promise(resolve => {
 
-			// Create new nest account from stored token
-			this.nestAccount = new NestAccount({
-				accessToken: Homey.ManagerSettings.get('nestAccesstoken'),
-			})
-				.on('authenticated', () => Homey.ManagerApi.realtime('authenticated', true))
-				.on('unauthenticated', () => Homey.ManagerApi.realtime('authenticated', false))
-				.on('initialized', success => resolve(success))
+			// Create new nest account from stored oauth2Account
+			this.nestAccount = new NestAccount({ oauth2Account })
+				.on('authenticated', () => {
+					this.log('nestAccount authenticated');
+					Homey.ManagerSettings.set('oauth2Account', oauth2Account);
+					Homey.ManagerApi.realtime('authenticated', true)
+				})
+				.on('unauthenticated', () => {
+					this.log('nestAccount unauthenticated');
+					Homey.ManagerApi.realtime('authenticated', false)
+				})
+				.on('initialized', success => {
+					this.log('nestAccount initialized', success);
+					resolve(success)
+				})
 				.on('away', structure => {
 					this.awayStatusChangedFlowCardTrigger
 						.trigger({}, structure)
 						.catch(err => this.error('Failed to trigger away_status_changed', err))
 				});
-
-			new Homey.FlowCardCondition('away_status')
-				.register()
-				.on('run', (args, state, callback) => {
-					if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')) {
-						return callback(null, !!findWhere(this.nestAccount.structures, {
-							structure_id: args.structure.structure_id,
-							away: args.status,
-						}));
-					}
-					return callback(new Error('missing_structure_or_structure_id_arguments'));
-				})
-				.getArgument('structure')
-				.on('autocomplete', (query, args, callback) => {
-					if (this.nestAccount.hasOwnProperty('structures') && Array.isArray(this.nestAccount.structures)) {
-						return callback(null, this.nestAccount.structures.filter(item => item.name.toLowerCase().includes(query.toLowerCase())));
-					}
-					return callback(null, []);
-				});
-
-			this.awayStatusChangedFlowCardTrigger = new Homey.FlowCardTrigger('away_status_changed')
-				.register()
-				.on('run', (args, state, callback) => {
-					if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')
-						&& state && state.hasOwnProperty('away') && state.hasOwnProperty('structure_id')
-						&& args.hasOwnProperty('status')) {
-						return callback(null, (args.structure.structure_id === state.structure_id && args.status === state.away));
-					}
-					return callback(true, null);
-				})
-			this.awayStatusChangedFlowCardTrigger.getArgument('structure')
-				.on('autocomplete', (query, args, callback) => {
-					if (this.nestAccount.hasOwnProperty('structures') && Array.isArray(this.nestAccount.structures)) {
-						return callback(null, this.nestAccount.structures.filter(item => item.name.toLowerCase().includes(query.toLowerCase())));
-					}
-					return callback(null, []);
-				});
 		});
+
+		this.registerFlowCards();
+	}
+
+	registerFlowCards() {
+
+		new Homey.FlowCardCondition('away_status')
+			.register()
+			.on('run', (args, state, callback) => {
+				if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')) {
+					return callback(null, !!findWhere(this.nestAccount.structures, {
+						structure_id: args.structure.structure_id,
+						away: args.status,
+					}));
+				}
+				return callback(new Error('missing_structure_or_structure_id_arguments'));
+			})
+			.getArgument('structure')
+			.on('autocomplete', (query, args, callback) => {
+				if (this.nestAccount.hasOwnProperty('structures') && Array.isArray(this.nestAccount.structures)) {
+					return callback(null, this.nestAccount.structures.filter(item => item.name.toLowerCase().includes(query.toLowerCase())));
+				}
+				return callback(null, []);
+			});
+
+		this.awayStatusChangedFlowCardTrigger = new Homey.FlowCardTrigger('away_status_changed')
+			.register()
+			.on('run', (args, state, callback) => {
+				if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')
+					&& state && state.hasOwnProperty('away') && state.hasOwnProperty('structure_id')
+					&& args.hasOwnProperty('status')) {
+					return callback(null, (args.structure.structure_id === state.structure_id && args.status === state.away));
+				}
+				return callback(true, null);
+			})
+		this.awayStatusChangedFlowCardTrigger.getArgument('structure')
+			.on('autocomplete', (query, args, callback) => {
+				if (this.nestAccount.hasOwnProperty('structures') && Array.isArray(this.nestAccount.structures)) {
+					return callback(null, this.nestAccount.structures.filter(item => item.name.toLowerCase().includes(query.toLowerCase())));
+				}
+				return callback(null, []);
+			});
 	}
 
 	/**
@@ -79,43 +111,6 @@ class NestApp extends Homey.App {
 		logItems.push(item);
 		if (logItems.length > 10) logItems.shift();
 		Homey.ManagerSettings.set('logItems', logItems);
-	}
-
-	/**
-	 * Fetches OAuth authorization url from Nest. When this url is used it will
-	 * callback with an OAuth authorization code which will in turn be exchanged
-	 * for a OAuth access token.
-	 * @param callback
-	 */
-	fetchAccessToken(callback) {
-		return new Promise((resolve, reject) => {
-
-			new Homey.CloudOAuth2Callback(`https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`)
-				.once('url', url => {
-					this.log('retrieved authentication url');
-					callback({ url });
-				})
-				.once('code', code => {
-					this.log('retrieved authentication code');
-
-					// Exchange authorization code for access token
-					request.post(
-						`https://api.home.nest.com/oauth2/access_token?client_id=${Homey.env.NEST_CLIENT_ID}&code=${code}&client_secret=${Homey.env.NEST_CLIENT_SECRET}&grant_type=authorization_code`, {
-							json: true,
-						}, (err, response, body) => {
-							if (err || response.statusCode >= 400 || !body.access_token) {
-
-								// Catch error
-								this.error('Error fetching access token', err || response.statusCode >= 400 || body);
-
-								return reject(err);
-							}
-							return resolve(body.access_token);
-						}
-					);
-				})
-				.generate();
-		});
 	}
 }
 

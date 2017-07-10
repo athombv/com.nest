@@ -14,14 +14,22 @@ class NestDevice extends WifiDevice {
 
 		// Wait for nest account to be initialized
 		Homey.app.nestAccountInitialization.then(authenticated => {
-
+			this.log('nestAccount initialized')
 			// Listen for authentication events
 			Homey.app.nestAccount
 				.on('authenticated', () => {
+
+					this.log('authenticated')
+					this.createClient();
+					this.setAvailable();
+				})
+				.on('initialized', () => {
+					this.log('initialized')
 					this.createClient();
 					this.setAvailable();
 				})
 				.on('unauthenticated', () => {
+					this.log('unauthenticated')
 					this.setUnavailable(Homey.__('unauthenticated'));
 				});
 
@@ -35,7 +43,7 @@ class NestDevice extends WifiDevice {
 			}
 		});
 
-		Homey.app.nestAccount.authenticate(this.getOAuth2Account().accessToken, true);
+		Homey.app.nestAccount.authenticate(this.getOAuth2Account());
 	}
 
 	onDeleted() {

@@ -8,7 +8,7 @@ const Homey = require('homey');
 
 /**
  * Class that represents a single Nest account. It requires an
- * accessToken and will keep up-to-date lists of all devices and
+ * oauth2Account and will keep up-to-date lists of all devices and
  * structures in the Nest account.
  */
 class NestAccount extends EventEmitter {
@@ -47,36 +47,46 @@ class NestAccount extends EventEmitter {
 
 		// Authenticate NestAccount
 		this.authenticate()
-			.then(() => this.emit('initialized', true))
-			.catch(() => this.emit('initialized', false));
+			.then(() => {
+				console.log('--> initialized', true)
+				this.emit('initialized', true)
+			})
+			.catch(() => {
+				console.log('--> initialized', false)
+				this.emit('initialized', false)
+			});
 	}
 
 	/**
 	 * Authenticate with Nest API using accessToken
 	 * stored in this instance or if provided
 	 * the parameter accessToken.
-	 * @param accessToken
+	 * @param oauth2Account
 	 * @returns {Promise}
 	 */
-	authenticate(accessToken, force) {
+	authenticate(oauth2Account, force) {
 		return new Promise((resolve, reject) => {
 
-			// Store provided accessToken
-			if (accessToken) this.accessToken = accessToken;
+			// Reject if no oauth2Account is found
+			if (!this.oauth2Account && !oauth2Account) {
 
-			// Reject if no accessToken is found
-			if (!this.accessToken) {
+				console.error('NestAccount: authentication failed, no oauth2Account available');
 
-				console.error('NestAccount: authentication failed, no access token available');
-
-				return reject('NestAccount: no access token available');
+				return reject('NestAccount: no oauth2Account available');
 			}
+
+			if (typeof this.oauth2Account === 'undefined' ||
+				typeof this.oauth2Account.accessToken === 'undefined') {
+				this.oauth2Account = oauth2Account;
+			}
+
+			console.log('AUTHORIZE', this.oauth2Account.accessToken, force || !this.db.getAuth())
 
 			// Check if not authenticated yet
 			if (force || !this.db.getAuth()) {
 
 				// Authenticate using accessToken
-				this.db.authWithCustomToken(this.accessToken, err => {
+				this.db.authWithCustomToken(this.oauth2Account.accessToken, err => {
 					if (err) {
 
 						console.error('NestAccount: failed to authenticate', err);
@@ -87,7 +97,10 @@ class NestAccount extends EventEmitter {
 					console.log('NestAccount: authentication successful');
 
 					// Start listening for realtime updates from Nest API
-					this._listenForRealtimeUpdates().then(() => resolve());
+					this._listenForRealtimeUpdates().then(() => {
+						console.log('LISTEN FOR REALTIME UPDATES PROMISE')
+						resolve()
+					});
 				});
 			} else return resolve();
 		});
@@ -103,8 +116,8 @@ class NestAccount extends EventEmitter {
 			// Unauth Firebase reference
 			this.db.unauth();
 
-			// Remove stored access token
-			Homey.ManagerSettings.unset('nestAccesstoken');
+			// TODO something with OAuth2Account
+			Homey.ManagerSettings.unset('oauth2Acount');
 
 			// Reset list of devices in NestAccount
 			this.thermostats = [];
@@ -116,7 +129,7 @@ class NestAccount extends EventEmitter {
 
 			// Post authorization url with needed credentials
 			request.del(
-				`https://api.home.nest.com/oauth2/access_tokens/${this.accessToken}`, {}, (err, response) => {
+				`https://api.home.nest.com/oauth2/access_tokens/${this.oauth2Account.accessToken}`, {}, (err, response) => {
 					if (err || response.statusCode >= 400) {
 						console.error(err || response.statusCode, 'NestAccount: failed to revoke authentication');
 						return reject(err || response.statusCode);
@@ -141,6 +154,7 @@ class NestAccount extends EventEmitter {
 			console.log('NestAccount: start listening for incoming realtime updates');
 
 			this.db.child('structures').on('value', snapshot => {
+				console.log(snapshot)
 				this.registerStructures(snapshot);
 
 				const promises = [];
@@ -149,6 +163,7 @@ class NestAccount extends EventEmitter {
 					new Promise(thermostatsResolve => {
 
 						this.db.child('devices/thermostats').on('value', thermostatsSnapshot => {
+							console.log('thermostats', thermostatsSnapshot)
 							this.registerDevices(thermostatsSnapshot, 'thermostats');
 							thermostatsResolve();
 						});
@@ -156,6 +171,8 @@ class NestAccount extends EventEmitter {
 					new Promise(smokeCOAlarmsResolve => {
 
 						this.db.child('devices/smoke_co_alarms').on('value', smokeCOAlarmsSnapshot => {
+							console.log('smoke_co_alarms', smokeCOAlarmsSnapshot)
+
 							this.registerDevices(smokeCOAlarmsSnapshot, 'smoke_co_alarms');
 							smokeCOAlarmsResolve();
 						});
