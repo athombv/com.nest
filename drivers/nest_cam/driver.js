@@ -3,7 +3,7 @@
 const NestDriver = require('./../nestDriver');
 
 class NestCamDriver extends NestDriver {
-	onInit(){
+	onInit() {
 		super.onInit();
 		this.driverType = 'cameras';
 	}

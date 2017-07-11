@@ -1,6 +1,5 @@
 'use strict';
 
-// TODO: homey-wifidriver -> revoke authentication
 // TODO: test
 // TODO: migrate
 
@@ -99,7 +98,8 @@ class NestApp extends WifiApp {
 					return callback(null, (args.structure.structure_id === state.structure_id && args.status === state.away));
 				}
 				return callback(true, null);
-			})
+			});
+
 		this.awayStatusChangedFlowCardTrigger.getArgument('structure')
 			.on('autocomplete', (query, args, callback) => {
 				if (this.nestAccount.hasOwnProperty('structures') && Array.isArray(this.nestAccount.structures)) {

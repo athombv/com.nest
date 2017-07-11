@@ -279,6 +279,13 @@
               "en": "snapshot"
             }
           }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
+          }
         ]
       },
       {

@@ -9,22 +9,22 @@ class NestThermostat extends NestDevice {
 		super.onInit();
 
 		// Set default settings
-		if (this.getSetting('eco_override_allow') === null) this.setSettings({ eco_override_allow: false })
-		if (this.getSetting('eco_override_by')) this.setSettings({ eco_override_by: 'heat' })
+		if (this.getSetting('eco_override_allow') === null) this.setSettings({ eco_override_allow: false });
+		if (this.getSetting('eco_override_by')) this.setSettings({ eco_override_by: 'heat' });
 
 		this.hvacStatusChangedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('hvac_status_changed')
 			.on('run', (args, state, callback) => {
 				if (args && args.hasOwnProperty('status')) return callback(null, this.client.hvac_state === args.status);
 				return callback('invalid arguments and or state provided');
 			})
-			.register()
+			.register();
 
 		this.hvacModeChangedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('hvac_mode_changed')
 			.on('run', (args, state, callback) => {
 				if (args && args.hasOwnProperty('mode')) return callback(null, this.client.hvac_mode === args.mode);
 				return callback('invalid arguments and or state provided');
 			})
-			.register()
+			.register();
 	}
 
 	/**

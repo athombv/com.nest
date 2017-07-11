@@ -15,7 +15,7 @@ class NestDevice extends WifiDevice {
 		// Listen for authentication events
 		Homey.app.nestAccount
 			.on('authenticated', () => {
-				this.log('authenticated')
+				this.log('authenticated');
 				this.createClient();
 				this.setAvailable();
 			})
@@ -28,7 +28,7 @@ class NestDevice extends WifiDevice {
 				this.log('initialized but not authenticated');
 			})
 			.on('unauthenticated', () => {
-				this.log('unauthenticated')
+				this.log('unauthenticated');
 				this.setUnavailable(Homey.__('unauthenticated'));
 			});
 

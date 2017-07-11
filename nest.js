@@ -212,7 +212,7 @@ class NestAccount extends EventEmitter {
 				if (!device || !device.device_id || !device.name_long || !device.structure_id) return false;
 
 				// Find structure
-				const structure = _.findWhere(this.structures, { structure_id: device.structure_id });
+				const structure = _.findWhere(this.structures, {structure_id: device.structure_id});
 
 				// Add device to its array
 				foundDevices.push({
@@ -248,7 +248,7 @@ class NestAccount extends EventEmitter {
 				structure = snapshot.child(structure.structure_id).val();
 
 				// Get stored structure data
-				const oldStructure = _.findWhere(this.structures, { structure_id: structure.structure_id });
+				const oldStructure = _.findWhere(this.structures, {structure_id: structure.structure_id});
 				if (oldStructure) {
 
 					// Loop over all keys and values in stored data
@@ -284,7 +284,7 @@ class NestAccount extends EventEmitter {
 	 */
 	createThermostat(deviceId) {
 		console.log(`NestAccount: create NestThermostat (${deviceId})`);
-		const thermostat = _.findWhere(this.thermostats, { device_id: deviceId });
+		const thermostat = _.findWhere(this.thermostats, {device_id: deviceId});
 		if (thermostat) return new NestThermostat(thermostat);
 		return undefined;
 	}
@@ -296,27 +296,27 @@ class NestAccount extends EventEmitter {
 	 */
 	createProtect(deviceId) {
 		console.log(`NestAccount: create NestProtect (${deviceId})`);
-		const protect = _.findWhere(this.smoke_co_alarms, { device_id: deviceId });
+		const protect = _.findWhere(this.smoke_co_alarms, {device_id: deviceId});
 		if (protect) return new NestProtect(protect);
 		return undefined;
 	}
 
 	/**
-	 * Factory method to return NestCamera instance.
+	 * Factory method to return NestCam instance.
 	 * @param deviceId
-	 * @returns {NestCamera}
+	 * @returns {NestCam}
 	 */
 	createCam(deviceId) {
-		console.log(`NestAccount: create NestCamera (${deviceId})`);
-		const camera = _.findWhere(this.cameras, { device_id: deviceId });
-		if (camera) return new NestCamera(camera);
+		console.log(`NestAccount: create NestCam (${deviceId})`);
+		const camera = _.findWhere(this.cameras, {device_id: deviceId});
+		if (camera) return new NestCam(camera);
 		return undefined;
 	}
 }
 
 /**
  * Abstract class that handles all common functionality
- * for the NestThermostat, NestProtect and NestCamera.
+ * for the NestThermostat, NestProtect and NestCam.
  * It will listen for updates on the device, and call
  * the child's checkForChanges method to register changes
  * in data.
@@ -346,7 +346,7 @@ class NestDevice extends EventEmitter {
 	}
 
 	get structure() {
-		return _.findWhere(this.nest_account.structures, { structure_id: this.structure_id });
+		return _.findWhere(this.nest_account.structures, {structure_id: this.structure_id});
 	}
 
 	/**
@@ -567,10 +567,10 @@ class NestProtect extends NestDevice {
 }
 
 /**
- * Class representing NestCamera, extends
+ * Class representing NestCam, extends
  * NestDevice.
  */
-class NestCamera extends NestDevice {
+class NestCam extends NestDevice {
 
 	/**
 	 * Pass options object to NestDevice.
@@ -596,7 +596,7 @@ class NestCamera extends NestDevice {
 		// Authenticate
 		this.nest_account.authenticate().then(() => {
 
-			if (typeof onoff !== 'boolean') console.error('NestCamera: setStreaming parameter "onoff" is not a boolean', onoff);
+			if (typeof onoff !== 'boolean') console.error('NestCam: setStreaming parameter "onoff" is not a boolean', onoff);
 
 			// All clear to change the target temperature
 			this.nest_account.db.child(`devices/cameras/${this.device_id}/is_streaming`).set(onoff);
@@ -607,7 +607,7 @@ class NestCamera extends NestDevice {
 	 * Fetch image from snapshot url.
 	 * @returns {Promise}
 	 */
-	getSnapshotUrl() {
+	getImageBufferFromSnapshotUrl() {
 		return new Promise((resolve, reject) => {
 
 			// Can not fetch screenshot if not streaming
@@ -617,19 +617,18 @@ class NestCamera extends NestDevice {
 				}));
 			}
 
-			this.nest_account.db.child(`devices/cameras/${this.device_id}/snapshot_url`).on('value', url => {
-
-				// TODO test with cam url
-				const uri = 'https://image.slidesharecdn.com/streams-151026152822-lva1-app6891/95/streams-in-nodejs-26-638.jpg?cb=1445873412';
-
-				request.head(uri, (err, res) => {
+			// Fetch snapshot url
+			this.nest_account.db.child(`devices/cameras/${this.device_id}/snapshot_url`).on('value', uri => {
+				request.head(uri, err => {
 					if (err) return reject('Downloading snapshot failed', err);
-					const filename = `${this.device_id}_snapshot.${mime.extension(res.headers['content-type'])}`;
-					request(uri).pipe(fs.createWriteStream(path.join(__dirname, 'userdata', filename))).on('close', () => resolve(filename));
+					request({url: uri, encoding: null}, (err, response, body) => {
+						if (err) return reject(err);
+						return resolve(new Buffer(body));
+					});
 				});
 			});
 		});
 	}
 }
 
-module.exports = { NestAccount, NestThermostat, NestProtect };
+module.exports = {NestAccount, NestThermostat, NestProtect};

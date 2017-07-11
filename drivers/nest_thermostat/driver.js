@@ -19,7 +19,7 @@ class NestThermostatDriver extends NestDriver {
 				}
 				return callback('invalid arguments and or state provided');
 			})
-			.register()
+			.register();
 
 		new Homey.FlowCardCondition('hvac_mode')
 			.on('run', (args, state, callback) => {
@@ -29,7 +29,7 @@ class NestThermostatDriver extends NestDriver {
 				}
 				return callback('invalid arguments and or state provided');
 			})
-			.register()
+			.register();
 
 		new Homey.FlowCardAction('hvac_mode')
 			.on('run', (args, state, callback) => {
@@ -45,7 +45,7 @@ class NestThermostatDriver extends NestDriver {
 					} else return callback('No Nest client found');
 				} else callback('invalid arguments and or state provided');
 			})
-			.register()
+			.register();
 	}
 }
 

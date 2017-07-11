@@ -5,13 +5,6 @@ const WifiDriver = require('homey-wifidriver').Driver;
 
 class NestDriver extends WifiDriver {
 
-	onInit() {
-		// Start OAuth2Client
-		super.onInit({
-			oauth2ClientConfig: Homey.app.oauth2ClientConfig,
-		});
-	}
-
 	/**
 	 * The method will be called during pairing when a list of devices is needed. Only when this class
 	 * extends WifiDriver and provides a oauth2ClientConfig onInit. The data parameter contains an
