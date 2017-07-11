@@ -47,25 +47,43 @@ class NestAccount extends EventEmitter {
 		this.structures = [];
 
 		console.log('NestAccount: construct new nest account');
+		this.initialized = new Promise((resolve, reject) => {
+			this.resolveInitialized = resolve;
+			this.rejectInitialized = reject;
+		});
 
 		// Authenticate NestAccount
 		this.authenticate()
 			.then(() => {
-				console.log('NestAccount: initialized', true)
+				console.log('NestAccount: initialized', true);
 				this.emit('initialized', true)
 			})
 			.catch(() => {
-				console.log('NestAccount: initialized', false)
+				console.log('NestAccount: initialized', false);
 				this.emit('initialized', false)
 			});
 	}
 
 	/**
-	 * Get authenticated state of this nest account.
-	 * @returns {boolean}
+	 * Method that fetches metadata from Nest API.
+	 * @returns {Promise}
 	 */
-	isAuthenticated() {
-		return !!this.db.getAuth();
+	getMetadata() {
+		return new Promise(resolve => {
+			request({
+				url: 'https://developer-api.nest.com/',
+				method: 'GET',
+				json: true,
+				headers: {
+					Authorization: 'Bearer ' + this.oauth2Account.accessToken
+				}
+			}, (err, res, body) => {
+				if (err) return reject(err);
+				if (body && body.hasOwnProperty('metadata') && body.metadata.hasOwnProperty('client_version'))
+					this.client_version = body.metadata.client_version;
+				return resolve(body);
+			});
+		})
 	}
 
 	/**
@@ -102,11 +120,27 @@ class NestAccount extends EventEmitter {
 					// Make sure account is saved in persistent storage
 					Homey.ManagerSettings.set('oauth2Account', this.oauth2Account);
 
-					// Start listening for realtime updates from Nest API
-					this._listenForRealtimeUpdates()
-						.then(() => resolve());
+					// Update client_version
+					this.getMetadata().then(() => {
+
+						// Start listening for realtime updates from Nest API
+						this._listenForRealtimeUpdates()
+							.then(() => {
+								this.resolveInitialized();
+								this.emit('initialized', true);
+								return resolve();
+							})
+							.catch(err => {
+								this.rejectInitialized(err);
+								this.emit('initialized', false);
+								return reject(err);
+							});
+					});
 				});
-			} else return resolve();
+			} else {
+				this.emit('initialized', true);
+				return resolve();
+			}
 		});
 	}
 
@@ -152,7 +186,7 @@ class NestAccount extends EventEmitter {
 	 * @private
 	 */
 	_listenForRealtimeUpdates() {
-		return new Promise(resolve => {
+		return new Promise((resolve, reject) => {
 
 			console.log('NestAccount: start listening for incoming realtime updates');
 
@@ -160,6 +194,16 @@ class NestAccount extends EventEmitter {
 				this.registerStructures(snapshot);
 
 				const promises = [];
+
+				// New client version needed for cams
+				if (this.client_version > 4) { // TODO check if this is latest client version without cam
+					new Promise(camerasResolve => {
+						this.db.child('devices/cameras').on('value', camerasSnapshot => {
+							this.registerDevices(camerasSnapshot, 'cameras');
+							camerasResolve();
+						});
+					})
+				}
 
 				promises.push(
 					new Promise(thermostatsResolve => {
@@ -174,17 +218,11 @@ class NestAccount extends EventEmitter {
 							smokeCOAlarmsResolve();
 						});
 					}),
-					new Promise(camerasResolve => {
-						this.db.child('devices/cameras').on('value', camerasSnapshot => {
-							this.registerDevices(camerasSnapshot, 'cameras');
-							camerasResolve();
-						});
-					})
 				);
 
-				Promise.all(promises).then(() => {
-					resolve();
-				});
+				Promise.all(promises)
+					.then(() => resolve())
+					.catch(err => reject(err));
 			});
 		});
 	}

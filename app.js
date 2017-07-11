@@ -2,6 +2,7 @@
 
 // TODO: test
 // TODO: migrate
+// TODO: update nest client
 
 const Homey = require('homey');
 const request = require('request');
@@ -30,6 +31,12 @@ class NestApp extends WifiApp {
 		this.oauth2ClientConfig = oauth2ClientConfig;
 		const oauth2Client = this.OAuth2ClientManager.createClient(oauth2ClientConfig);
 		const oauth2Account = oauth2Client.createAccount(Homey.ManagerSettings.get('oauth2Account') || {});
+
+		if (Homey.ManagerSettings.get('nestAccesstoken') && typeof oauth2Account.accessToken === 'undefined') {
+			this.log('migrate nestAccesstoken to OAuth2Account', Homey.ManagerSettings.get('nestAccesstoken'));
+			oauth2Account.accessToken = Homey.ManagerSettings.get('nestAccesstoken');
+			Homey.ManagerSettings.unset('nestAccesstoken');
+		}
 
 		// Create new nest account from stored oauth2Account
 		this.nestAccount = new NestAccount({ oauth2Account })

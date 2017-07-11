@@ -32,6 +32,7 @@ class NestThermostat extends NestDevice {
 	 * @returns {*}
 	 */
 	createClient() {
+		console.log('create client for thermostat', this.getData())
 
 		// Create thermostat
 		this.client = Homey.app.nestAccount.createThermostat(this.getData().id);
@@ -69,6 +70,7 @@ class NestThermostat extends NestDevice {
 			.on('removed', () => {
 				this.setUnavailable(Homey.__('removed_externally'));
 			});
+		console.log('create client for thermostat 2')
 
 		// Register capability
 		this.registerCapabilityListener('target_temperature', this.onCapabilityTargetTemperature.bind(this));

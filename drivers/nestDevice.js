@@ -12,33 +12,33 @@ class NestDevice extends WifiDevice {
 		// If device was added below 2.0.0 make sure to re-pair
 		if (!this.getData().hasOwnProperty('appVersion') || !this.getData().appVersion || !semver.gte(this.getData().appVersion, '2.0.0')) return this.setUnavailable(Homey.__('version_repair'));
 
-		// Listen for authentication events
-		Homey.app.nestAccount
-			.on('authenticated', () => {
-				this.log('authenticated');
+		Homey.app.nestAccount.initialized
+			.then(() => {
+				this.bindAuthenticationListeners();
 				this.createClient();
 				this.setAvailable();
 			})
-			.on('initialized', result => {
-				if (result) {
-					this.createClient();
-					this.setAvailable();
-					this.log('initialized and authenticated');
-				}
-				this.log('initialized but not authenticated');
-			})
+			.catch(() => {
+				this.setUnavailable(Homey.__('unauthenticated'));
+				this.bindAuthenticationListeners();
+			});
+	}
+
+	bindAuthenticationListeners() {
+
+		// Listen for authentication events
+		Homey.app.nestAccount
 			.on('unauthenticated', () => {
 				this.log('unauthenticated');
 				this.setUnavailable(Homey.__('unauthenticated'));
+			})
+			.on('initialized', success => { // TODO fix, this doesn't get called
+				this.log('initialized', success);
+				if (success) {
+					this.createClient();
+					this.setAvailable();
+				}
 			});
-
-		// If account already authenticated
-		if (Homey.app.nestAccount.isAuthenticated()) {
-			this.createClient();
-			this.setAvailable();
-		} else {
-			this.setUnavailable(Homey.__('unauthenticated'));
-		}
 	}
 
 	onDeleted() {
