@@ -11,22 +11,13 @@ const WifiApp = require('homey-wifidriver').App;
 const NestAccount = require('./nest').NestAccount;
 
 const oauth2ClientConfig = {
-	url: `https://home.nest.com/login/oauth2?client_id=94f995f3-625c-4ad8-893b-5366806b1150&state=NEST`,
+	url: `https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`,
 	tokenEndpoint: 'https://api.home.nest.com/oauth2/access_token',
-	key: '94f995f3-625c-4ad8-893b-5366806b1150',
-	secret: 'ioqve2Fs8sYCUTaKxKrio2c4W',
+	key: Homey.env.NEST_CLIENT_ID,
+	secret: Homey.env.NEST_CLIENT_SECRET,
 	allowMultipleAccounts: false,
 	refreshingEnabled: false,
 };
-
-// const oauth2ClientConfig = {
-// 	url: `https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`,
-// 	tokenEndpoint: 'https://api.home.nest.com/oauth2/access_token',
-// 	key: Homey.env.NEST_CLIENT_ID,
-// 	secret: Homey.env.NEST_CLIENT_SECRET,
-// 	allowMultipleAccounts: false,
-// 	refreshingEnabled: false,
-// };
 
 class NestApp extends WifiApp {
 
