@@ -230,8 +230,8 @@
         "nl": "Nest Cam"
       },
       "images": {
-        "large": "drivers/nest_cam/assets/images/large.jpg",
-        "small": "drivers/nest_cam/assets/images/small.jpg"
+        "large": "drivers/nest_cam/assets/images/large.png",
+        "small": "drivers/nest_cam/assets/images/small.png"
       },
       "class": "other",
       "capabilities": [],
