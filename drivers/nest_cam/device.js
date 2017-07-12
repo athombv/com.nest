@@ -7,6 +7,13 @@ class NestCam extends NestDevice {
 
 	onInit() {
 		super.onInit();
+
+		// Register device trigger flow cards
+		this.startedStreamingFlowTriggerDevice = new Homey.FlowCardTriggerDevice('started_streaming');
+		this.startedStreamingFlowTriggerDevice.register();
+
+		this.stoppedStreamingFlowTriggerDevice = new Homey.FlowCardTriggerDevice('stopped_streaming');
+		this.stoppedStreamingFlowTriggerDevice.register();
 	}
 
 	/**
@@ -20,6 +27,31 @@ class NestCam extends NestDevice {
 
 		// If client construction failed, set device unavailable
 		if (!this.client) return this.setUnavailable(Homey.__('removed_externally'));
+
+		this.client.on('isStreaming', isStreaming => {
+
+			// Detect change
+			if (typeof this.isStreaming !== 'undefined') {
+
+				// Check if started or ended
+				if (this.isStreaming === false && isStreaming === true) {
+
+					// Trigger Flow
+					this.startedStreamingFlowTriggerDevice.trigger(this)
+						.catch(err => {
+							if (err) return this.error('Error triggeringDevice:', err);
+						});
+				} else if (this.isStreaming === true && isStreaming === false) {
+
+					// Trigger Flow
+					this.stoppedStreamingFlowTriggerDevice.trigger(this)
+						.catch(err => {
+							if (err) return this.error('Error triggeringDevice:', err);
+						});
+				}
+			}
+			this.isStreaming = isStreaming;
+		});
 
 		// Register snapshot image and snapshot flow token
 		const snapshotImage = await this.registerSnapShotImage();

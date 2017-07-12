@@ -266,20 +266,25 @@
   "flow": {
     "triggers": [
       {
-        "id": "new_snapshot",
+        "id": "started_streaming",
         "title": {
-          "en": "New snapshot",
-          "nl": "Nieuw snapshot"
+          "en": "Started streaming",
+          "nl": "Begonnen met streamen"
         },
-        "tokens": [
+        "args": [
           {
-            "name": "snapshot",
-            "type": "image",
-            "title": {
-              "en": "snapshot"
-            }
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
           }
-        ],
+        ]
+      },
+      {
+        "id": "stopped_streaming",
+        "title": {
+          "en": "Stopped streaming",
+          "nl": "Gestopt met streamen"
+        },
         "args": [
           {
             "name": "device",
