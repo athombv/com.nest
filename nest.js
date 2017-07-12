@@ -683,6 +683,24 @@ class NestCam extends NestDevice {
 			});
 		});
 	}
+
+	/**
+	 * Fetch image from snapshot url.
+	 * @returns {Promise}
+	 */
+	getImageBufferFromLastEventUrl(uri) {
+		return new Promise((resolve, reject) => {
+
+			// Fetch snapshot url
+			request.head(uri, err => {
+				if (err) return reject('Downloading last event image failed', err);
+				request({url: uri, encoding: null}, (err, response, body) => {
+					if (err) return reject(err);
+					return resolve(new Buffer(body));
+				});
+			});
+		});
+	}
 }
 
 module.exports = {NestAccount, NestThermostat, NestProtect};

@@ -17,6 +17,17 @@ class NestCamDriver extends NestDriver {
 				return callback('invalid arguments provided');
 			})
 			.register();
+
+		new Homey.FlowCardCondition('on_going_event')
+			.on('run', (args, state, callback) => {
+				if (args && (args.hasOwnProperty('device'))) {
+					const device = args.device;
+					return callback(null, device.eventIsHappening);
+				}
+				return callback('invalid arguments provided');
+			})
+			.register();
+
 	}
 }
 
