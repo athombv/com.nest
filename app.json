@@ -459,6 +459,20 @@
     ],
     "conditions": [
       {
+        "id": "is_streaming",
+        "title": {
+          "en": "!{{Is|Is not}} streaming",
+          "nl": "!{{Is|Is niet}} aan het streamen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
+          }
+        ]
+      },
+      {
         "id": "away_status",
         "title": {
           "en": "Away status !{{is|is not}}",
