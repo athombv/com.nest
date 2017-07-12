@@ -7,7 +7,7 @@
 const Homey = require('homey');
 const request = require('request');
 const Log = require('homey-log').Log;
-const WifiApp = require('homey-wifidriver').App;
+const OAuth2App = require('homey-wifidriver').OAuth2App;
 
 const NestAccount = require('./nest').NestAccount;
 
@@ -20,7 +20,7 @@ const oauth2ClientConfig = {
 	refreshingEnabled: false,
 };
 
-class NestApp extends WifiApp {
+class NestApp extends OAuth2App {
 
 	onInit() {
 		super.onInit();
@@ -43,18 +43,18 @@ class NestApp extends WifiApp {
 			.on('authenticated', () => {
 				this.log('nestAccount authenticated');
 				Homey.ManagerSettings.set('oauth2Account', oauth2Account);
-				Homey.ManagerApi.realtime('authenticated', true)
+				Homey.ManagerApi.realtime('authenticated', true);
 			})
 			.on('unauthenticated', () => {
 				this.log('nestAccount unauthenticated');
 				Homey.ManagerSettings.unset('oauth2Account');
-				Homey.ManagerApi.realtime('authenticated', false)
+				Homey.ManagerApi.realtime('authenticated', false);
 			})
 			.on('initialized', () => this.log('nestAccount initialized'))
 			.on('away', structure => {
 				this.awayStatusChangedFlowCardTrigger
 					.trigger({}, structure)
-					.catch(err => this.error('Failed to trigger away_status_changed', err))
+					.catch(err => this.error('Failed to trigger away_status_changed', err));
 			});
 
 		this.log(`initialized (oauth2AccountId: ${oauth2Account.id})`);

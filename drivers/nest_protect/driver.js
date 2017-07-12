@@ -3,7 +3,7 @@
 const NestDriver = require('./../nestDriver');
 
 class NestProtectDriver extends NestDriver {
-	onInit(){
+	onInit() {
 		super.onInit();
 		this.driverType = 'smoke_co_alarms';
 	}

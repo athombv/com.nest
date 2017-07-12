@@ -32,7 +32,6 @@ class NestThermostat extends NestDevice {
 	 * @returns {*}
 	 */
 	createClient() {
-		console.log('create client for thermostat', this.getData())
 
 		// Create thermostat
 		this.client = Homey.app.nestAccount.createThermostat(this.getData().id);
@@ -70,7 +69,6 @@ class NestThermostat extends NestDevice {
 			.on('removed', () => {
 				this.setUnavailable(Homey.__('removed_externally'));
 			});
-		console.log('create client for thermostat 2')
 
 		// Register capability
 		this.registerCapabilityListener('target_temperature', this.onCapabilityTargetTemperature.bind(this));
@@ -93,28 +91,28 @@ class NestThermostat extends NestDevice {
 
 			return new Promise((resolve, reject) => {
 				this.client.setHvacMode(this.getSetting('eco_override_by'))
-					.then(() => {
+					.then(() =>
 						// Override succeeded: re-attempt to set target temperature
-						return resolve(this.onCapabilityTargetTemperature(temperature));
-					})
+						resolve(this.onCapabilityTargetTemperature(temperature))
+					)
 					.catch(err => {
 						// Override failed
 						const errOverride = Homey.__('error.hvac_mode_eco_override_failed', { name: thermostat.client.name_long || '' }) + err;
 						Homey.app.registerLogItem({ msg: errOverride, timestamp: new Date() });
 						return reject(errOverride);
 					});
-			})
-		} else {
-			// Fix temperature range
-			temperature = Math.round(temperature * 2) / 2;
-
-			return this.client.setTargetTemperature(temperature)
-				.catch(err => {
-					console.error(err);
-					Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
-					throw new Error(err);
-				});
+			});
 		}
+		// Fix temperature range
+		temperature = Math.round(temperature * 2) / 2;
+
+		return this.client.setTargetTemperature(temperature)
+			.catch(err => {
+				this.error('Error setting target temperature', err);
+				Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
+				throw new Error(err);
+			});
+
 	}
 }
 

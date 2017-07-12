@@ -34,7 +34,10 @@ class NestAccount extends EventEmitter {
 
 		// Attach listener to auth state
 		this.db.onAuth(authData => {
-			if (authData === null) this.emit('unauthenticated');
+			if (authData === null) {
+				this.hasData = false;
+				this.emit('unauthenticated');
+			}
 			else this.emit('authenticated');
 		});
 
@@ -47,21 +50,32 @@ class NestAccount extends EventEmitter {
 		this.structures = [];
 
 		console.log('NestAccount: construct new nest account');
-		this.initialized = new Promise((resolve, reject) => {
-			this.resolveInitialized = resolve;
-			this.rejectInitialized = reject;
-		});
+		this.hasData = false;
 
 		// Authenticate NestAccount
 		this.authenticate()
 			.then(() => {
 				console.log('NestAccount: initialized', true);
-				this.emit('initialized', true)
 			})
 			.catch(() => {
 				console.log('NestAccount: initialized', false);
 				this.emit('initialized', false)
 			});
+	}
+
+	/**
+	 * Method to check if account is authenticated
+	 * @returns {boolean|*}
+	 */
+	isAuthenticated() {
+		return this.db.getAuth();
+	}
+	/**
+	 * Method to check if account is properly initialized
+	 * @returns {boolean|*}
+	 */
+	isAuthenticatedAndHasData() {
+		return this.hasData && this.isAuthenticated();
 	}
 
 	/**
@@ -126,19 +140,20 @@ class NestAccount extends EventEmitter {
 						// Start listening for realtime updates from Nest API
 						this._listenForRealtimeUpdates()
 							.then(() => {
-								this.resolveInitialized();
-								this.emit('initialized', true);
+
+								// If no data was available before, emit initialized
+								if (!this.hasData) {
+									this.emit('initialized', true);
+									this.hasData = true;
+								}
 								return resolve();
 							})
 							.catch(err => {
-								this.rejectInitialized(err);
-								this.emit('initialized', false);
 								return reject(err);
 							});
 					});
 				});
 			} else {
-				this.emit('initialized', true);
 				return resolve();
 			}
 		});
@@ -153,6 +168,7 @@ class NestAccount extends EventEmitter {
 
 			// Unauth Firebase reference
 			this.db.unauth();
+			this.hasData = false;
 
 			Homey.ManagerSettings.unset('oauth2Account');
 

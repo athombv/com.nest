@@ -1,7 +1,7 @@
 {
 	"offline": "Dit apparaat blijkt offline te zijn",
 	"removed_externally": "Dit apparaat kon niet worden gevonden, voeg opnieuw toe",
-	"unauthenticated": "Geen toegang tot dit apparaat",
+	"unauthenticated": "Geen toegang tot dit apparaat, ga naar Instellingen > Nest om opnieuw in te loggen",
 	"reconnecting": "Verbinden...",
 	"version_repair": "Vanwege een update moet dit apparaat opnieuw worden toegevoegd",
 	"settings": {

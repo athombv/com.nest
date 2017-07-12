@@ -1,7 +1,7 @@
 {
   "offline": "This device appears to be offline",
   "removed_externally": "This device could not be found, please re-pair",
-  "unauthenticated": "Authentication has been revoked",
+  "unauthenticated": "Authentication has been revoked, go to Settings > Nest to re-authenticate",
   "reconnecting": "Reconnecting...",
   "version_repair": "Due to a major update, this device needs to be re-paired",
   "settings": {

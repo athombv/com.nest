@@ -1,7 +1,7 @@
 'use strict';
 
 const Homey = require('homey');
-const WifiUtil = require('homey-wifidriver').Util;
+const OAuth2Util = require('homey-wifidriver').OAuth2Util;
 
 module.exports = [
 	{
@@ -32,12 +32,12 @@ module.exports = [
 		fn: (args, callback) => {
 
 			// Start OAuth2 flow
-			WifiUtil.generateOAuth2Callback(Homey.app.nestAccount.oauth2Account)
+			OAuth2Util.generateOAuth2Callback(Homey.app.nestAccount.oauth2Account)
 				.on('url', url => callback(null, url))
 				.on('authorized', () => {
 					Homey.app.nestAccount.authenticate().then(() => {
 						Homey.ManagerSettings.set('oauth2Account', Homey.app.nestAccount.oauth2Account);
-					})
+					});
 				})
 				.on('error', error => callback(error));
 		},
