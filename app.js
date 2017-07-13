@@ -9,7 +9,7 @@ const request = require('request');
 const Log = require('homey-log').Log;
 const OAuth2App = require('homey-wifidriver').OAuth2App;
 
-const NestAccount = require('./nest').NestAccount;
+const NestAccount = require('./lib/NestAccount');
 
 const oauth2ClientConfig = {
 	url: `https://home.nest.com/login/oauth2?client_id=${Homey.env.NEST_CLIENT_ID}&state=NEST`,
