@@ -19,6 +19,9 @@ class Log {
 		} else {
 			this._homey = global.Homey;
 		}
+		
+		if( typeof this._homey === 'undefined' )
+			return console.error('Error: Homey not found');
 				
 		if( typeof this._homey.env.HOMEY_LOG_URL === 'string' ) {
 			this.init( this._homey.env.HOMEY_LOG_URL );
@@ -27,25 +30,25 @@ class Log {
 	}
 
 	_log() {
-		console.log.bind( null, '[homey-log]' ).apply( null, arguments );
+		console.log.bind( null, Log.logTime(), '[homey-log]' ).apply( null, arguments );
 	}
 
 	init( url, opts ) {
-
-		if( process.env.DEBUG === '1' )
+		
+		if( process.env.DEBUG === '1' && this._homey.env.HOMEY_LOG_FORCE !== '1' )
 			return this._log('App is running in debug mode, disabling log');
 
 		this._client = new raven.Client( url, opts );
 
 		this._client.patchGlobal();
-
+		
 		this.setTags({
-			appId			: Homey.manifest.id,
-			appVersion		: Homey.manifest.version,
-			homeyVersion	: Homey.version
+			appId			: this._homey.manifest.id,
+			appVersion		: this._homey.manifest.version,
+			homeyVersion	: this._homey.version
 		});
 
-		this._log(`App ${Homey.manifest.id} v${Homey.manifest.version} logging...`);
+		this._log(`App ${this._homey.manifest.id} v${this._homey.manifest.version} logging...`);
 
 		return this;
 
@@ -115,6 +118,24 @@ class Log {
 		}
 
 		return this;
+	}
+
+	static logTime() {
+
+		let date = new Date();
+
+		let mm = date.getMonth()+1;
+			mm = (mm<10?"0"+mm:mm);
+		let dd = date.getDate();
+			dd = (dd<10?"0"+dd:dd);
+		let hh = date.getHours();
+			hh = (hh<10?"0"+hh:hh);
+		let min = date.getMinutes();
+			min = (min<10?"0"+min:min);
+		let sec = date.getSeconds();
+			sec = (sec<10?"0"+sec:sec);
+
+		return `${date.getFullYear()}-${mm}-${dd} ${hh}:${min}:${sec}`;
 	}
 
 }

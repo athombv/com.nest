@@ -5,7 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "firebase": "^2.4.2",
-    "homey-log": "^1.0.1",
+    "homey-log": "git+https://github.com/athombv/node-homey-log.git",
     "homey-wifidriver": "git+https://github.com/athombv/node-homey-wifidriver.git",
     "mime-types": "^2.1.15",
     "request": "^2.69.0",
