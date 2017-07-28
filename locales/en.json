@@ -41,6 +41,7 @@
     "hvac_mode_heat_unsupported": "(__name__) HVAC mode heating is unsupported",
     "hvac_mode_eco_unsupported": "(__name__) HVAC mode eco is unsupported",
     "hvac_mode_eco_override_failed": "(__name__) HVAC mode eco override failed: ",
+    "camera_permission": "The Nest client you are using does not allow for adding Nest Cams to Homey. Check the Nest smartphone app for a message asking you to accept a client update. After accepting you should login again via Settings > Nest.",
     "unknown": "(__name__) Failed to set target temperature to __temp__, error: __error__"
   },
   "pair": {
