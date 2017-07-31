@@ -13,18 +13,18 @@ class NestThermostat extends NestDevice {
 		if (this.getSetting('eco_override_by')) this.setSettings({ eco_override_by: 'heat' });
 
 		this.hvacStatusChangedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('hvac_status_changed')
-			.on('run', (args, state, callback) => {
-				if (args && args.hasOwnProperty('status')) return callback(null, this.client.hvac_state === args.status);
-				return callback('invalid arguments and or state provided');
-			})
-			.register();
+			.register()
+			.registerRunListener(args => {
+				if (args && args.hasOwnProperty('status')) return Promise.resolve(this.client.hvac_state === args.status);
+				return Promise.reject(new Error('invalid arguments and or state provided'));
+			});
 
 		this.hvacModeChangedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('hvac_mode_changed')
-			.on('run', (args, state, callback) => {
-				if (args && args.hasOwnProperty('mode')) return callback(null, this.client.hvac_mode === args.mode);
-				return callback('invalid arguments and or state provided');
-			})
-			.register();
+			.register()
+			.registerRunListener(args => {
+				if (args && args.hasOwnProperty('mode')) return Promise.resolve(this.client.hvac_mode === args.mode);
+				return Promise.reject(new Error('invalid arguments and or state provided'));
+			});
 	}
 
 	/**
@@ -97,7 +97,7 @@ class NestThermostat extends NestDevice {
 					)
 					.catch(err => {
 						// Override failed
-						const errOverride = Homey.__('error.hvac_mode_eco_override_failed', { name: thermostat.client.name_long || '' }) + err;
+						const errOverride = Homey.__('error.hvac_mode_eco_override_failed', { name: this.client.name_long || '' }) + err;
 						Homey.app.registerLogItem({ msg: errOverride, timestamp: new Date() });
 						return reject(errOverride);
 					});

@@ -70,40 +70,42 @@ class NestApp extends OAuth2App {
 
 		new Homey.FlowCardCondition('away_status')
 			.register()
-			.on('run', (args, state, callback) => {
+			.registerRunListener(args => {
 				if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')) {
-					return callback(null, !!findWhere(this.nestAccount.structures, {
+					return Promise.resolve(!!findWhere(this.nestAccount.structures, {
 						structure_id: args.structure.structure_id,
 						away: args.status,
 					}));
 				}
-				return callback(new Error('missing_structure_or_structure_id_arguments'));
+				return Promise.reject(new Error('missing_structure_or_structure_id_arguments'));
 			})
 			.getArgument('structure')
-			.on('autocomplete', (query, args, callback) => {
+			.registerAutocompleteListener(query => {
 				if (this.nestAccount.hasOwnProperty('structures') && Array.isArray(this.nestAccount.structures)) {
-					return callback(null, this.nestAccount.structures.filter(item => item.name.toLowerCase().includes(query.toLowerCase())));
+					return Promise.resolve(this.nestAccount.structures.filter(item =>
+						item.name.toLowerCase().includes(query.toLowerCase())));
 				}
-				return callback(null, []);
+				return Promise.resolve([]);
 			});
 
 		this.awayStatusChangedFlowCardTrigger = new Homey.FlowCardTrigger('away_status_changed')
 			.register()
-			.on('run', (args, state, callback) => {
+			.registerRunListener((args, state) => {
 				if (args && args.hasOwnProperty('structure') && args.structure.hasOwnProperty('structure_id')
 					&& state && state.hasOwnProperty('away') && state.hasOwnProperty('structure_id')
 					&& args.hasOwnProperty('status')) {
-					return callback(null, (args.structure.structure_id === state.structure_id && args.status === state.away));
+					return Promise.resolve((args.structure.structure_id === state.structure_id && args.status === state.away));
 				}
-				return callback(true, null);
+				return Promise.reject(new Error('missing_arguments_or_state_properties'));
 			});
 
 		this.awayStatusChangedFlowCardTrigger.getArgument('structure')
-			.on('autocomplete', (query, args, callback) => {
+			.registerAutocompleteListener(query => {
 				if (this.nestAccount.hasOwnProperty('structures') && Array.isArray(this.nestAccount.structures)) {
-					return callback(null, this.nestAccount.structures.filter(item => item.name.toLowerCase().includes(query.toLowerCase())));
+					return Promise.resolve(this.nestAccount.structures.filter(item =>
+						item.name.toLowerCase().includes(query.toLowerCase())));
 				}
-				return callback(null, []);
+				return Promise.resolve([]);
 			});
 	}
 

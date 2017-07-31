@@ -9,25 +9,24 @@ class NestCamDriver extends NestDriver {
 		this.driverType = 'cameras';
 
 		new Homey.FlowCardCondition('is_streaming')
-			.on('run', (args, state, callback) => {
+			.register()
+			.registerRunListener(args => {
 				if (args && (args.hasOwnProperty('device'))) {
 					const device = args.device;
-					return callback(null, device.client.is_streaming);
+					return Promise.resolve(device.client.is_streaming);
 				}
-				return callback('invalid arguments provided');
-			})
-			.register();
+				return Promise.reject(new Error('invalid arguments provided'));
+			});
 
 		new Homey.FlowCardCondition('on_going_event')
-			.on('run', (args, state, callback) => {
+			.register()
+			.registerRunListener(args => {
 				if (args && (args.hasOwnProperty('device'))) {
 					const device = args.device;
-					return callback(null, device.eventIsHappening);
+					return Promise.resolve(device.eventIsHappening);
 				}
-				return callback('invalid arguments provided');
-			})
-			.register();
-
+				return Promise.reject(new Error('invalid arguments provided'));
+			});
 	}
 }
 

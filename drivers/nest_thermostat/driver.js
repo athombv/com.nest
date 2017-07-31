@@ -12,40 +12,44 @@ class NestThermostatDriver extends NestDriver {
 		this.driverType = 'thermostats';
 
 		new Homey.FlowCardCondition('hvac_status')
-			.on('run', (args, state, callback) => {
-				if (args && args.hasOwnProperty('status') && (args.hasOwnProperty('device') || args.hasOwnProperty('deviceData'))) {
+			.register()
+			.registerRunListener(args => {
+				if (args && args.hasOwnProperty('status') && (args.hasOwnProperty('device') ||
+					args.hasOwnProperty('deviceData'))) {
 					const device = args.device || args.deviceData; // Legacy
-					return callback(null, device.client.hvac_state === args.status);
+					return Promise.resolve(device.client.hvac_state === args.status);
 				}
-				return callback('invalid arguments and or state provided');
-			})
-			.register();
+				return Promise.reject(new Error('invalid arguments and or state provided'));
+			});
 
 		new Homey.FlowCardCondition('hvac_mode')
-			.on('run', (args, state, callback) => {
-				if (args && args.hasOwnProperty('mode') && (args.hasOwnProperty('device') || args.hasOwnProperty('deviceData'))) {
+			.register()
+			.registerRunListener(args => {
+				if (args && args.hasOwnProperty('mode') && (args.hasOwnProperty('device') ||
+					args.hasOwnProperty('deviceData'))) {
 					const device = args.device || args.deviceData; // Legacy
-					return callback(null, device.client.hvac_mode === args.mode);
+					return Promise.resolve(device.client.hvac_mode === args.mode);
 				}
-				return callback('invalid arguments and or state provided');
-			})
-			.register();
+				return Promise.reject('invalid arguments and or state provided');
+			});
 
 		new Homey.FlowCardAction('hvac_mode')
-			.on('run', (args, state, callback) => {
-				if (args && args.hasOwnProperty('mode') && (args.hasOwnProperty('device') || args.hasOwnProperty('deviceData'))) {
+			.register()
+			.registerRunListener(args => {
+				if (args && args.hasOwnProperty('mode') && (args.hasOwnProperty('device') ||
+					args.hasOwnProperty('deviceData'))) {
 					const device = args.device || args.deviceData; // Legacy
 					if (device.hasOwnProperty('client')) {
-						device.client.setHvacMode(args.mode)
-							.then(() => callback(null, args.mode))
+						return device.client.setHvacMode(args.mode)
 							.catch(err => {
 								Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
-								return callback(err);
+								throw err;
 							});
-					} else return callback('No Nest client found');
-				} else callback('invalid arguments and or state provided');
-			})
-			.register();
+					}
+					return Promise.reject(new Error('No Nest client found'));
+				}
+				return Promise.reject(new Error('invalid arguments and or state provided'));
+			});
 	}
 }
 
