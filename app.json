@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "compatibility": ">=1.0.0",
   "name": {
     "en": "Nest",
@@ -360,9 +360,7 @@
               "en": "Humidity",
               "nl": "Luchtvochtigheid"
             },
-            "example": {
-              "en": "35"
-            }
+            "example": 35
           }
         ],
         "args": [
