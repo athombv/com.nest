@@ -13,11 +13,6 @@ class NestDriver extends OAuth2Driver {
 	 */
 	onPairOAuth2ListDevices() {
 
-		// Cameras only available after client_version has been updated (user accepts permission change)
-		if (this.driverType === 'cameras' && Homey.app.nestAccount.client_version <= 4) {
-			return Promise.reject(new Error(Homey.__('error.camera_permission')));
-		}
-
 		// Authenticate nest account
 		return Homey.app.nestAccount.authenticate()
 			.then(() => {
