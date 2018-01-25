@@ -381,9 +381,7 @@
               "en": "Humidity",
               "nl": "Luchtvochtigheid"
             },
-            "example": {
-              "en": "35"
-            }
+            "example": 35
           }
         ],
         "args": [
