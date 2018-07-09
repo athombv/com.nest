@@ -1,7 +1,7 @@
 {
   "offline": "This device appears to be offline",
   "removed_externally": "This device could not be found, please re-pair",
-  "unauthenticated": "Authentication has been revoked",
+  "unauthenticated": "Authentication has been revoked, go to Settings > Nest to re-authenticate",
   "reconnecting": "Reconnecting...",
   "version_repair": "Due to a major update, this device needs to be re-paired",
   "settings": {
@@ -29,6 +29,7 @@
     "msg": "Message"
   },
   "error":{
+    "not_streaming": "(__name__) Failed to fetch snapshot, device is not streaming",
     "hvac_mode_is_heat_cool": "(__name__) Failed to set target temperature to __temp__, can not adjust when HVAC mode is heat-cool",
     "hvac_mode_is_eco": "(__name__) Failed to set target temperature to __temp__, can not adjust when HVAC mode is Eco",
     "structure_is_away": "(__name__) Failed to set target temperature to __temp__, can not adjust when structure mode is away",

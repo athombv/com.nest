@@ -1,7 +1,8 @@
 {
   "id": "com.nest",
-  "version": "2.4.2",
-  "compatibility": ">=1.0.0",
+  "version": "2.5.4",
+  "compatibility": ">=1.5.0",
+  "sdk": 2,
   "name": {
     "en": "Nest",
     "nl": "Nest"
@@ -24,7 +25,7 @@
     ]
   },
   "images": {
-    "large": "assets/images/large.jpg",
+    "large": "assets/images/large.png",
     "small": "assets/images/small.png"
   },
   "drivers": [
@@ -83,7 +84,17 @@
       },
       "pair": [
         {
-          "id": "authorization"
+          "id": "authorization",
+          "template": "login_oauth2",
+          "options": {
+            "hint": {
+              "en": "Give Homey access to your Nest devices!",
+              "nl": "Geef Homey toegang tot je Nest devices!"
+            },
+            "button": {
+              "en": "Login"
+            }
+          }
         },
         {
           "id": "list_nests_thermostats",
@@ -97,66 +108,66 @@
           "template": "add_devices"
         }
       ],
-	  "settings": [
-		{
-		  "type": "group",
-		  "label": {
-			"en": "HVAC Eco mode override",
-			"nl": "HVAC Eco modus overschrijven"
-		  },
-		  "children": [
-			{
-			  "id": "eco_override_allow",
-			  "type": "checkbox",
-			  "value": false,
-			  "label": {
-				"en": "Allow HVAC Eco mode override",
-				"nl": "HVAC Eco modus overschrijven toestaan"
-			  },
-			  "hint": {
-				"en": "If HVAC Eco Mode is active, setting a target temperature is not allowed.\n\nThis setting allows Homey to override the Eco mode when adjusting the target temperature when in Eco mode.",
-				"nl": "Indien HVAC Eco modus actief is, is het instellen van een doel temperatuur niet toegestaan.\n\nDeze instelling laat Homey, indien HVAC Eco modus actief is deze overschrijven zodat de temperatuur toch kan worden ingesteld."
-			  }
-			},
-			{
-			  "id": "eco_override_by",
-			  "type": "dropdown",
-			  "value": "heat",
-			  "label": {
-				"en": "Always override with mode",
-				"nl": "Altijd overschrijven met modus"
-			  },
-			  "hint": {
-				"en": "Caution: All HVAC modes are displayed, even though your thermostat may not support some modes.",
-				"nl": "Let op: alle HVAC modi worden weergegeven, maar het kan zijn dat je thermostaat bepaalde modi niet ondersteund."
-			  },
-			  "values": [
-				{
-				  "id": "heat",
-				  "label": {
-					"en": "Heat",
-					"nl": "Verwarm"
-				  }
-				},
-				{
-				  "id": "cool",
-				  "label": {
-					"en": "Cool",
-					"nl": "Koel"
-				  }
-				},
-				{
-				  "id": "heat-cool",
-				  "label": {
-					"en": "Heating and cooling",
-					"nl": "Verwarm en koel"
-				  }
-				}
-			  ]
-			}
-		  ]
-		}
-	  ]
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "HVAC Eco mode override",
+            "nl": "HVAC Eco modus overschrijven"
+          },
+          "children": [
+            {
+              "id": "eco_override_allow",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Allow HVAC Eco mode override",
+                "nl": "HVAC Eco modus overschrijven toestaan"
+              },
+              "hint": {
+                "en": "If HVAC Eco Mode is active, setting a target temperature is not allowed.\n\nThis setting allows Homey to override the Eco mode when adjusting the target temperature when in Eco mode.",
+                "nl": "Indien HVAC Eco modus actief is, is het instellen van een doel temperatuur niet toegestaan.\n\nDeze instelling laat Homey, indien HVAC Eco modus actief is deze overschrijven zodat de temperatuur toch kan worden ingesteld."
+              }
+            },
+            {
+              "id": "eco_override_by",
+              "type": "dropdown",
+              "value": "heat",
+              "label": {
+                "en": "Always override with mode",
+                "nl": "Altijd overschrijven met modus"
+              },
+              "hint": {
+                "en": "Caution: All HVAC modes are displayed, even though your thermostat may not support some modes.",
+                "nl": "Let op: alle HVAC modi worden weergegeven, maar het kan zijn dat je thermostaat bepaalde modi niet ondersteund."
+              },
+              "values": [
+                {
+                  "id": "heat",
+                  "label": {
+                    "en": "Heat",
+                    "nl": "Verwarm"
+                  }
+                },
+                {
+                  "id": "cool",
+                  "label": {
+                    "en": "Cool",
+                    "nl": "Koel"
+                  }
+                },
+                {
+                  "id": "heat-cool",
+                  "label": {
+                    "en": "Heating and cooling",
+                    "nl": "Verwarm en koel"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "nest_protect",
@@ -187,10 +198,20 @@
       },
       "pair": [
         {
-          "id": "authorization"
+          "id": "authorization",
+          "template": "login_oauth2",
+          "options": {
+            "hint": {
+              "en": "Give Homey access to your Nest devices!",
+              "nl": "Geef Homey toegang tot je Nest devices!"
+            },
+            "button": {
+              "en": "Login"
+            }
+          }
         },
         {
-          "id": "list_nests_protects",
+          "id": "list_nest_protects",
           "template": "list_devices",
           "navigation": {
             "next": "add_nest_protects"
@@ -281,7 +302,7 @@
             ]
           },
           {
-            "name": "deviceData",
+            "name": "device",
             "type": "device",
             "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
@@ -340,7 +361,7 @@
             ]
           },
           {
-            "name": "deviceData",
+            "name": "device",
             "type": "device",
             "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
@@ -449,7 +470,7 @@
             ]
           },
           {
-            "name": "deviceData",
+            "name": "device",
             "type": "device",
             "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
@@ -508,7 +529,7 @@
             ]
           },
           {
-            "name": "deviceData",
+            "name": "device",
             "type": "device",
             "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
@@ -569,7 +590,7 @@
             ]
           },
           {
-            "name": "deviceData",
+            "name": "device",
             "type": "device",
             "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }

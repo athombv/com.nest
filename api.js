@@ -1,20 +1,23 @@
 'use strict';
 
+const Homey = require('homey');
+const OAuth2Util = require('homey-wifidriver').OAuth2Util;
+
 module.exports = [
 	{
 		description: 'Authenticate Nest',
 		method: 'GET',
 		path: '/authenticated/',
-		fn: callback => {
-			if (Homey.app.nestAccount && Homey.app.nestAccount.db) callback(null, Homey.app.nestAccount.db.getAuth());
-			else (callback('No nest account found'));
+		fn: (args, callback) => {
+			if (Homey.app.nestAccount && Homey.app.nestAccount.db) return callback(null, Homey.app.nestAccount.db.getAuth());
+			return callback('No nest account found');
 		},
 	},
 	{
 		description: 'Revoke authentication Nest',
 		method: 'POST',
 		path: '/revokeAuthentication/',
-		fn: callback => {
+		fn: (args, callback) => {
 
 			// Revoke authentication on nest account
 			Homey.app.nestAccount.revokeAuthentication()
@@ -26,19 +29,17 @@ module.exports = [
 		description: 'Authenticate Nest',
 		method: 'POST',
 		path: '/authenticate/',
-		fn: callback => {
+		fn: (args, callback) => {
 
-			// Fetch access token
-			Homey.app.fetchAccessToken(data => {
-				callback(null, data.url);
-			}).then(accessToken => {
-
-				// Save token
-				Homey.manager('settings').set('nestAccesstoken', accessToken);
-
-				// Authenticate nest account with new token
-				Homey.app.nestAccount.authenticate(accessToken);
-			});
+			// Start OAuth2 flow
+			OAuth2Util.generateOAuth2Callback(Homey.app.nestAccount.oauth2Account)
+				.on('url', url => callback(null, url))
+				.on('authorized', () => {
+					Homey.app.nestAccount.authenticate().then(() => {
+						Homey.ManagerSettings.set('oauth2Account', Homey.app.nestAccount.oauth2Account);
+					});
+				})
+				.on('error', error => callback(error));
 		},
 	},
 ];

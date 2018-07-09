@@ -1,7 +1,7 @@
 {
 	"offline": "Dit apparaat blijkt offline te zijn",
 	"removed_externally": "Dit apparaat kon niet worden gevonden, voeg opnieuw toe",
-	"unauthenticated": "Geen toegang tot dit apparaat",
+	"unauthenticated": "Geen toegang tot dit apparaat, ga naar Instellingen > Nest om opnieuw in te loggen",
 	"reconnecting": "Verbinden...",
 	"version_repair": "Vanwege een update moet dit apparaat opnieuw worden toegevoegd",
 	"settings": {
@@ -29,6 +29,7 @@
 		"msg": "Bericht"
 	},
 	"error": {
+		"not_streaming": "(__name__) Kon geen snapshot maken, apparaat is niet aan het streamen",
 		"hvac_mode_is_heat_cool": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op 'heat-cool'",
 		"hvac_mode_is_eco": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op Eco",
 		"structure_is_away": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl structure op away modus stond ingesteld",
