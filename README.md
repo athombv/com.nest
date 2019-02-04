@@ -3,7 +3,10 @@
 This app provides support for the following devices:
 
 - Nest Learning Thermostat
+- Nest Thermostat E (except for the Thermostat E with Heat Link in the EU)
 - Nest Protect Smoke and CO Alarm
+
+Unfortunately, the Nest API currently [does not support](https://developers.nest.com/reference/api-thermostat) the Nest Thermostat E with Heat Link in the EU.
 
 You can use this app to:
 
