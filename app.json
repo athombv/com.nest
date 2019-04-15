@@ -5,11 +5,13 @@
   "sdk": 2,
   "name": {
     "en": "Nest",
-    "nl": "Nest"
+    "nl": "Nest",
+	"de": "Nest"
   },
   "description": {
     "en": "This app lets you control your Nest Thermostat and Nest Protect",
-    "nl": "Deze app laat jou je Nest Thermostat en Nest Protect bedienen"
+    "nl": "Deze app laat jou je Nest Thermostat en Nest Protect bedienen",
+	"de": "Diese App lässt dich deinen Nest Thermostat und Nest Protect steuern"
   },
   "category": "climate",
   "author": {
@@ -33,7 +35,8 @@
       "id": "nest_thermostat",
       "name": {
         "en": "Nest Thermostat",
-        "nl": "Nest Thermostaat"
+        "nl": "Nest Thermostaat",
+		"de": "Nest Thermostat"
       },
       "images": {
         "large": "drivers/nest_thermostat/assets/images/large.jpg",
@@ -89,10 +92,12 @@
           "options": {
             "hint": {
               "en": "Give Homey access to your Nest devices!",
-              "nl": "Geef Homey toegang tot je Nest devices!"
+              "nl": "Geef Homey toegang tot je Nest devices!",
+			  "de": "Gewähre Homey Zugriff auf deine Nest-Geräte!"
             },
             "button": {
-              "en": "Login"
+              "en": "Login",
+			  "de": "Login"
             }
           }
         },
@@ -113,7 +118,8 @@
           "type": "group",
           "label": {
             "en": "HVAC Eco mode override",
-            "nl": "HVAC Eco modus overschrijven"
+            "nl": "HVAC Eco modus overschrijven",
+			"de": "HVAC-Eco-Modus überschreiben"
           },
           "children": [
             {
@@ -122,11 +128,13 @@
               "value": false,
               "label": {
                 "en": "Allow HVAC Eco mode override",
-                "nl": "HVAC Eco modus overschrijven toestaan"
+                "nl": "HVAC Eco modus overschrijven toestaan",
+				"de": "Überschreiben des HVAC-Eco-Modus erlauben"
               },
               "hint": {
                 "en": "If HVAC Eco Mode is active, setting a target temperature is not allowed.\n\nThis setting allows Homey to override the Eco mode when adjusting the target temperature when in Eco mode.",
-                "nl": "Indien HVAC Eco modus actief is, is het instellen van een doel temperatuur niet toegestaan.\n\nDeze instelling laat Homey, indien HVAC Eco modus actief is deze overschrijven zodat de temperatuur toch kan worden ingesteld."
+                "nl": "Indien HVAC Eco modus actief is, is het instellen van een doel temperatuur niet toegestaan.\n\nDeze instelling laat Homey, indien HVAC Eco modus actief is deze overschrijven zodat de temperatuur toch kan worden ingesteld.",
+				"de": "Wenn der HVAC-Eco-Modus aktiv ist, kann keine Zieltemperatur gesetzt werden.\n\nDiese Einstellung erlaubt Homey, den Eco-Modus, wenn aktiv, beim Anpassen der Zieltemperatur zu überschreiben."
               }
             },
             {
@@ -135,32 +143,37 @@
               "value": "heat",
               "label": {
                 "en": "Always override with mode",
-                "nl": "Altijd overschrijven met modus"
+                "nl": "Altijd overschrijven met modus",
+				"de": "Im Modus immer überschreiben"
               },
               "hint": {
                 "en": "Caution: All HVAC modes are displayed, even though your thermostat may not support some modes.",
-                "nl": "Let op: alle HVAC modi worden weergegeven, maar het kan zijn dat je thermostaat bepaalde modi niet ondersteund."
+                "nl": "Let op: alle HVAC modi worden weergegeven, maar het kan zijn dat je thermostaat bepaalde modi niet ondersteund.",
+				"de": "Vorsicht: Es werden alle HVAC-Modi angezeigt, auch wenn dein Thermostat möglicherweise nicht alle unterstützt."
               },
               "values": [
                 {
                   "id": "heat",
                   "label": {
                     "en": "Heat",
-                    "nl": "Verwarm"
+                    "nl": "Verwarm",
+					"de": "Heizen"
                   }
                 },
                 {
                   "id": "cool",
                   "label": {
                     "en": "Cool",
-                    "nl": "Koel"
+                    "nl": "Koel",
+					"de": "Kühlen"
                   }
                 },
                 {
                   "id": "heat-cool",
                   "label": {
                     "en": "Heating and cooling",
-                    "nl": "Verwarm en koel"
+                    "nl": "Verwarm en koel",
+					"de": "Heizen und Kühlen"
                   }
                 }
               ]
@@ -173,7 +186,8 @@
       "id": "nest_protect",
       "name": {
         "en": "Nest Protect",
-        "nl": "Nest Protect"
+        "nl": "Nest Protect",
+		"de": "Nest Protect"
       },
       "images": {
         "large": "drivers/nest_protect/assets/images/large.jpg",
@@ -203,10 +217,12 @@
           "options": {
             "hint": {
               "en": "Give Homey access to your Nest devices!",
-              "nl": "Geef Homey toegang tot je Nest devices!"
+              "nl": "Geef Homey toegang tot je Nest devices!",
+			  "de": "Gewähre Homey Zugriff auf deine Nest-Geräte!"
             },
             "button": {
-              "en": "Login"
+              "en": "Login",
+			  "de": "Login"
             }
           }
         },
@@ -230,7 +246,8 @@
         "id": "away_status_changed",
         "title": {
           "en": "Away status changed to",
-          "nl": "Away status gewijzigd naar"
+          "nl": "Away status gewijzigd naar",
+		  "de": "Weg-Status hat sich geändert zu"
         },
         "args": [
           {
@@ -238,7 +255,8 @@
             "type": "autocomplete",
             "placeholder": {
               "en": "Which home",
-              "nl": "Welk huis"
+              "nl": "Welk huis",
+			  "de": "Welches Heim"
             }
           },
           {
@@ -249,14 +267,16 @@
                 "id": "home",
                 "label": {
                   "en": "Home",
-                  "nl": "Home"
+                  "nl": "Home",
+				  "de": "Zuhause"
                 }
               },
               {
                 "id": "away",
                 "label": {
                   "en": "Away",
-                  "nl": "Away"
+                  "nl": "Away",
+				  "de": "Weg"
                 }
               }
             ]
@@ -267,11 +287,13 @@
         "id": "hvac_status_changed",
         "title": {
           "en": "HVAC status changed to",
-          "nl": "HVAC status gewijzigd naar"
+          "nl": "HVAC status gewijzigd naar",
+		  "de": "HVAC-Status hat sich geändert zu"
         },
         "hint": {
           "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
-          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat."
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat.",
+		  "de": "HVAC-Status zeigt an, ob das System aktiv heizt, kühlt oder aus ist."
         },
         "args": [
           {
@@ -282,21 +304,24 @@
                 "id": "heating",
                 "label": {
                   "en": "Heating",
-                  "nl": "Verwarmen"
+                  "nl": "Verwarmen",
+				  "de": "Heizen"
                 }
               },
               {
                 "id": "cooling",
                 "label": {
                   "en": "Cooling",
-                  "nl": "Koelen"
+                  "nl": "Koelen",
+				  "de": "Kühlen"
                 }
               },
               {
                 "id": "off",
                 "label": {
                   "en": "Off",
-                  "nl": "Uit"
+                  "nl": "Uit",
+				  "de": "Aus"
                 }
               }
             ]
@@ -312,11 +337,13 @@
         "id": "hvac_mode_changed",
         "title": {
           "en": "HVAC mode changed to",
-          "nl": "HVAC modus gewijzigd naar"
+          "nl": "HVAC modus gewijzigd naar",
+		  "de": "HVAC-Modus hat sich geändert zu"
         },
         "hint": {
           "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
-          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status.",
+		  "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen. Für die momentane HVAC-Aktivität siehe HVAC-Status."
         },
         "args": [
           {
@@ -327,35 +354,40 @@
                 "id": "heat",
                 "label": {
                   "en": "Heating",
-                  "nl": "Verwarm"
+                  "nl": "Verwarm",
+				  "de": "Heizen"
                 }
               },
               {
                 "id": "cool",
                 "label": {
                   "en": "Cooling",
-                  "nl": "Koel"
+                  "nl": "Koel",
+				  "de": "Kühlen"
                 }
               },
               {
                 "id": "heat-cool",
                 "label": {
                   "en": "Heating and cooling",
-                  "nl": "Verwarm en koel"
+                  "nl": "Verwarm en koel",
+				  "de": "Heizen und Kühlen"
                 }
               },
               {
                 "id": "eco",
                 "label": {
                   "en": "Eco",
-                  "nl": "Eco"
+                  "nl": "Eco",
+				  "de": "Eco"
                 }
               },
               {
                 "id": "off",
                 "label": {
                   "en": "Off",
-                  "nl": "Uit"
+                  "nl": "Uit",
+				  "de": "Aus"
                 }
               }
             ]
@@ -371,7 +403,8 @@
         "id": "measure_humidity_changed",
         "title": {
           "en": "The humidity changed",
-          "nl": "De luchtvochtigheid is veranderd"
+          "nl": "De luchtvochtigheid is veranderd",
+		  "de": "Die Luftfeuchtigkeit hat sich geändert"
         },
         "tokens": [
           {
@@ -379,7 +412,8 @@
             "type": "number",
             "title": {
               "en": "Humidity",
-              "nl": "Luchtvochtigheid"
+              "nl": "Luchtvochtigheid",
+			  "de": "Luftfeuchtigkeit"
             },
             "example": 35
           }
@@ -398,7 +432,8 @@
         "id": "away_status",
         "title": {
           "en": "Away status !{{is|is not}}",
-          "nl": "Away status !{{is|is niet}}"
+          "nl": "Away status !{{is|is niet}}",
+		  "de": "Weg-Status !{{ist|ist nicht}}"
         },
         "args": [
           {
@@ -406,7 +441,8 @@
             "type": "autocomplete",
             "placeholder": {
               "en": "Which home",
-              "nl": "Welk huis"
+              "nl": "Welk huis",
+			  "de": "Welches Heim"
             }
           },
           {
@@ -417,14 +453,16 @@
                 "id": "home",
                 "label": {
                   "en": "Home",
-                  "nl": "Home"
+                  "nl": "Home",
+				  "de": "Zuhause"
                 }
               },
               {
                 "id": "away",
                 "label": {
                   "en": "Away",
-                  "nl": "Away"
+                  "nl": "Away",
+				  "de": "Weg"
                 }
               }
             ]
@@ -435,11 +473,13 @@
         "id": "hvac_status",
         "title": {
           "en": "HVAC status !{{is|is not}}",
-          "nl": "HVAC status !{{is|is niet}}"
+          "nl": "HVAC status !{{is|is niet}}",
+		  "de": "HVAC-Status !{{ist|ist nicht}}"
         },
         "hint": {
           "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
-          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat."
+          "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat.",
+		  "de": "HVAC-Status zeigt an, ob das System aktiv heizt, kühlt oder aus ist."
         },
         "args": [
           {
@@ -450,21 +490,24 @@
                 "id": "heating",
                 "label": {
                   "en": "Heating",
-                  "nl": "Verwarmen"
+                  "nl": "Verwarmen",
+				  "de": "Heizen"
                 }
               },
               {
                 "id": "cooling",
                 "label": {
                   "en": "Cooling",
-                  "nl": "Koelen"
+                  "nl": "Koelen",
+				  "de": "Kühlen"
                 }
               },
               {
                 "id": "off",
                 "label": {
                   "en": "Off",
-                  "nl": "Uit"
+                  "nl": "Uit",
+				  "de": "Aus"
                 }
               }
             ]
@@ -480,11 +523,13 @@
         "id": "hvac_mode",
         "title": {
           "en": "HVAC mode !{{is|is not}}",
-          "nl": "HVAC modus !{{is|is niet}}"
+          "nl": "HVAC modus !{{is|is niet}}",
+		  "de": "HVAC-Modus !{{ist|ist nicht}}"
         },
         "hint": {
           "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
-          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status."
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status.",
+		  "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen. Für die momentane HVAC-Aktivität siehe HVAC-Status."
         },
         "args": [
           {
@@ -495,35 +540,40 @@
                 "id": "heat",
                 "label": {
                   "en": "Heating",
-                  "nl": "Verwarm"
+                  "nl": "Verwarm",
+				  "de": "Heizen"
                 }
               },
               {
                 "id": "cool",
                 "label": {
                   "en": "Cooling",
-                  "nl": "Koel"
+                  "nl": "Koel",
+				  "de": "Kühlen"
                 }
               },
               {
                 "id": "heat-cool",
                 "label": {
                   "en": "Heating and cooling",
-                  "nl": "Verwarm en koel"
+                  "nl": "Verwarm en koel",
+				  "de": "Heizen und Kühlen"
                 }
               },
               {
                 "id": "eco",
                 "label": {
                   "en": "Eco",
-                  "nl": "Eco"
+                  "nl": "Eco",
+				  "de": "Eco"
                 }
               },
               {
                 "id": "off",
                 "label": {
                   "en": "Off",
-                  "nl": "Uit"
+                  "nl": "Uit",
+				  "de": "Aus"
                 }
               }
             ]
@@ -541,11 +591,13 @@
         "id": "hvac_mode",
         "title": {
           "en": "Set HVAC mode to",
-          "nl": "HVAC modus instellen op"
+          "nl": "HVAC modus instellen op",
+		  "de": "HVAC-Modus setzen auf"
         },
         "hint": {
           "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature.",
-          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken."
+          "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken.",
+		  "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen."
         },
         "args": [
           {
@@ -556,35 +608,40 @@
                 "id": "heat",
                 "label": {
                   "en": "Heating",
-                  "nl": "Verwarm"
+                  "nl": "Verwarm",
+				  "de": "Heizen"
                 }
               },
               {
                 "id": "cool",
                 "label": {
                   "en": "Cooling",
-                  "nl": "Koel"
+                  "nl": "Koel",
+				  "de": "Kühlen"
                 }
               },
               {
                 "id": "heat-cool",
                 "label": {
                   "en": "Heating and cooling",
-                  "nl": "Verwarm en koel"
+                  "nl": "Verwarm en koel",
+				  "de": "Heizen und Kühlen"
                 }
               },
               {
                 "id": "eco",
                 "label": {
                   "en": "Eco",
-                  "nl": "Eco"
+                  "nl": "Eco",
+				  "de": "Eco"
                 }
               },
               {
                 "id": "off",
                 "label": {
                   "en": "Off",
-                  "nl": "Uit"
+                  "nl": "Uit",
+				  "de": "Aus"
                 }
               }
             ]
