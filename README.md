@@ -1,3 +1,5 @@
+Note: this app will stop working after August 31st 2019. [Read more](https://mailchi.mp/16841c6489fc/your-homey-nest-integration-will-stop-working).
+
 # Nest App for Homey
 
 This app provides support for the following devices:
