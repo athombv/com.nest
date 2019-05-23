@@ -7,7 +7,34 @@ const fetch = require('node-fetch');
 const NestDevice = require('../../lib/NestDevice');
 const { NEST_CAPABILITIES } = require('../../constants');
 
+const SNAPSHOT_ID = 'snapshot';
+const LAST_EVENT_ID = 'lastEvent';
+const LAST_EVENT_ANIMATED_ID = 'lastEventAnimated';
+
 class NestCam extends NestDevice {
+  async onInit() {
+    // Keep track of image urls
+    this._imageUrls = {
+      [SNAPSHOT_ID]: null,
+      [LAST_EVENT_ID]: null,
+      [LAST_EVENT_ANIMATED_ID]: null,
+    };
+
+    // Register images
+    this._snapshotImage = this._registerCameraImage({
+      id: 'snapshot', title: 'Snapshot',
+    });
+    this._lastEventImage = this._registerCameraImage({
+      id: 'lastEvent', title: Homey.__('cam_last_event_image_title'),
+    });
+    this._lastEventAnimatedImage = this._registerCameraImage({
+      id: 'lastEventAnimated', title: Homey.__('cam_last_event_animated_image_title'),
+    });
+
+    // Do this after the above is done
+    await super.onInit();
+  }
+
   /**
    * Getter for device specific capabilities
    * @returns {*[]}
@@ -27,12 +54,10 @@ class NestCam extends NestDevice {
   async createNewSnapshot() {
     this.log('createNewSnapshot()');
 
-    // Generate snapshot
-    const res = await Homey.app.executeGetRequest(`devices/${this.driverType}/${this.getData().id}`, 'snapshot_url');
-    const snapshotUrl = await res.json();
+    // Generate new snapshot, update url and then update Image instance
+    this._imageUrls[SNAPSHOT_ID] = await this._getNewSnapshotUrl();
+    this._snapshotImage.update();
 
-    // Update Image instance
-    this._snapshotImage = await this._updateImage({ image: this._snapshotImage, url: snapshotUrl, title: 'Snapshot' });
     try {
       // Update global token
       await this._updateSnapshotFlowToken();
@@ -45,6 +70,62 @@ class NestCam extends NestDevice {
     const driver = this.getDriver();
     driver.triggerSnapshotCreatedFlow(this, { snapshot: this._snapshotImage });
     this.log('createNewSnapshot() -> flow triggered');
+  }
+
+  /**
+   * Method that registers a Homey.Image instance and then sets it as camera image. The url is passed by reference so
+   * it can be set to a different value and then Image.update() will trigger the setStream method and update the image
+   * accordingly.
+   * @param id
+   * @param title
+   * @param url
+   * @returns {*}
+   * @private
+   */
+  _registerCameraImage({ id, title }) {
+    this.log('_registerCameraImage() -> id', id);
+    const image = new Homey.Image();
+
+    // Set stream, this method is called when image.update() is called
+    image.setStream(async (stream) => {
+      // If snapshot needs to be updated first generate new snapshot
+      if (id === SNAPSHOT_ID) this._imageUrls[SNAPSHOT_ID] = await this._getNewSnapshotUrl();
+
+      this.log('_registerCameraImage() -> setStream ->', id, this._imageUrls[id]);
+      if (!this._imageUrls[id]) {
+        this.error('_registerCameraImage() -> setStream -> failed no image url available');
+        throw new Error('No image url available');
+      }
+
+      // Fetch image from url and pipe
+      const res = await fetch(this._imageUrls[id]);
+      if (!res.ok) {
+        this.error('_registerCameraImage() -> setStream -> failed', res.statusText);
+        throw new Error('Could not fetch image');
+      }
+      res.body.pipe(stream);
+    });
+
+    // Register and set camera iamge
+    image.register()
+      .then(() => this.setCameraImage(id, title, image))
+      .catch(this.error);
+
+    return image;
+  }
+
+  /**
+   * Method that makes a call to the API to generate a new snapshot and returns the new url.
+   * @returns {Promise<*>}
+   * @private
+   */
+  async _getNewSnapshotUrl() {
+    const res = await Homey.app.executeGetRequest(`devices/${this.driverType}/${this.getData().id}`, 'snapshot_url');
+    if (!res.ok) {
+      this.error('_getNewSnapshotUrl() -> failed', res.statusText);
+      return null;
+    }
+    return res.json();
   }
 
   /**
@@ -68,63 +149,6 @@ class NestCam extends NestDevice {
       this.error('_updateSnapshotFlowToken() -> error', err, this._snapshotImage);
     }
     return this._snapshotImageToken;
-  }
-
-  /**
-   * Method that creates a Homey.Image instance.
-   * @param url
-   * @returns {Promise<T> | *}
-   * @private
-   */
-  _createImage({ url }) {
-    this.log('_createImage() -> url', url);
-
-    // Register new image
-    const image = new Homey.Image();
-    image.setStream(async (stream) => {
-      this.log('_createImage() -> refresh event');
-      const res = await fetch(url);
-      res.body.pipe(stream);
-    });
-
-    // Register image
-    return image
-      .register()
-      .catch(err => this.error('_createImage() -> error registering last event image', err));
-  }
-
-  /**
-   * Method that updates the setStream method of a Homey.Image instance.
-   * @param image
-   * @param url
-   * @param title
-   * @returns {Promise<*>}
-   * @private
-   */
-  async _updateImage({ image, url, title }) {
-    this.log('_updateImage()');
-    let _image = image;
-    // Create snapshot image if not done before
-    if (!_image) {
-      _image = await this._createImage({ url });
-    } else {
-      // Image was already created, only update url
-      _image.setStream(async (stream) => {
-        this.log('_updateImage() -> refresh event');
-        const res = await fetch(url);
-        res.body.pipe(stream);
-      });
-      _image.update();
-    }
-
-    // Update camera image
-    try {
-      await this.setCameraImage(Homey.util.uuid(), title, _image);
-    } catch (err) {
-      this.error('_updateCameraImage() -> failed', err);
-    }
-
-    return _image;
   }
 
   /**
@@ -159,8 +183,10 @@ class NestCam extends NestDevice {
   async onCapabilityValue(capabilityId, value) {
     if (capabilityId === NEST_CAPABILITIES.SNAPSHOT_URL && this.snapshot_url !== value) {
       this.log('onCapabilityValue() -> new snapshot_url');
-      // Update snapshot image
-      this._snapshotImage = await this._updateImage({ image: this._snapshotImage, url: value, title: 'Snapshot' });
+
+      // Update url and then update Image instance
+      this._imageUrls[SNAPSHOT_ID] = value;
+      this._snapshotImage.update();
 
       // Update snapshot flow token
       await this._updateSnapshotFlowToken();
@@ -183,19 +209,13 @@ class NestCam extends NestDevice {
         return;
       }
 
-      // Update image
-      this._lastEventImage = await this._updateImage({
-        image: this._lastEventImage,
-        url: value.image_url,
-        title: Homey.__('cam_last_event_image_title'),
-      });
+      // Update url and then update Image instance
+      this._imageUrls[LAST_EVENT_ID] = value.image_url;
+      this._lastEventImage.update();
 
-      // Update image
-      this._lastEventAnimatedImage = await this._updateImage({
-        image: this._lastEventAnimatedImage,
-        url: value.animated_image_url,
-        title: Homey.__('cam_last_event_animated_image_title'),
-      });
+      // Update url and then update Image instance
+      this._imageUrls[LAST_EVENT_ANIMATED_ID] = value.animated_image_url;
+      this._lastEventAnimatedImage.update();
 
       // Create Flow tokens object
       const tokens = {
