@@ -1,12 +1,13 @@
 'use strict';
 
-const NestDriver = require('./../nestDriver');
+const NestDriver = require('../../lib/NestDriver');
+const { DRIVER_TYPE } = require('../../constants');
 
 class NestProtectDriver extends NestDriver {
-	onInit() {
-		super.onInit();
-		this.driverType = 'smoke_co_alarms';
-	}
+  onInit() {
+    // Set correct driver type
+    this.driverType = DRIVER_TYPE.SMOKE_CO_ALARMS;
+  }
 }
 
 module.exports = NestProtectDriver;

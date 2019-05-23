@@ -1,0 +1,37 @@
+{
+  "removed_externally": "Dieses Gerät konnte nicht gefunden werden, bitte erneut koppeln",
+  "unauthenticated": "Autorisierung wurde wiederrufen; gehe in Einstellungen > Nest, um erneut zu autorisieren",
+  "reconnecting": "Neu verbinden...",
+  "version_repair": "Aufgrund eines großen Updates muss dieses Gerät erneut gekoppelt werden",
+  "settings": {
+    "title": "Nest-Einstellungen",
+    "january": "Januar",
+    "february": "Februar",
+    "march": "März",
+    "april": "April",
+    "may": "Mai",
+    "june": "Juni",
+    "july": "Juli",
+    "august": "August",
+    "september": "September",
+    "october": "Oktober",
+    "november": "November",
+    "december": "Dezember",
+    "time": "Zeit",
+    "msg": "Nachricht"
+  },
+  "error": {
+    "not_streaming": "(__name__) Abrufen des Schnappschusses fehlgeschlagen, Gerät streamt nicht",
+    "hvac_mode_is_heat_cool": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung nicht möglich, wenn HVAC-Modus Heizen/Kühlen ist",
+    "hvac_mode_is_eco": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung nicht möglich, wenn HVAC-Modus Eco ist",
+    "temp_lock": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung außerhalb Temperaturrahmen nicht möglich (__min__ - __max__)",
+    "emergency_heat": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung bei Notheizen nicht möglich",
+    "hvac_emergency_heat": "(__name__) Setzen des HVAC-Modus fehlgeschlagen; Anpassung bei Notheizen nicht möglich",
+    "hvac_mode_heat-cool_unsupported": "(__name__) HVAC-Modus Heizen und Kühlen wird nicht unterstützt",
+    "hvac_mode_cool_unsupported": "(__name__) HVAC-Modus Kühlen wird nicht unterstützt",
+    "hvac_mode_heat_unsupported": "(__name__) HVAC-Modus Heizen wird nicht unterstützt",
+    "hvac_mode_eco_unsupported": "(__name__) HVAC-Modus Eco wird nicht unterstützt",
+    "hvac_mode_eco_override_failed": "(__name__) Überschreiben von HVAC-Eco-Modus fehlgeschlagen: ",
+    "unknown": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen, Fehler: __error__"
+  }
+}

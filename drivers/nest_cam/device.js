@@ -1,234 +1,242 @@
 'use strict';
 
 const Homey = require('homey');
-const NestDevice = require('./../nestDevice');
+
+const fetch = require('node-fetch');
+
+const NestDevice = require('../../lib/NestDevice');
+const { NEST_CAPABILITIES } = require('../../constants');
 
 class NestCam extends NestDevice {
+  /**
+   * Getter for device specific capabilities
+   * @returns {*[]}
+   */
+  get capabilities() {
+    return [
+      NEST_CAPABILITIES.SNAPSHOT_URL,
+      NEST_CAPABILITIES.LAST_EVENT,
+      NEST_CAPABILITIES.IS_STREAMING,
+    ];
+  }
 
-	onInit() {
-		super.onInit();
+  /**
+   * Method that fetches a new snapshot from the Nest API and updates the associated Image and FlowToken instances.
+   * @returns {Promise<void>}
+   */
+  async createNewSnapshot() {
+    this.log('createNewSnapshot()');
 
-		// Register device trigger flow cards
-		this.startedStreamingFlowTriggerDevice = new Homey.FlowCardTriggerDevice('started_streaming');
-		this.startedStreamingFlowTriggerDevice.register();
+    // Generate snapshot
+    const res = await Homey.app.executeGetRequest(`devices/${this.driverType}/${this.getData().id}`, 'snapshot_url');
+    const snapshotUrl = await res.json();
 
-		this.stoppedStreamingFlowTriggerDevice = new Homey.FlowCardTriggerDevice('stopped_streaming');
-		this.stoppedStreamingFlowTriggerDevice.register();
+    // Update Image instance
+    this._snapshotImage = await this._updateImage({ image: this._snapshotImage, url: snapshotUrl, title: 'Snapshot' });
+    try {
+      // Update global token
+      await this._updateSnapshotFlowToken();
+      this.log('createNewSnapshot() -> flow token updated');
+    } catch (err) {
+      this.error('createNewSnapshot() -> error could not update snapshot token', err);
+    }
 
-		this.eventStartedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('event_started');
-		this.eventStartedFlowTriggerDevice.register();
+    // Trigger snapshot done flow
+    const driver = this.getDriver();
+    driver.triggerSnapshotCreatedFlow(this, { snapshot: this._snapshotImage });
+    this.log('createNewSnapshot() -> flow triggered');
+  }
 
-		this.eventStoppedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('event_stopped');
-		this.eventStoppedFlowTriggerDevice.register();
-	}
+  /**
+   * Method that updates the value of the snapshot image FlowToken and registers the FlowToken if not
+   * already done before.
+   * @returns {Promise<Homey.FlowToken|*>}
+   */
+  async _updateSnapshotFlowToken() {
+    this.log('_updateSnapshotFlowToken()');
 
-	/**
-	 * Create client and bind event listeners.
-	 * @returns {*}
-	 */
-	async createClient() {
+    // First register snapshot if needed
+    if (!this._snapshotImageToken) {
+      return this._registerSnapshotFlowToken({ image: this._snapshotImage });
+    }
 
-		// Create thermostat
-		this.client = Homey.app.nestAccount.createCam(this.getData().id);
+    // Try to set new value
+    try {
+      await this._snapshotImageToken.setValue(this._snapshotImage);
+      this.log('_updateSnapshotFlowToken() -> success');
+    } catch (err) {
+      this.error('_updateSnapshotFlowToken() -> error', err, this._snapshotImage);
+    }
+    return this._snapshotImageToken;
+  }
 
-		// If client construction failed, set device unavailable
-		if (!this.client) return this.setUnavailable(Homey.__('removed_externally'));
+  /**
+   * Method that creates a Homey.Image instance.
+   * @param url
+   * @returns {Promise<T> | *}
+   * @private
+   */
+  _createImage({ url }) {
+    this.log('_createImage() -> url', url);
 
-		this.client
-			.on('is_streaming', isStreaming => {
+    // Register new image
+    const image = new Homey.Image();
+    image.setStream(async (stream) => {
+      this.log('_createImage() -> refresh event');
+      const res = await fetch(url);
+      res.body.pipe(stream);
+    });
 
-				// Detect change
-				if (typeof this.isStreaming !== 'undefined') {
+    // Register image
+    return image
+      .register()
+      .catch(err => this.error('_createImage() -> error registering last event image', err));
+  }
 
-					// Check if started or ended
-					if (this.isStreaming === false && isStreaming === true) {
+  /**
+   * Method that updates the setStream method of a Homey.Image instance.
+   * @param image
+   * @param url
+   * @param title
+   * @returns {Promise<*>}
+   * @private
+   */
+  async _updateImage({ image, url, title }) {
+    this.log('_updateImage()');
+    let _image = image;
+    // Create snapshot image if not done before
+    if (!_image) {
+      _image = await this._createImage({ url });
+    } else {
+      // Image was already created, only update url
+      _image.setStream(async (stream) => {
+        this.log('_updateImage() -> refresh event');
+        const res = await fetch(url);
+        res.body.pipe(stream);
+      });
+      _image.update();
+    }
 
-						// Trigger Flow
-						this.startedStreamingFlowTriggerDevice.trigger(this)
-							.catch(err => {
-								if (err) return this.error('Error triggeringDevice:', err);
-							});
-					} else if (this.isStreaming === true && isStreaming === false) {
+    // Update camera image
+    try {
+      await this.setCameraImage(Homey.util.uuid(), title, _image);
+    } catch (err) {
+      this.error('_updateCameraImage() -> failed', err);
+    }
 
-						// Trigger Flow
-						this.stoppedStreamingFlowTriggerDevice.trigger(this)
-							.catch(err => {
-								if (err) return this.error('Error triggeringDevice:', err);
-							});
-					}
-				}
-				this.isStreaming = isStreaming;
-			})
-			.on('last_event', event => {
-				const startTime = new Date(event.start_time);
-				const endTime = new Date(event.end_time);
-				const hasMotion = event.has_motion;
-				const hasPerson = event.has_person;
-				const hasSound = event.has_sound;
+    return _image;
+  }
 
-				this.lastEventImageUrl = event.image_url;
-				this.lastEventAnimatedImageUrl = event.animated_image_url;
+  /**
+   * Register image flow token, which holds a snapshot image.
+   * @param snapshotImage
+   * @returns {*}
+   */
+  _registerSnapshotFlowToken({ image }) {
+    // Create new flow image token
+    this._snapshotImageToken = new Homey.FlowToken('snapshot_token', {
+      type: 'image',
+      title: Homey.__('cam_snapshot_token_title', { name: this.getName() }),
+    });
 
-				// Event has ended
-				if (endTime > startTime) {
+    // Register flow image token
+    return this._snapshotImageToken
+      .register()
+      .then(() => {
+        this.log('_registerSnapshotFlowToken() -> image token registered');
 
-					this.eventIsHappening = false;
+        // Update image in token
+        this._snapshotImageToken.setValue(image)
+          .catch(err => this.error('_registerSnapshotFlowToken() -> failed to setValue() on image token', err));
+      });
+  }
 
-					// Event has ended, check if it was not triggered already
-					if (this.lastRegisteredStopTime !== endTime && typeof this.lastRegisteredStopTime !== 'undefined') {
-						this.eventStoppedFlowTriggerDevice.trigger(this, {
-							motion: hasMotion,
-							sound: hasSound,
-							person: hasPerson,
-							image: this.lastEventImage,
-							animated_image: this.lastEventAnimatedImage,
-						}).catch(err => {
-							if (err) return this.error('Error triggeringDevice:', err);
-						});
-					}
-				} else {
+  /**
+   * Method that is called when a capability value update is received.
+   * @param capabilityId
+   * @param value
+   */
+  async onCapabilityValue(capabilityId, value) {
+    if (capabilityId === NEST_CAPABILITIES.SNAPSHOT_URL && this.snapshot_url !== value) {
+      this.log('onCapabilityValue() -> new snapshot_url');
+      // Update snapshot image
+      this._snapshotImage = await this._updateImage({ image: this._snapshotImage, url: value, title: 'Snapshot' });
 
-					this.eventIsHappening = true;
+      // Update snapshot flow token
+      await this._updateSnapshotFlowToken();
+    } else if (capabilityId === NEST_CAPABILITIES.IS_STREAMING && this.valueChangedAndNotNew(capabilityId, value)) {
+      this.log('onCapabilityValue() -> new is_streaming', value);
+      // Check if started or ended
+      const driver = this.getDriver();
+      if (value) {
+        driver.triggerStartedStreamingFlow(this);
+      } else {
+        driver.triggerStoppedStreamingFlow(this);
+      }
+    } else if (capabilityId === NEST_CAPABILITIES.LAST_EVENT && value) { // value can be null
+      this.log('onCapabilityValue() -> new last_event');
+      const startTime = new Date(value.start_time);
+      const endTime = new Date(value.end_time);
 
-					// Event has started, check if it was not triggered already
-					if (this.lastRegisteredStartTime !== startTime && typeof this.lastRegisteredStartTime !== 'undefined') {
+      if (typeof value.image_url !== 'string' || typeof value.animated_image_url !== 'string') {
+        this.error('onCapabilityValue() -> new last_event -> missing images, abort');
+        return;
+      }
 
-						// Event has started
-						this.eventStartedFlowTriggerDevice.trigger(this, {
-							motion: hasMotion,
-							sound: hasSound,
-							person: hasPerson,
-							image: this.lastEventImage,
-							animated_image: this.lastEventAnimatedImage,
-						}).catch(err => {
-							if (err) return this.error('Error triggeringDevice:', err);
-						});
-					}
-				}
+      // Update image
+      this._lastEventImage = await this._updateImage({
+        image: this._lastEventImage,
+        url: value.image_url,
+        title: Homey.__('cam_last_event_image_title'),
+      });
 
-				this.lastRegisteredStartTime = startTime;
-				this.lastRegisteredStopTime = endTime;
-			});
+      // Update image
+      this._lastEventAnimatedImage = await this._updateImage({
+        image: this._lastEventAnimatedImage,
+        url: value.animated_image_url,
+        title: Homey.__('cam_last_event_animated_image_title'),
+      });
 
-		// Register snapshot image and snapshot flow token
-		const snapshotImage = await this.registerSnapShotImage();
-		await this.registerSnapshotFlowToken(snapshotImage);
-		await this.registerLastEventImage();
-		await this.registerLastEventAnimatedImage();
-		this.log('registered snapshot image, last event image and last even animated image and flow token');
-	}
+      // Create Flow tokens object
+      const tokens = {
+        motion: value.has_motion,
+        sound: value.has_sound,
+        person: value.has_person,
+        image: this._lastEventImage,
+        animated_image: this._lastEventAnimatedImage,
+      };
 
-	/**
-	 * Register a snapshot image, which will later be fetched from the Nest API.
-	 * @returns {Promise|Error}
-	 */
-	registerSnapShotImage() {
+      // Get driver
+      const driver = this.getDriver();
 
-		// Register new image
-		// TODO check if nest provides jpg images
-		const snapshotImage = new Homey.Image('jpg');
+      // Event has ended
+      if (endTime > startTime) {
+        this.log('onCapabilityValue() -> new last_event -> stopped');
+        // Mark event stopped
+        this.eventIsHappening = false;
 
-		// This method is called when the image has to be read
-		snapshotImage.setBuffer((args, callback) => {
+        // Event has ended, check if it was not triggered already
+        if (typeof this._lastRegisteredStopTime !== 'undefined'
+          && this._lastRegisteredStopTime.getTime() !== endTime.getTime()) {
+          driver.triggerEventStoppedFlow(this, tokens);
+        }
+      } else {
+        this.log('onCapabilityValue() -> new last_event -> started');
+        // Mark event happening
+        this.eventIsHappening = true;
 
-			// Retrieve last snapshot from Nest API
-			this.client.getImageBufferFromSnapshotUrl()
-				.then(buffer => callback(null, buffer))
-				.catch(err => {
-					this.error('Error on getImageBufferFromSnapshotUrl', err);
-					return callback(err);
-				});
-		});
+        // Event has started, check if it was not triggered already
+        if (typeof this._lastRegisteredStartTime !== 'undefined'
+          && this._lastRegisteredStartTime.getTime() !== startTime.getTime()) {
+          driver.triggerEventStartedFlow(this, tokens);
+        }
+      }
 
-		// Register image
-		return snapshotImage
-			.register()
-			.catch(err => this.error('Error registering snapshot image', err));
-
-	}
-
-	/**
-	 * Register a last event image, which will later be fetched from the Nest API.
-	 * @returns {Promise|Error}
-	 */
-	registerLastEventImage() {
-
-		// Register new image
-		// TODO check if nest provides jpg images
-		this.lastEventImage = new Homey.Image('jpg');
-
-		// This method is called when the image has to be read
-		this.lastEventImage.setBuffer((args, callback) => {
-
-			// Retrieve last snapshot from Nest API
-			this.client.getImageBufferFromLastEventUrl(this.lastEventImageUrl)
-				.then(buffer => callback(null, buffer))
-				.catch(err => {
-					this.error('Error on getImageBufferFromLastEventUrl', err);
-					return callback(err);
-				});
-		});
-
-		// Register image
-		return this.lastEventImage
-			.register()
-			.catch(err => this.error('Error registering last event image', err));
-	}
-
-	/**
-	 * Register a last event animated image, which will later be fetched from the Nest API.
-	 * @returns {Promise|Error}
-	 */
-	registerLastEventAnimatedImage() {
-
-		// Register new image
-		// TODO check if nest provides gif images
-		this.lastEventAnimatedImage = new Homey.Image('gif');
-
-		// This method is called when the image has to be read
-		this.lastEventAnimatedImage.setBuffer((args, callback) => {
-
-			// Retrieve last snapshot from Nest API
-			this.client.getImageBufferFromLastEventUrl(this.lastEventAnimatedImageUrl)
-				.then(buffer => callback(null, buffer))
-				.catch(err => {
-					this.error('Error on getImageBufferFromLastEventUrl', err);
-					return callback(err);
-				});
-		});
-
-		// Register image
-		return this.lastEventAnimatedImage
-			.register()
-			.catch(err => this.error('Error registering last event animated image', err));
-	}
-
-	/**
-	 * Register image flow token, which holds a snapshot image.
-	 * @param snapshotImage
-	 * @returns {*}
-	 */
-	registerSnapshotFlowToken(snapshotImage) {
-
-		// Create new flow image token
-		const myImageToken = new Homey.FlowToken('snapshot_token', {
-			type: 'image',
-			title: {
-				en: 'Snapshot',
-			},
-		});
-
-		// Register flow image token
-		return myImageToken
-			.register()
-			.then(() => {
-				this.log('image token registered');
-
-				// Update image in token
-				myImageToken.setValue(snapshotImage)
-					.catch(err => this.error('failed to setValue() on image token', err));
-			});
-	}
+      // Safe start and stop times
+      this._lastRegisteredStartTime = startTime;
+      this._lastRegisteredStopTime = endTime;
+    }
+  }
 }
 
 module.exports = NestCam;

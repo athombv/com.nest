@@ -1,119 +1,227 @@
 'use strict';
 
 const Homey = require('homey');
-const NestDevice = require('./../nestDevice');
+
+const NestDevice = require('../../lib/NestDevice');
+const {
+  SETTINGS, CAPABILITIES, NEST_CAPABILITIES, HVAC_MODE,
+} = require('../../constants');
 
 class NestThermostat extends NestDevice {
+  async onInit() {
+    await super.onInit();
 
-	onInit() {
-		super.onInit();
+    // Set default settings
+    if (this.getSetting(SETTINGS.ECO_OVERRIDE_BY)) this.setSettings({ [SETTINGS.ECO_OVERRIDE_BY]: HVAC_MODE.HEAT });
+    if (this.getSetting(SETTINGS.ECO_OVERRIDE_ALLOW) === null) this.setSettings({ [SETTINGS.ECO_OVERRIDE_ALLOW]: false });
 
-		// Set default settings
-		if (this.getSetting('eco_override_allow') === null) this.setSettings({ eco_override_allow: false });
-		if (this.getSetting('eco_override_by')) this.setSettings({ eco_override_by: 'heat' });
+    // Register capability
+    this.registerCapabilityListener(CAPABILITIES.TARGET_TEMPERATURE, this.onCapabilityTargetTemperature.bind(this));
+  }
 
-		this.hvacStatusChangedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('hvac_status_changed')
-			.register()
-			.registerRunListener(args => {
-				if (args && args.hasOwnProperty('status')) return Promise.resolve(this.client.hvac_state === args.status);
-				return Promise.reject(new Error('invalid arguments and or state provided'));
-			});
+  /**
+   * Getter for device specific capabilities
+   * @returns {*[]}
+   */
+  get capabilities() {
+    return [
+      NEST_CAPABILITIES.HUMIDITY,
+      NEST_CAPABILITIES.HVAC_MODE,
+      NEST_CAPABILITIES.HVAC_STATE,
+      NEST_CAPABILITIES.TARGET_TEMPERATURE_C,
+      NEST_CAPABILITIES.AMBIENT_TEMPERATURE_C,
+    ];
+  }
 
-		this.hvacModeChangedFlowTriggerDevice = new Homey.FlowCardTriggerDevice('hvac_mode_changed')
-			.register()
-			.registerRunListener(args => {
-				if (args && args.hasOwnProperty('mode')) return Promise.resolve(this.client.hvac_mode === args.mode);
-				return Promise.reject(new Error('invalid arguments and or state provided'));
-			});
-	}
+  /**
+   * Method that is called when a capability value update is received.
+   * @param capabilityId
+   * @param value
+   */
+  onCapabilityValue(capabilityId, value) {
+    if (capabilityId === NEST_CAPABILITIES.AMBIENT_TEMPERATURE_C) {
+      this.setCapabilityValue(CAPABILITIES.MEASURE_TEMPERATURE, value).catch(this.error);
+    } else if (capabilityId === NEST_CAPABILITIES.TARGET_TEMPERATURE_C) {
+      this.setCapabilityValue(CAPABILITIES.TARGET_TEMPERATURE, value).catch(this.error);
+    } else if (capabilityId === NEST_CAPABILITIES.HUMIDITY) {
+      this.setCapabilityValue(CAPABILITIES.MEASURE_HUMIDITY, value).catch(this.error);
+    } else if (capabilityId === NEST_CAPABILITIES.HVAC_STATE && this.valueChangedAndNotNew(capabilityId, value)) {
+      const driver = this.getDriver();
+      driver.triggerHVACStatusChangedFlow(this);
+    } else if (capabilityId === NEST_CAPABILITIES.HVAC_MODE && this.valueChangedAndNotNew(capabilityId, value)) {
+      const driver = this.getDriver();
+      driver.triggerHVACModeChangedFlow(this);
+    }
+  }
 
-	/**
-	 * Create client and bind event listeners.
-	 * @returns {*}
-	 */
-	createClient() {
+  /**
+   * This method will be called when the target temperature needs to be changed.
+   * @param temperature
+   * @param options
+   * @returns {Promise}
+   */
+  async onCapabilityTargetTemperature(temperature, options) {
+    this.log('onCapabilityTargetTemperature()', 'temperature:', temperature, 'options:', options);
 
-		// Create thermostat
-		this.client = Homey.app.nestAccount.createThermostat(this.getData().id);
+    // Determine if mode is Eco and if it may be overridden
+    if (Object.prototype.hasOwnProperty.call(this, NEST_CAPABILITIES.HVAC_MODE)
+      && this.hvac_mode === HVAC_MODE.ECO
+      && this.getSetting(SETTINGS.ECO_OVERRIDE_ALLOW) === true
+      && [HVAC_MODE.HEAT, HVAC_MODE.COOL, HVAC_MODE.HEAT_COOL].indexOf(this.getSetting(SETTINGS.ECO_OVERRIDE_BY)) >= 0) {
+      try {
+        await this.setHvacMode(this.getSetting(SETTINGS.ECO_OVERRIDE_BY));
+      } catch (err) {
+        // Override failed
+        const errOverride = Homey.__('error.hvac_mode_eco_override_failed', { name: this.getName() }) + err;
+        Homey.app.registerLogItem({ msg: errOverride, timestamp: new Date() });
+        // Abort
+        return;
+      }
+      // Override succeeded: re-attempt to set target temperature
+      await this.onCapabilityTargetTemperature(temperature);
+    }
 
-		// If client construction failed, set device unavailable
-		if (!this.client) return this.setUnavailable(Homey.__('removed_externally'));
+    // Fix temperature range
+    temperature = Math.round(temperature * 2) / 2;
 
-		// Subscribe to events on data change
-		this.client
-			.on('target_temperature_c', targetTemperatureC => {
-				this.setCapabilityValue('target_temperature', targetTemperatureC);
-			})
-			.on('ambient_temperature_c', ambientTemperatureC => {
-				this.setCapabilityValue('measure_temperature', ambientTemperatureC);
-			})
-			.on('humidity', humidity => {
-				this.setCapabilityValue('measure_humidity', humidity);
-			})
-			.on('hvac_state', hvacState => {
+    try {
+      await this.setTargetTemperature(temperature);
+    } catch (err) {
+      this.error('Error setting target temperature', err);
+      Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
+      throw new Error(err);
+    }
+  }
 
-				// Trigger the hvac_status_changed flow
-				this.hvacStatusChangedFlowTriggerDevice.trigger(this)
-					.catch(err => {
-						if (err) return this.error('Error triggeringDevice:', err);
-					});
-			})
-			.on('hvac_mode', hvacMode => {
+  /**
+   * Set the target temperature of this Nest Thermostat.
+   * @param temperature in Celsius
+   */
+  async setTargetTemperature(temperature) {
+    // Handle cases where temperature could not be set
+    if (this.is_using_emergency_heat) {
+      // Register error in log
+      const errorMessage = Homey.__('error.emergency_heat', {
+        temp: temperature,
+        name: this.getName(),
+      });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+    if (this.hvac_mode === HVAC_MODE.HEAT_COOL) {
+      // Register error in log
+      const errorMessage = Homey.__('error.hvac_mode_is_heat_cool', {
+        temp: temperature,
+        name: this.getName(),
+      });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+    if (this.hvac_mode === HVAC_MODE.ECO) {
+      // Register error in log
+      const errorMessage = Homey.__('error.hvac_mode_is_eco', {
+        temp: temperature,
+        name: this.getName(),
+      });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+    if (this.is_locked && (temperature < this.locked_temp_min_c || temperature > this.locked_temp_max_c)) {
+      // Register error in log
+      const errorMessage = Homey.__('error.temp_lock', {
+        temp: temperature,
+        min: this.locked_temp_min_c,
+        max: this.locked_temp_max_c,
+        name: this.getName(),
+      });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
 
-				// Trigger the hvac_mode_changed flow
-				this.hvacModeChangedFlowTriggerDevice.trigger(this)
-					.catch(err => {
-						if (err) return this.error('Error triggeringDevice:', err);
-					});
-			})
-			.on('removed', () => {
-				this.setUnavailable(Homey.__('removed_externally'));
-			});
+    // All clear to change the target temperature
+    try {
+      await Homey.app.executePutRequest(`devices/${this.driverType}/${this.getData().id}`, NEST_CAPABILITIES.TARGET_TEMPERATURE_C, temperature);
+    } catch (err) {
+      this.error(`setTargetTemperature(${temperature}) -> failed, reason: ${err}`);
 
-		// Register capability
-		this.registerCapabilityListener('target_temperature', this.onCapabilityTargetTemperature.bind(this));
-	}
+      // Register error in log
+      const errorMessage = Homey.__('error.unknown', {
+        temp: temperature,
+        name: this.getName(),
+        error: err,
+      });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+  }
 
-	/**
-	 * This method will be called when the target temperature needs to be changed.
-	 * @param temperature
-	 * @param options
-	 * @returns {Promise}
-	 */
-	onCapabilityTargetTemperature(temperature, options) {
-		this.log('onCapabilityTargetTemperature()', 'temperature:', temperature, 'options:', options);
+  /**
+   * Set the target HVAC mode of this Nest Thermostat.
+   * @param mode
+   */
+  async setHvacMode(mode) {
+    // Handle cases where mode is unsupported
+    if (this.is_using_emergency_heat) {
+      // Register error in log
+      const errorMessage = Homey.__('error.hvac_emergency_heat', { name: this.getName() });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+    if (mode === HVAC_MODE.HEAT_COOL && !(this.can_cool && this.can_heat)) {
+      // Register error in log
+      const errorMessage = Homey.__('error.hvac_mode_heat-cool_unsupported', { name: this.getName() });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+    if (mode === HVAC_MODE.COOL && !this.can_cool) {
+      // Register error in log
+      const errorMessage = Homey.__('error.hvac_mode_cool_unsupported', { name: this.getName() });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+    if (mode === HVAC_MODE.HEAT && !this.can_heat) {
+      // Register error in log
+      const errorMessage = Homey.__('error.hvac_mode_heat_unsupported', { name: this.getName() });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
+    if (mode === HVAC_MODE.ECO && (!NestThermostat.checkSoftwareVersionGTE(this.software_version, '5.6.0') || !(this.can_cool || this.can_heat))) {
+      // Register error in log
+      const errorMessage = Homey.__('error.hvac_mode_eco_unsupported', { name: this.getName() });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
+      throw new Error(errorMessage);
+    }
 
-		// Determine if mode is Eco and if it may be overridden
-		if (this.client.hasOwnProperty('hvac_mode') &&
-			this.client.hvac_mode === 'eco' &&
-			this.getSetting('eco_override_allow') === true &&
-			['heat', 'cool', 'heat-cool'].indexOf(this.getSetting('eco_override_by')) >= 0) {
+    // Good to go, execute command
+    try {
+      await Homey.app.executePutRequest(`devices/${this.driverType}/${this.getData().id}`, NEST_CAPABILITIES.HVAC_MODE, mode);
+    } catch (err) {
+      this.error(`setHvacMode(${mode}) -> failed, reason: ${err}`);
 
-			return new Promise((resolve, reject) => {
-				this.client.setHvacMode(this.getSetting('eco_override_by'))
-					.then(() =>
-						// Override succeeded: re-attempt to set target temperature
-						resolve(this.onCapabilityTargetTemperature(temperature))
-					)
-					.catch(err => {
-						// Override failed
-						const errOverride = Homey.__('error.hvac_mode_eco_override_failed', { name: this.client.name_long || '' }) + err;
-						Homey.app.registerLogItem({ msg: errOverride, timestamp: new Date() });
-						return reject(errOverride);
-					});
-			});
-		}
-		// Fix temperature range
-		temperature = Math.round(temperature * 2) / 2;
+      // Register error in log
+      const errorMessage = Homey.__('error.unknown', {
+        hvac_mode: mode,
+        name: this.getName(),
+        error: err,
+      });
+      Homey.app.registerLogItem({ msg: errorMessage, timestamp: new Date() });
 
-		return this.client.setTargetTemperature(temperature)
-			.catch(err => {
-				this.error('Error setting target temperature', err);
-				Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
-				throw new Error(err);
-			});
+      throw new Error(errorMessage);
+    }
+  }
 
-	}
+  /**
+   * Check if device software version is greater than or
+   * equal to the provided version parameter.
+   * @param currentVersion
+   * @param newVersion
+   * @returns {boolean}
+   */
+  static checkSoftwareVersionGTE(currentVersion, newVersion) {
+    const major = currentVersion.split('.')[0];
+    const minor = currentVersion.split('.')[1];
+    return (major >= newVersion.split('.')[0] && minor >= newVersion.split('.')[1]);
+  }
 }
 
 module.exports = NestThermostat;

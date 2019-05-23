@@ -1,168 +1,86 @@
 <!doctype html>
 <html>
 <head>
-	<script type="text/javascript" src="/homey.js" data-origin="settings"></script>
-	<link rel="stylesheet" href="/manager/webserver/assets/css/font.awesome.css">
-	<script type="application/javascript">var authURL;</script>
-	<script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
 </head>
 <body>
 <h1 data-i18n="settings.title"></h1>
 
 <div id="content">
-	<p data-i18n="settings.deauthorize_intro"></p>
-
-	<fieldset>
-		<legend data-i18n="settings.deauth_title"></legend>
-		<button id="deauthorize" data-i18n="settings.deauthorize"></button>
-	</fieldset>
-
-	<p data-i18n="settings.authorize_intro"></p>
-
-	<fieldset>
-		<legend data-i18n="settings.auth_title"></legend>
-		<button id="authorize" data-i18n="settings.authorize"></button>
-	</fieldset>
-
-	<p data-i18n="settings.warning" id="warning" style="display:none;"></p>
-
-	<div id="log_wrapper">
-		<h1>Log</h1>
-		<table id="log" style="border-spacing: 20px;">
-
-			<!-- Table header -->
-
-			<thead>
-			<tr>
-				<th scope="col" id="htimestamp" data-i18n="settings.time"></th>
-				<th scope="col" id="hmsg" data-i18n="settings.msg"></th>
-			</tr>
-			</thead>
-
-			<!-- Table footer -->
-
-			<tfoot>
-			<tr>
-				<td></td>
-			</tr>
-			</tfoot>
-
-			<!-- Table body -->
-
-			<tbody>
-
-			</tbody>
-
-		</table>
-	</div>
+    <div id="login" style="display:none;padding-bottom:20px;">
+        <p data-i18n="settings.login_intro"></p>
+        <button id="login_btn" data-i18n="settings.login_button" onclick="login()"></button>
+    </div>
+    <div id="logout" style="display:none;padding-bottom:20px;">
+        <p data-i18n="settings.logged_in"></p>
+        <p data-i18n="settings.logout_intro"></p>
+        <button id="logout_btn" data-i18n="settings.logout_button" onclick="logout()"></button>
+    </div>
+    <div id="log_wrapper">
+        <h1>Log</h1>
+        <table id="log" style="border-spacing: 20px;">
+            <thead>
+                <tr>
+                    <th scope="col" id="htimestamp" data-i18n="settings.time"></th>
+                    <th scope="col" id="hmsg" data-i18n="settings.msg"></th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <td></td>
+                </tr>
+            </tfoot>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>
 
 <script type="text/javascript">
+	function showLogin() {
+		document.getElementById('logout').style.display = 'none';
+		document.getElementById('login').style.display = 'block';
+	}
 
-	// Wait for Homey to be available
+	function showLogout() {
+		document.getElementById('login').style.display = 'none';
+		document.getElementById('logout').style.display = 'block';
+	}
+
+	function login() {
+		Homey.api('POST', '/login/', { state: true }, function (err, success) {
+			if (!err && success) showLogout()
+		});
+	}
+
+	function logout() {
+		Homey.api('POST', '/login/', { state: false }, function (err, success) {
+			if (!err && success) showLogin();
+		});
+	}
+
 	function onHomeyReady(Homey) {
+		Homey.on('url', url => Homey.openURL(url));
+		Homey.on('authorized', () => showLogout());
+		Homey.on('error', err => {
+			if (err) return Homey.alert(err.message || err);
+		});
+		Homey.api('GET', '/login/', {}, function (err, loggedIn) {
+			if (loggedIn) {
+				showLogout()
+			} else {
+				showLogin()
+			}
+		});
+
 		var monthNames = [Homey.__("settings.january"), Homey.__("settings.february"), Homey.__("settings.march"), Homey.__("settings.april"), Homey.__("settings.may"), Homey.__("settings.june"),
 			Homey.__("settings.july"), Homey.__("settings.august"), Homey.__("settings.september"), Homey.__("settings.october"), Homey.__("settings.november"), Homey.__("settings.december")
 		];
 
-		var deauthorizeButton = document.getElementById('deauthorize');
-		deauthorizeButton.addEventListener('click', function() {
-			Homey.api('POST', '/revokeAuthentication/');
-		});
-
-		var authorizeButton = document.getElementById('authorize');
-		authorizeButton.addEventListener('click', function() {
-			Homey.popup(authURL);
-		});
-
 		// Hide log initially
 		$('#log_wrapper').hide();
-
-		// Disable all buttons initially
-		$('#authorize').prop('disabled', true);
-		$('#deauthorize').prop('disabled', true);
-
-		// Make API call to trigger fetchAuthorizationURL in Nest driver to fetch the url
-		Homey.api('POST', '/authenticate/', {}, function (err, url) {
-			if (!err && url) {
-				authURL = url;
-			}
-		});
-
-		// Append icons after translations are added by data-i18n to avoid overwrite
-		$('#deauthorize').append('<span id="deauth_icon" class="fa fa-cog fa-spin" style="display:none; margin-left:5px"></span>');
-		$('#authorize').append('<span id="auth_icon" class="fa fa-cog fa-spin" style="display:none; margin-left:5px"></span>');
-
-		// Catch deauthorize click
-		$('#deauthorize').on('click', function () {
-
-			// Show loading icon, hide auth button
-			$('#deauth_icon').show();
-			$('#auth_icon').hide();
-			$('#deauth_icon').attr('class', "fa fa-cog fa-spin");
-
-			// Make API call to trigger fetchAuthorizationURL in Nest driver to update the url
-			Homey.api('POST', '/authenticate/', {}, function (err, url) {
-				if (!err && url) {
-					authURL = url;
-				}
-			});
-		});
-
-		// Catch authorization click
-		$('#authorize').on('click', function () {
-
-			// Show loading icon
-			$('#auth_icon').show();
-			$('#auth_icon').attr('class', "fa fa-cog fa-spin");
-
-			// Hide deauth icon
-			$('#deauth_icon').hide();
-		});
-
-		// Listen for incoming changes concerning the authentication state from the app
-		Homey.on('authenticated', function (authenticated) {
-			if (authenticated) {
-
-				// Mark buttons as authenticated
-				$('#deauth_icon').attr('class', "");
-				$('#auth_icon').attr('class', "fa fa-check");
-				$('#auth_icon').show();
-				$('#authorize').prop('disabled', true);
-				$('#deauthorize').prop('disabled', false);
-			}
-			else {
-
-				// Mark buttons as unauthenticated
-				$('#deauth_icon').attr('class', "fa fa-check");
-				$('#auth_icon').attr('class', "");
-				$('#deauthorize').prop('disabled', true);
-				$('#authorize').prop('disabled', false);
-			}
-		});
-
-		// Fetch current authorization state from the app
-		Homey.api('GET', '/authenticated/', {}, function (err, authenticated) {
-			if (authenticated) {
-
-				// Mark buttons as authenticated
-				$('#deauth_icon').attr('class', "");
-				$('#auth_icon').attr('class', "fa fa-check");
-				$('#auth_icon').show();
-				$('#authorize').prop('disabled', true);
-				$('#deauthorize').prop('disabled', false);
-			}
-			else {
-
-				// Mark buttons as unauthenticated
-				$('#deauth_icon').attr('class', "fa fa-check");
-				$('#auth_icon').attr('class', "");
-				$('#deauthorize').prop('disabled', true);
-				$('#authorize').prop('disabled', false);
-			}
-		});
 
 		Homey.get('logItems', function (err, items) {
 			if (items) {
@@ -177,7 +95,7 @@
 				});
 				if (items.length === 0) $('#log_wrapper').hide();
 				else $('#log_wrapper').show();
-			} else  $('#log_wrapper').hide();
+			} else $('#log_wrapper').hide();
 		});
 
 		// We are ready
