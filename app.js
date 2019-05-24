@@ -590,6 +590,10 @@ class NestApp extends Homey.App {
     if (accessToken) {
       this.log('_migrateTokens() -> success');
       this.accessToken = accessToken;
+
+      // Remove old tokens so that migration does not occur again with expired tokens
+      Homey.ManagerSettings.unset(NEST_ACCESS_TOKEN_SETTING_KEY);
+      Homey.ManagerSettings.unset(OAUTH2_ACCOUNT_SETTING_KEY);
     }
   }
 }
