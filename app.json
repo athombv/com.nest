@@ -339,14 +339,6 @@
               "en": "Snapshot",
               "nl": "Snapshot"
             }
-          },
-          {
-            "name": "animated_image",
-            "type": "image",
-            "title": {
-              "en": "Animated snapshot",
-              "nl": "Geanimeerde snapshot"
-            }
           }
         ],
         "args": [
@@ -401,14 +393,6 @@
             "title": {
               "en": "Snapshot",
               "nl": "Snapshot"
-            }
-          },
-          {
-            "name": "animated_image",
-            "type": "image",
-            "title": {
-              "en": "Animated snapshot",
-              "nl": "Geanimeerde snapshot"
             }
           }
         ],

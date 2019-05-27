@@ -4,7 +4,6 @@
   "reconnecting": "Verbinden...",
   "version_repair": "Vanwege een update moet dit apparaat opnieuw worden toegevoegd",
   "cam_last_event_image_title": "Gebeurtenis snapshot",
-  "cam_last_event_animated_image_title": "Bewegende gebeurtenis snapshot",
   "settings": {
     "title": "Nest Instellingen",
     "login_intro": "Klik hier om in te loggen met je Nest account.",
