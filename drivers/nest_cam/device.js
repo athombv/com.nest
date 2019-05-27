@@ -123,7 +123,7 @@ class NestCam extends NestDevice {
    * @param value
    */
   async onCapabilityValue(capabilityId, value) {
-    if (capabilityId === NEST_CAPABILITIES.SNAPSHOT_URL && this.snapshot_url !== value) {
+    if (capabilityId === NEST_CAPABILITIES.SNAPSHOT_URL && this.valueChangedAndNotNew(capabilityId, value)) {
       this.log('onCapabilityValue() -> new snapshot_url');
 
       // Update url and then update Image instance
