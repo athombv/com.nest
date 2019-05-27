@@ -1,16 +1,13 @@
 {
   "name": "com.nest",
   "version": "1.0.0",
-  "description": "This app provides support for the following devices:",
+  "description": "This app provides support for Nest devices.",
   "main": "app.js",
   "dependencies": {
-    "firebase": "^2.4.2",
+    "eventsource": "^1.0.7",
     "homey-log": "git+https://github.com/athombv/node-homey-log.git",
-    "homey-wifidriver": "git+https://github.com/athombv/node-homey-wifidriver.git",
-    "mime-types": "^2.1.15",
-    "request": "^2.69.0",
-    "semver": "^5.3.0",
-    "underscore": "^1.8.3"
+    "node-fetch": "^2.6.0",
+    "semver": "^5.3.0"
   },
   "devDependencies": {},
   "scripts": {
@@ -20,6 +17,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/athombv/com.nest.git"
+  },
+  "engines": {
+    "node": "8"
   },
   "author": "",
   "license": "ISC",

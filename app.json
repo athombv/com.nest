@@ -1,17 +1,17 @@
 {
   "id": "com.nest",
-  "version": "2.5.9",
-  "compatibility": ">=1.5.0",
+  "version": "2.6.0",
+  "compatibility": ">=2.2.0",
   "sdk": 2,
   "name": {
     "en": "Nest",
     "nl": "Nest",
-	"de": "Nest"
+    "de": "Nest"
   },
   "description": {
-    "en": "This app lets you control your Nest Thermostat and Nest Protect",
-    "nl": "Deze app laat jou je Nest Thermostat en Nest Protect bedienen",
-	"de": "Diese App lässt dich deinen Nest Thermostat und Nest Protect steuern"
+    "en": "This app lets you control your Nest Thermostat, Nest Protect and Nest Cameras",
+    "nl": "Deze app laat jou je Nest Thermostat, Nest Protect en Nest Cameras bedienen",
+    "de": "Diese App lässt dich deinen Nest Thermostat, Nest Protect und Nest Cameras steuern"
   },
   "category": "climate",
   "author": {
@@ -36,7 +36,7 @@
       "name": {
         "en": "Nest Thermostat",
         "nl": "Nest Thermostaat",
-		"de": "Nest Thermostat"
+        "de": "Nest Thermostat"
       },
       "images": {
         "large": "drivers/nest_thermostat/assets/images/large.jpg",
@@ -64,40 +64,20 @@
           "preventInsights": true
         }
       },
-      "mobile": {
-        "components": [
-          {
-            "capabilities": [],
-            "id": "icon"
-          },
-          {
-            "capabilities": [
-              "measure_humidity",
-              "measure_temperature"
-            ],
-            "id": "sensor"
-          },
-          {
-            "capabilities": [
-              "target_temperature"
-            ],
-            "id": "thermostat"
-          }
-        ]
-      },
       "pair": [
         {
-          "id": "authorization",
+          "id": "login_oauth2",
           "template": "login_oauth2",
           "options": {
             "hint": {
               "en": "Give Homey access to your Nest devices!",
               "nl": "Geef Homey toegang tot je Nest devices!",
-			  "de": "Gewähre Homey Zugriff auf deine Nest-Geräte!"
+              "de": "Gewähre Homey Zugriff auf deine Nest-Geräte!"
             },
             "button": {
               "en": "Login",
-			  "de": "Login"
+              "nl": "Login",
+              "de": "Login"
             }
           }
         },
@@ -119,7 +99,7 @@
           "label": {
             "en": "HVAC Eco mode override",
             "nl": "HVAC Eco modus overschrijven",
-			"de": "HVAC-Eco-Modus überschreiben"
+            "de": "HVAC-Eco-Modus überschreiben"
           },
           "children": [
             {
@@ -129,12 +109,12 @@
               "label": {
                 "en": "Allow HVAC Eco mode override",
                 "nl": "HVAC Eco modus overschrijven toestaan",
-				"de": "Überschreiben des HVAC-Eco-Modus erlauben"
+                "de": "Überschreiben des HVAC-Eco-Modus erlauben"
               },
               "hint": {
                 "en": "If HVAC Eco Mode is active, setting a target temperature is not allowed.\n\nThis setting allows Homey to override the Eco mode when adjusting the target temperature when in Eco mode.",
                 "nl": "Indien HVAC Eco modus actief is, is het instellen van een doel temperatuur niet toegestaan.\n\nDeze instelling laat Homey, indien HVAC Eco modus actief is deze overschrijven zodat de temperatuur toch kan worden ingesteld.",
-				"de": "Wenn der HVAC-Eco-Modus aktiv ist, kann keine Zieltemperatur gesetzt werden.\n\nDiese Einstellung erlaubt Homey, den Eco-Modus, wenn aktiv, beim Anpassen der Zieltemperatur zu überschreiben."
+                "de": "Wenn der HVAC-Eco-Modus aktiv ist, kann keine Zieltemperatur gesetzt werden.\n\nDiese Einstellung erlaubt Homey, den Eco-Modus, wenn aktiv, beim Anpassen der Zieltemperatur zu überschreiben."
               }
             },
             {
@@ -144,12 +124,12 @@
               "label": {
                 "en": "Always override with mode",
                 "nl": "Altijd overschrijven met modus",
-				"de": "Im Modus immer überschreiben"
+                "de": "Im Modus immer überschreiben"
               },
               "hint": {
                 "en": "Caution: All HVAC modes are displayed, even though your thermostat may not support some modes.",
                 "nl": "Let op: alle HVAC modi worden weergegeven, maar het kan zijn dat je thermostaat bepaalde modi niet ondersteund.",
-				"de": "Vorsicht: Es werden alle HVAC-Modi angezeigt, auch wenn dein Thermostat möglicherweise nicht alle unterstützt."
+                "de": "Vorsicht: Es werden alle HVAC-Modi angezeigt, auch wenn dein Thermostat möglicherweise nicht alle unterstützt."
               },
               "values": [
                 {
@@ -157,7 +137,7 @@
                   "label": {
                     "en": "Heat",
                     "nl": "Verwarm",
-					"de": "Heizen"
+                    "de": "Heizen"
                   }
                 },
                 {
@@ -165,7 +145,7 @@
                   "label": {
                     "en": "Cool",
                     "nl": "Koel",
-					"de": "Kühlen"
+                    "de": "Kühlen"
                   }
                 },
                 {
@@ -173,7 +153,7 @@
                   "label": {
                     "en": "Heating and cooling",
                     "nl": "Verwarm en koel",
-					"de": "Heizen und Kühlen"
+                    "de": "Heizen und Kühlen"
                   }
                 }
               ]
@@ -187,7 +167,7 @@
       "name": {
         "en": "Nest Protect",
         "nl": "Nest Protect",
-		"de": "Nest Protect"
+        "de": "Nest Protect"
       },
       "images": {
         "large": "drivers/nest_protect/assets/images/large.jpg",
@@ -212,22 +192,23 @@
       },
       "pair": [
         {
-          "id": "authorization",
+          "id": "login_oauth2",
           "template": "login_oauth2",
           "options": {
             "hint": {
               "en": "Give Homey access to your Nest devices!",
               "nl": "Geef Homey toegang tot je Nest devices!",
-			  "de": "Gewähre Homey Zugriff auf deine Nest-Geräte!"
+              "de": "Gewähre Homey Zugriff auf deine Nest-Geräte!"
             },
             "button": {
               "en": "Login",
-			  "de": "Login"
+              "nl": "Login",
+              "de": "Login"
             }
           }
         },
         {
-          "id": "list_nest_protects",
+          "id": "list_nests_protects",
           "template": "list_devices",
           "navigation": {
             "next": "add_nest_protects"
@@ -238,16 +219,197 @@
           "template": "add_devices"
         }
       ]
+    },
+    {
+      "id": "nest_cam",
+      "name": {
+        "en": "Nest Cam",
+        "nl": "Nest Cam",
+        "de": "Nest Cam"
+      },
+      "images": {
+        "large": "drivers/nest_cam/assets/images/large.png",
+        "small": "drivers/nest_cam/assets/images/small.png"
+      },
+      "class": "camera",
+      "capabilities": [],
+      "pair": [
+        {
+          "id": "login_oauth2",
+          "template": "login_oauth2",
+          "options": {
+            "hint": {
+              "en": "Give Homey access to your Nest devices!",
+              "nl": "Geef Homey toegang tot je Nest devices!",
+              "de": "Gewähre Homey Zugriff auf deine Nest-Geräte!"
+            },
+            "button": {
+              "en": "Login",
+              "nl": "Login",
+              "de": "Login"
+            }
+          }
+        },
+        {
+          "id": "list_nests_cams",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_nest_cams"
+          }
+        },
+        {
+          "id": "add_nest_cams",
+          "template": "add_devices"
+        }
+      ]
     }
   ],
   "flow": {
     "triggers": [
       {
+        "id": "started_streaming",
+        "title": {
+          "en": "Started streaming",
+          "nl": "Begonnen met streamen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
+          }
+        ]
+      },
+      {
+        "id": "stopped_streaming",
+        "title": {
+          "en": "Stopped streaming",
+          "nl": "Gestopt met streamen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
+          }
+        ]
+      },
+      {
+        "id": "event_started",
+        "title": {
+          "en": "Event started",
+          "nl": "Begonnen iets te detecteren"
+        },
+        "hint": {
+          "en": "This Flow card only functions with a Nest Aware subscription",
+          "nl": "Dit Flow kaartje werkt alleen in combinatie met een Nest Aware abonnement"
+        },
+        "tokens": [
+          {
+            "name": "motion",
+            "type": "boolean",
+            "title": {
+              "en": "Motion",
+              "nl": "Beweging"
+            },
+            "example": false
+          },
+          {
+            "name": "sound",
+            "type": "boolean",
+            "title": {
+              "en": "Sound",
+              "nl": "Geluid"
+            },
+            "example": true
+          },
+          {
+            "name": "person",
+            "type": "boolean",
+            "title": {
+              "en": "Person",
+              "nl": "Persoon"
+            },
+            "example": true
+          },
+          {
+            "name": "image",
+            "type": "image",
+            "title": {
+              "en": "Snapshot",
+              "nl": "Snapshot"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
+          }
+        ]
+      },
+      {
+        "id": "event_stopped",
+        "title": {
+          "en": "Event stopped",
+          "nl": "Gestopt iets te detecteren"
+        },
+        "hint": {
+          "en": "This Flow card only functions with a Nest Aware subscription",
+          "nl": "Dit Flow kaartje werkt alleen in combinatie met een Nest Aware abonnement"
+        },
+        "tokens": [
+          {
+            "name": "motion",
+            "type": "boolean",
+            "title": {
+              "en": "Motion",
+              "nl": "Beweging"
+            },
+            "example": false
+          },
+          {
+            "name": "sound",
+            "type": "boolean",
+            "title": {
+              "en": "Sound",
+              "nl": "Geluid"
+            },
+            "example": true
+          },
+          {
+            "name": "person",
+            "type": "boolean",
+            "title": {
+              "en": "Person",
+              "nl": "Persoon"
+            },
+            "example": true
+          },
+          {
+            "name": "image",
+            "type": "image",
+            "title": {
+              "en": "Snapshot",
+              "nl": "Snapshot"
+            }
+          }
+        ],
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
+          }
+        ]
+      },
+      {
         "id": "away_status_changed",
         "title": {
           "en": "Away status changed to",
           "nl": "Away status gewijzigd naar",
-		  "de": "Weg-Status hat sich geändert zu"
+          "de": "Weg-Status hat sich geändert zu"
         },
         "args": [
           {
@@ -256,7 +418,7 @@
             "placeholder": {
               "en": "Which home",
               "nl": "Welk huis",
-			  "de": "Welches Heim"
+              "de": "Welches Heim"
             }
           },
           {
@@ -268,7 +430,7 @@
                 "label": {
                   "en": "Home",
                   "nl": "Home",
-				  "de": "Zuhause"
+                  "de": "Zuhause"
                 }
               },
               {
@@ -276,7 +438,7 @@
                 "label": {
                   "en": "Away",
                   "nl": "Away",
-				  "de": "Weg"
+                  "de": "Weg"
                 }
               }
             ]
@@ -288,12 +450,12 @@
         "title": {
           "en": "HVAC status changed to",
           "nl": "HVAC status gewijzigd naar",
-		  "de": "HVAC-Status hat sich geändert zu"
+          "de": "HVAC-Status hat sich geändert zu"
         },
         "hint": {
           "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
           "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat.",
-		  "de": "HVAC-Status zeigt an, ob das System aktiv heizt, kühlt oder aus ist."
+          "de": "HVAC-Status zeigt an, ob das System aktiv heizt, kühlt oder aus ist."
         },
         "args": [
           {
@@ -305,7 +467,7 @@
                 "label": {
                   "en": "Heating",
                   "nl": "Verwarmen",
-				  "de": "Heizen"
+                  "de": "Heizen"
                 }
               },
               {
@@ -313,7 +475,7 @@
                 "label": {
                   "en": "Cooling",
                   "nl": "Koelen",
-				  "de": "Kühlen"
+                  "de": "Kühlen"
                 }
               },
               {
@@ -321,7 +483,7 @@
                 "label": {
                   "en": "Off",
                   "nl": "Uit",
-				  "de": "Aus"
+                  "de": "Aus"
                 }
               }
             ]
@@ -338,12 +500,12 @@
         "title": {
           "en": "HVAC mode changed to",
           "nl": "HVAC modus gewijzigd naar",
-		  "de": "HVAC-Modus hat sich geändert zu"
+          "de": "HVAC-Modus hat sich geändert zu"
         },
         "hint": {
           "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
           "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status.",
-		  "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen. Für die momentane HVAC-Aktivität siehe HVAC-Status."
+          "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen. Für die momentane HVAC-Aktivität siehe HVAC-Status."
         },
         "args": [
           {
@@ -355,7 +517,7 @@
                 "label": {
                   "en": "Heating",
                   "nl": "Verwarm",
-				  "de": "Heizen"
+                  "de": "Heizen"
                 }
               },
               {
@@ -363,7 +525,7 @@
                 "label": {
                   "en": "Cooling",
                   "nl": "Koel",
-				  "de": "Kühlen"
+                  "de": "Kühlen"
                 }
               },
               {
@@ -371,7 +533,7 @@
                 "label": {
                   "en": "Heating and cooling",
                   "nl": "Verwarm en koel",
-				  "de": "Heizen und Kühlen"
+                  "de": "Heizen und Kühlen"
                 }
               },
               {
@@ -379,7 +541,7 @@
                 "label": {
                   "en": "Eco",
                   "nl": "Eco",
-				  "de": "Eco"
+                  "de": "Eco"
                 }
               },
               {
@@ -387,7 +549,7 @@
                 "label": {
                   "en": "Off",
                   "nl": "Uit",
-				  "de": "Aus"
+                  "de": "Aus"
                 }
               }
             ]
@@ -398,42 +560,47 @@
             "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
         ]
-      },
+      }
+    ],
+    "conditions": [
       {
-        "id": "measure_humidity_changed",
+        "id": "is_streaming",
         "title": {
-          "en": "The humidity changed",
-          "nl": "De luchtvochtigheid is veranderd",
-		  "de": "Die Luftfeuchtigkeit hat sich geändert"
+          "en": "!{{Is|Is not}} streaming",
+          "nl": "!{{Is|Is niet}} aan het streamen"
         },
-        "tokens": [
-          {
-            "name": "measure_humidity",
-            "type": "number",
-            "title": {
-              "en": "Humidity",
-              "nl": "Luchtvochtigheid",
-			  "de": "Luftfeuchtigkeit"
-            },
-            "example": 35
-          }
-        ],
         "args": [
           {
             "name": "device",
             "type": "device",
-            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
           }
         ]
-      }
-    ],
-    "conditions": [
+      },
+      {
+        "id": "on_going_event",
+        "title": {
+          "en": "!{{Is|Is not}} detecting an event",
+          "nl": "!{{Is|Is niet}} iets aan het detecteren"
+        },
+        "hint": {
+          "en": "This Flow card only functions with a Nest Aware subscription",
+          "nl": "Dit Flow kaartje werkt alleen in combinatie met een Nest Aware abonnement"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
+          }
+        ]
+      },
       {
         "id": "away_status",
         "title": {
           "en": "Away status !{{is|is not}}",
           "nl": "Away status !{{is|is niet}}",
-		  "de": "Weg-Status !{{ist|ist nicht}}"
+          "de": "Weg-Status !{{ist|ist nicht}}"
         },
         "args": [
           {
@@ -442,7 +609,7 @@
             "placeholder": {
               "en": "Which home",
               "nl": "Welk huis",
-			  "de": "Welches Heim"
+              "de": "Welches Heim"
             }
           },
           {
@@ -454,7 +621,7 @@
                 "label": {
                   "en": "Home",
                   "nl": "Home",
-				  "de": "Zuhause"
+                  "de": "Zuhause"
                 }
               },
               {
@@ -462,7 +629,7 @@
                 "label": {
                   "en": "Away",
                   "nl": "Away",
-				  "de": "Weg"
+                  "de": "Weg"
                 }
               }
             ]
@@ -474,12 +641,12 @@
         "title": {
           "en": "HVAC status !{{is|is not}}",
           "nl": "HVAC status !{{is|is niet}}",
-		  "de": "HVAC-Status !{{ist|ist nicht}}"
+          "de": "HVAC-Status !{{ist|ist nicht}}"
         },
         "hint": {
           "en": "HVAC status indicates whether the system is now actively heating, cooling or is off.",
           "nl": "HVAC status geeft aan of het systeem nu actief verwarmt, koelt of uit staat.",
-		  "de": "HVAC-Status zeigt an, ob das System aktiv heizt, kühlt oder aus ist."
+          "de": "HVAC-Status zeigt an, ob das System aktiv heizt, kühlt oder aus ist."
         },
         "args": [
           {
@@ -491,7 +658,7 @@
                 "label": {
                   "en": "Heating",
                   "nl": "Verwarmen",
-				  "de": "Heizen"
+                  "de": "Heizen"
                 }
               },
               {
@@ -499,7 +666,7 @@
                 "label": {
                   "en": "Cooling",
                   "nl": "Koelen",
-				  "de": "Kühlen"
+                  "de": "Kühlen"
                 }
               },
               {
@@ -507,7 +674,7 @@
                 "label": {
                   "en": "Off",
                   "nl": "Uit",
-				  "de": "Aus"
+                  "de": "Aus"
                 }
               }
             ]
@@ -524,12 +691,12 @@
         "title": {
           "en": "HVAC mode !{{is|is not}}",
           "nl": "HVAC modus !{{is|is niet}}",
-		  "de": "HVAC-Modus !{{ist|ist nicht}}"
+          "de": "HVAC-Modus !{{ist|ist nicht}}"
         },
         "hint": {
           "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature. For the current HVAC activity, please refer to HVAC status.",
           "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken. Voor de huidige HVAC activiteit, raadpleeg de HVAC status.",
-		  "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen. Für die momentane HVAC-Aktivität siehe HVAC-Status."
+          "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen. Für die momentane HVAC-Aktivität siehe HVAC-Status."
         },
         "args": [
           {
@@ -541,7 +708,7 @@
                 "label": {
                   "en": "Heating",
                   "nl": "Verwarm",
-				  "de": "Heizen"
+                  "de": "Heizen"
                 }
               },
               {
@@ -549,7 +716,7 @@
                 "label": {
                   "en": "Cooling",
                   "nl": "Koel",
-				  "de": "Kühlen"
+                  "de": "Kühlen"
                 }
               },
               {
@@ -557,7 +724,7 @@
                 "label": {
                   "en": "Heating and cooling",
                   "nl": "Verwarm en koel",
-				  "de": "Heizen und Kühlen"
+                  "de": "Heizen und Kühlen"
                 }
               },
               {
@@ -565,7 +732,7 @@
                 "label": {
                   "en": "Eco",
                   "nl": "Eco",
-				  "de": "Eco"
+                  "de": "Eco"
                 }
               },
               {
@@ -573,7 +740,7 @@
                 "label": {
                   "en": "Off",
                   "nl": "Uit",
-				  "de": "Aus"
+                  "de": "Aus"
                 }
               }
             ]
@@ -588,16 +755,56 @@
     ],
     "actions": [
       {
+        "id": "set_away_mode",
+        "title": {
+          "en": "Set Away mode to",
+          "nl": "Pas Away modus aan"
+        },
+        "args": [
+          {
+            "name": "structure",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Which home",
+              "nl": "Welk huis",
+              "de": "Welches Heim"
+            }
+          },
+          {
+            "name": "status",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "home",
+                "label": {
+                  "en": "Home",
+                  "nl": "Home",
+                  "de": "Zuhause"
+                }
+              },
+              {
+                "id": "away",
+                "label": {
+                  "en": "Away",
+                  "nl": "Away",
+                  "de": "Weg"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "hvac_mode",
         "title": {
           "en": "Set HVAC mode to",
           "nl": "HVAC modus instellen op",
-		  "de": "HVAC-Modus setzen auf"
+          "de": "HVAC-Modus setzen auf"
         },
         "hint": {
           "en": "HVAC mode indicates what the thermostat may do to achieve the target temperature.",
           "nl": "HVAC modus geeft aan wat de thermostaat mag doen om de doel temperatuur te bereiken.",
-		  "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen."
+          "de": "HVAC-Modus zeigt an, was der Thermostat macht, um die Zieltemperatur zu erreichen."
         },
         "args": [
           {
@@ -609,7 +816,7 @@
                 "label": {
                   "en": "Heating",
                   "nl": "Verwarm",
-				  "de": "Heizen"
+                  "de": "Heizen"
                 }
               },
               {
@@ -617,7 +824,7 @@
                 "label": {
                   "en": "Cooling",
                   "nl": "Koel",
-				  "de": "Kühlen"
+                  "de": "Kühlen"
                 }
               },
               {
@@ -625,7 +832,7 @@
                 "label": {
                   "en": "Heating and cooling",
                   "nl": "Verwarm en koel",
-				  "de": "Heizen und Kühlen"
+                  "de": "Heizen und Kühlen"
                 }
               },
               {
@@ -633,7 +840,7 @@
                 "label": {
                   "en": "Eco",
                   "nl": "Eco",
-				  "de": "Eco"
+                  "de": "Eco"
                 }
               },
               {
@@ -641,7 +848,7 @@
                 "label": {
                   "en": "Off",
                   "nl": "Uit",
-				  "de": "Aus"
+                  "de": "Aus"
                 }
               }
             ]
