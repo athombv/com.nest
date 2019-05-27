@@ -126,7 +126,7 @@ class NestApp extends Homey.App {
   async getDevices({ driverType }) {
     await this.getData(); // Make sure data is retrieved
     if (typeof driverType !== 'string') throw new Error('Missing driverType parameter');
-    if (this._data && Object.prototype.hasOwnProperty.call(this._data, 'devices')) {
+    if (this._data && Object.prototype.hasOwnProperty.call(this._data, 'devices') && this._data.devices[driverType]) {
       return Object.values(this._data.devices[driverType]);
     }
     return [];
@@ -526,7 +526,7 @@ class NestApp extends Homey.App {
 
     if (Object.prototype.hasOwnProperty.call(args, 'structure') && Object.prototype.hasOwnProperty.call(args, 'status')) {
       try {
-        await this.executePutRequest(`structures/${args.structure.structure_id}`, 'away', args.status);
+        return this.executePutRequest(`structures/${args.structure.structure_id}`, 'away', args.status);
       } catch (err) {
         this.error('_onFlowCardActionSetAwayStatus() -> api request failed', err);
         throw new Error(Homey.__('error.missing_argument'));
@@ -570,7 +570,10 @@ class NestApp extends Homey.App {
 
   _migrateTokens() {
     // No migration needed
-    if (this.isAuthenticated()) return;
+    if (this.isAuthenticated()) {
+      this.log('_migrateTokens() -> already migrated');
+      return;
+    }
 
     this.log('_migrateTokens() -> started');
 
