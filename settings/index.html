@@ -1,104 +1,103 @@
 <!doctype html>
 <html>
 <head>
-    <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
-    <script type="text/javascript" src="/manager/webserver/assets/js/jquery.js"></script>
+  <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
 </head>
 <body>
 <h1 data-i18n="settings.title"></h1>
 
 <div id="content">
-    <div id="login" style="display:none;padding-bottom:20px;">
-        <p data-i18n="settings.login_intro"></p>
-        <button id="login_btn" data-i18n="settings.login_button" onclick="login()"></button>
-    </div>
-    <div id="logout" style="display:none;padding-bottom:20px;">
-        <p data-i18n="settings.logged_in"></p>
-        <p data-i18n="settings.logout_intro"></p>
-        <button id="logout_btn" data-i18n="settings.logout_button" onclick="logout()"></button>
-    </div>
-    <div id="log_wrapper">
-        <h1>Log</h1>
-        <table id="log" style="border-spacing: 20px;">
-            <thead>
-                <tr>
-                    <th scope="col" id="htimestamp" data-i18n="settings.time"></th>
-                    <th scope="col" id="hmsg" data-i18n="settings.msg"></th>
-                </tr>
-            </thead>
-            <tfoot>
-                <tr>
-                    <td></td>
-                </tr>
-            </tfoot>
-            <tbody></tbody>
-        </table>
-    </div>
+  <div id="login" style="display:none;padding-bottom:20px;">
+    <p data-i18n="settings.login_intro"></p>
+    <button id="login_btn" data-i18n="settings.login_button" onclick="login()"></button>
+  </div>
+  <div id="logout" style="display:none;padding-bottom:20px;">
+    <p data-i18n="settings.logged_in"></p>
+    <p data-i18n="settings.logout_intro"></p>
+    <button id="logout_btn" data-i18n="settings.logout_button" onclick="logout()"></button>
+  </div>
+  <div id="log_wrapper">
+    <h1>Log</h1>
+    <table id="log" style="border-spacing: 20px;">
+      <thead>
+      <tr>
+        <th scope="col" id="htimestamp" data-i18n="settings.time"></th>
+        <th scope="col" id="hmsg" data-i18n="settings.msg"></th>
+      </tr>
+      </thead>
+      <tfoot>
+      <tr>
+        <td></td>
+      </tr>
+      </tfoot>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 </body>
 </html>
 
 <script type="text/javascript">
-	function showLogin() {
-		document.getElementById('logout').style.display = 'none';
-		document.getElementById('login').style.display = 'block';
-	}
+  function showLogin() {
+    document.getElementById('logout').style.display = 'none';
+    document.getElementById('login').style.display = 'block';
+  }
 
-	function showLogout() {
-		document.getElementById('login').style.display = 'none';
-		document.getElementById('logout').style.display = 'block';
-	}
+  function showLogout() {
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('logout').style.display = 'block';
+  }
 
-	function login() {
-		Homey.api('POST', '/login/', { state: true }, function (err, success) {
-			if (!err && success) showLogout()
-		});
-	}
+  function login() {
+    Homey.api('POST', '/login/', { state: true }, function (err, success) {
+      if (!err && success) showLogout()
+    });
+  }
 
-	function logout() {
-		Homey.api('POST', '/login/', { state: false }, function (err, success) {
-			if (!err && success) showLogin();
-		});
-	}
+  function logout() {
+    Homey.api('POST', '/login/', { state: false }, function (err, success) {
+      if (!err && success) showLogin();
+    });
+  }
 
-	function onHomeyReady(Homey) {
-		Homey.on('url', url => Homey.openURL(url));
-		Homey.on('authorized', () => showLogout());
-		Homey.on('error', err => {
-			if (err) return Homey.alert(err.message || err);
-		});
-		Homey.api('GET', '/login/', {}, function (err, loggedIn) {
-			if (loggedIn) {
-				showLogout()
-			} else {
-				showLogin()
-			}
-		});
+  function onHomeyReady(Homey) {
+    Homey.on('url', url => Homey.openURL(url));
+    Homey.on('authorized', () => showLogout());
+    Homey.on('error', err => {
+      if (err) return Homey.alert(err.message || err);
+    });
+    Homey.api('GET', '/login/', {}, function (err, loggedIn) {
+      if (loggedIn) {
+        showLogout()
+      } else {
+        showLogin()
+      }
+    });
 
-		var monthNames = [Homey.__("settings.january"), Homey.__("settings.february"), Homey.__("settings.march"), Homey.__("settings.april"), Homey.__("settings.may"), Homey.__("settings.june"),
-			Homey.__("settings.july"), Homey.__("settings.august"), Homey.__("settings.september"), Homey.__("settings.october"), Homey.__("settings.november"), Homey.__("settings.december")
-		];
+    var monthNames = [Homey.__("settings.january"), Homey.__("settings.february"), Homey.__("settings.march"), Homey.__("settings.april"), Homey.__("settings.may"), Homey.__("settings.june"),
+      Homey.__("settings.july"), Homey.__("settings.august"), Homey.__("settings.september"), Homey.__("settings.october"), Homey.__("settings.november"), Homey.__("settings.december")
+    ];
 
-		// Hide log initially
-		$('#log_wrapper').hide();
+    // Hide log initially
+    document.getElementById('log_wrapper').style.display = 'none';
 
-		Homey.get('logItems', function (err, items) {
-			if (items) {
-				items.reverse();
-				items.forEach(function (item) {
-					const date = new Date(item.timestamp);
-					const month = monthNames[date.getMonth()];
-					const day = date.getDate();
-					const hours = (date.getHours() <= 9) ? `0${date.getHours()}` : date.getHours();
-					const minutes = (date.getMinutes() <= 9) ? `0${date.getMinutes()}` : date.getMinutes();
-					$('#log tbody').append('<tr><td id="timestamp" style="white-space: nowrap;">' + month + ' ' + day + ', ' + hours + ':' + minutes + '</td><td id="msg">' + item.msg + '</td></tr>');
-				});
-				if (items.length === 0) $('#log_wrapper').hide();
-				else $('#log_wrapper').show();
-			} else $('#log_wrapper').hide();
-		});
+    Homey.get('logItems', function (err, items) {
+      if (items) {
+        items.reverse();
+        items.forEach(function (item) {
+          const date = new Date(item.timestamp);
+          const month = monthNames[date.getMonth()];
+          const day = date.getDate();
+          const hours = (date.getHours() <= 9) ? `0${date.getHours()}` : date.getHours();
+          const minutes = (date.getMinutes() <= 9) ? `0${date.getMinutes()}` : date.getMinutes();
+          document.getElementById('log').getElementsByTagName('tbody')[0].innerHTML += '<tr><td id="timestamp" style="white-space: nowrap;">' + month + ' ' + day + ', ' + hours + ':' + minutes + '</td><td id="msg">' + item.msg + '</td></tr>';
+        });
+        if (items.length === 0) document.getElementById('log_wrapper').style.display = 'none';
+        else document.getElementById('log_wrapper').style.display = 'block';
+      } else document.getElementById('log_wrapper').style.display = 'none';
+    });
 
-		// We are ready
-		Homey.ready();
-	}
+    // We are ready
+    Homey.ready();
+  }
 </script>

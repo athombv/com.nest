@@ -88,7 +88,6 @@ class NestThermostat extends NestDevice {
       await this.setTargetTemperature(temperature);
     } catch (err) {
       this.error('Error setting target temperature', err);
-      Homey.app.registerLogItem({ msg: err, timestamp: new Date() });
       throw new Error(err);
     }
   }
