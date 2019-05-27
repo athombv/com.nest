@@ -576,30 +576,6 @@
             "filter": "driver_uri=homey:app:com.nest&driver_id=nest_thermostat"
           }
         ]
-      },
-      {
-        "id": "snapshot_created",
-        "title": {
-          "en": "Snapshot was created",
-          "nl": "Snapshot is gemaakt"
-        },
-        "tokens": [
-          {
-            "name": "snapshot",
-            "type": "image",
-            "title": {
-              "en": "Snapshot",
-              "nl": "Snapshot"
-            }
-          }
-        ],
-        "args": [
-          {
-            "name": "device",
-            "type": "device",
-            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
-          }
-        ]
       }
     ],
     "conditions": [
@@ -794,20 +770,6 @@
       }
     ],
     "actions": [
-      {
-        "id": "create_snapshot",
-        "title": {
-          "en": "Create snapshot",
-          "nl": "Maak snapshot"
-        },
-        "args": [
-          {
-            "name": "device",
-            "type": "device",
-            "filter": "driver_uri=homey:app:com.nest&driver_id=nest_cam"
-          }
-        ]
-      },
       {
         "id": "set_away_mode",
         "title": {
