@@ -3,7 +3,6 @@
   "unauthenticated": "Authentication has been revoked, go to Settings > Nest to re-authenticate",
   "reconnecting": "Reconnecting...",
   "version_repair": "Due to a major update, this device needs to be re-paired",
-  "cam_snapshot_token_title": "Latest snapshot from __name__",
   "cam_last_event_image_title": "Event snapshot",
   "cam_last_event_animated_image_title": "Animated event snapshot",
   "settings": {

@@ -39,27 +39,19 @@ class NestCam extends NestDevice {
   }
 
   /**
-   * Method that fetches a new snapshot from the Nest API and updates the associated Image and FlowToken instances.
+   * Method that updates the snapshot image which fetches a new image from the Nest API
    * @returns {Promise<void>}
    */
-  async createNewSnapshot() {
-    this.log('createNewSnapshot()');
+  async updateSnapshot() {
+    this.log('updateSnapshot()');
 
     // Calling update triggers a GET on the snapshot url and updates the image
     this._snapshotImage.update();
 
-    try {
-      // Update global token
-      await this._updateSnapshotFlowToken();
-      this.log('createNewSnapshot() -> flow token updated');
-    } catch (err) {
-      this.error('createNewSnapshot() -> error could not update snapshot token', err);
-    }
-
     // Trigger snapshot done flow
     const driver = this.getDriver();
     driver.triggerSnapshotCreatedFlow(this, { snapshot: this._snapshotImage });
-    this.log('createNewSnapshot() -> flow triggered');
+    this.log('updateSnapshot() -> flow triggered');
   }
 
   /**
@@ -74,29 +66,6 @@ class NestCam extends NestDevice {
       return null;
     }
     return res.json();
-  }
-
-  /**
-   * Method that updates the value of the snapshot image FlowToken and registers the FlowToken if not
-   * already done before.
-   * @returns {Promise<Homey.FlowToken|*>}
-   */
-  async _updateSnapshotFlowToken() {
-    this.log('_updateSnapshotFlowToken()');
-
-    // First register snapshot if needed
-    if (!this._snapshotImageToken) {
-      return this._registerSnapshotFlowToken();
-    }
-
-    // Try to set new value
-    try {
-      await this._snapshotImageToken.setValue(this._snapshotImage);
-      this.log('_updateSnapshotFlowToken() -> success');
-    } catch (err) {
-      this.error('_updateSnapshotFlowToken() -> error', err, this._snapshotImage);
-    }
-    return this._snapshotImageToken;
   }
 
   /**
@@ -160,30 +129,6 @@ class NestCam extends NestDevice {
     this._lastEventImage.register()
       .then(() => this.setCameraImage('lastEvent', Homey.__('cam_last_event_image_title'), this._lastEventImage))
       .catch(this.error);
-  }
-
-  /**
-   * Register image flow token, which holds a snapshot image.
-   * @param snapshotImage
-   * @returns {*}
-   */
-  _registerSnapshotFlowToken() {
-    // Create new flow image token
-    this._snapshotImageToken = new Homey.FlowToken('snapshot_token', {
-      type: 'image',
-      title: Homey.__('cam_snapshot_token_title', { name: this.getName() }),
-    });
-
-    // Register flow image token
-    return this._snapshotImageToken
-      .register()
-      .then(() => {
-        this.log('_registerSnapshotFlowToken() -> image token registered');
-
-        // Update image in token
-        this._snapshotImageToken.setValue(this._snapshotImage)
-          .catch(err => this.error('_registerSnapshotFlowToken() -> failed to setValue() on image token', err));
-      });
   }
 
   /**

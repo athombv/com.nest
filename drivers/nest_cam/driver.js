@@ -122,7 +122,7 @@ class NestCamDriver extends NestDriver {
   static async _onFlowCardActionCreateSnapshot(args = {}) {
     if (Object.prototype.hasOwnProperty.call(args, 'device')) {
       // Try to create new snapshot
-      return args.device.createNewSnapshot();
+      return args.device.updateSnapshot();
     }
     throw new Error(Homey.__('error.missing_argument'));
   }
