@@ -1,6 +1,5 @@
 {
   "removed_externally": "Dit apparaat is niet langer beschikbaar in het Nest account",
-  "unauthenticated": "Geen toegang tot dit apparaat, ga naar Instellingen > Nest om opnieuw in te loggen",
   "reconnecting": "Verbinden...",
   "version_repair": "Vanwege een update moet dit apparaat opnieuw worden toegevoegd",
   "cam_last_event_image_title": "Gebeurtenis snapshot",
@@ -27,10 +26,8 @@
     "msg": "Bericht"
   },
   "authentication": {
-    "connecting": "Bezig met verbinden...",
     "not_authorized": "Log eerst in met je Nest account",
     "re-authorize": "Log opnieuw in via de Nest App Instellingen",
-    "device_not_found": "Apparaat niet gevonden, probeer opnieuw in te loggen met het juiste Nest account.",
     "re-login_failed": "Er is iets fout gegaan bij het opnieuw inloggen.",
     "re-login_failed_with_error": "Er is iets fout gegaan bij het opnieuw inloggen (error: __error__)"
   },
@@ -42,7 +39,6 @@
   },
   "error": {
     "missing_argument": "Er ging iets fout",
-    "not_streaming": "(__name__) Kon geen snapshot maken, apparaat is niet aan het streamen",
     "hvac_mode_is_heat_cool": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op 'heat-cool'",
     "hvac_mode_is_eco": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl HVAC modus stond ingesteld op Eco",
     "temp_lock": "Kon doeltemperatuur niet aanpassen naar __temp__ terwijl temperatuur slot actief was (__min__ - __max__)",

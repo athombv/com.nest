@@ -1,6 +1,5 @@
 {
   "removed_externally": "Dieses Gerät konnte nicht gefunden werden, bitte erneut koppeln",
-  "unauthenticated": "Autorisierung wurde wiederrufen; gehe in Einstellungen > Nest, um erneut zu autorisieren",
   "reconnecting": "Neu verbinden...",
   "version_repair": "Aufgrund eines großen Updates muss dieses Gerät erneut gekoppelt werden",
   "settings": {
@@ -21,7 +20,6 @@
     "msg": "Nachricht"
   },
   "error": {
-    "not_streaming": "(__name__) Abrufen des Schnappschusses fehlgeschlagen, Gerät streamt nicht",
     "hvac_mode_is_heat_cool": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung nicht möglich, wenn HVAC-Modus Heizen/Kühlen ist",
     "hvac_mode_is_eco": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung nicht möglich, wenn HVAC-Modus Eco ist",
     "temp_lock": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung außerhalb Temperaturrahmen nicht möglich (__min__ - __max__)",
