@@ -2,7 +2,6 @@
   "removed_externally": "This device is no longer available in your Nest account",
   "reconnecting": "Reconnecting...",
   "version_repair": "Due to a major update, this device needs to be re-paired",
-  "cam_last_event_image_title": "Event snapshot",
   "settings": {
     "title": "Nest Settings",
     "login_intro": "Click here to login with your Nest account.",

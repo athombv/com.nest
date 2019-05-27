@@ -83,6 +83,7 @@ class NestCam extends NestDevice {
     return this._snapshotImage.register()
       .then(() => this.log('_registerSnapshotImage() -> registered'))
       .then(() => this.setCameraImage('snapshot', 'Snapshot', this._snapshotImage))
+      .then(() => this.log('_registerSnapshotImage() -> set camera image done'))
       .catch(this.error);
   }
 
@@ -113,7 +114,6 @@ class NestCam extends NestDevice {
     // Register and set camera iamge
     return this._lastEventImage.register()
       .then(() => this.log('_registerLastEventImage() -> registered'))
-      .then(() => this.setCameraImage('lastEvent', Homey.__('cam_last_event_image_title'), this._lastEventImage))
       .catch(this.error);
   }
 
@@ -149,7 +149,7 @@ class NestCam extends NestDevice {
       }
 
       // Update url and then update Image instance
-      this._imageUrls[LAST_EVENT_ID] = value.animated_image_url || value.image_url;
+      this._imageUrls[LAST_EVENT_ID] = value.image_url;
       this._lastEventImage.update();
 
       // Create Flow tokens object
