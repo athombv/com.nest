@@ -118,6 +118,16 @@ class NestApp extends Homey.App {
   }
 
   /**
+   * Method that returns a specific structure object by id.
+   * @param id
+   * @returns {Promise<*>}
+   */
+  async getStructure({ id }) {
+    const structures = await this.getStructures();
+    return structures.find(structure => structure.structure_id === id);
+  }
+
+  /**
    * Method that returns devices by driverType, first it awaits the this._data property since it might still be a
    * Promise.
    * @param driverType
@@ -540,9 +550,13 @@ class NestApp extends Homey.App {
     this.log('_onFlowCardConditionAwayStatus()');
     if (!this.isAuthenticated()) throw new Error(Homey.__('authentication.not_authorized'));
 
-    if (Object.prototype.hasOwnProperty.call(args, 'structure') && Object.prototype.hasOwnProperty.call(args.structure, 'structure_id')) {
-      const structure = await this.getStructures({ id: args.structure.structure_id });
-      return !!structure;
+    if (Object.prototype.hasOwnProperty.call(args, 'structure') && Object.prototype.hasOwnProperty.call(args.structure, 'structure_id')
+      && Object.prototype.hasOwnProperty.call(args, 'status')) {
+      const structure = await this.getStructure({ id: args.structure.structure_id });
+      if (structure && Object.prototype.hasOwnProperty.call(structure, 'away')) {
+        return structure.away === args.status;
+      }
+      throw new Error(Homey.__('error.unknown_structure'));
     }
     throw new Error(Homey.__('error.missing_argument'));
   }

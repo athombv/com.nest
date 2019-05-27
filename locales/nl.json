@@ -51,6 +51,7 @@
     "hvac_mode_eco_override_failed": "HVAC eco modus overschrijven was mislukt: ",
     "camera_permission": "De Nest client die momenteel wordt gebruikt staat het toevoegen van Nest Cams aan Homey niet toe. Controleer de Nest smartphone app op een bericht waarin gevraagd wordt een client update te accepteren. Na dit geaccepteerd te hebben dien je opnieuw in te loggen via Instellingen > Nest.",
     "set_away_permission": "De Nest client die momenteel wordt gebruikt staat het aanpassen van de Away modus niet toe. Controleer de Nest smartphone app op een bericht waarin gevraagd wordt een client update te accepteren. Na dit geaccepteerd te hebben dien je opnieuw in te loggen via Instellingen > Nest.",
-    "unknown": "(__name__) Kon doeltemperatuur niet aanpassen naar __temp__, error: __error__"
+    "unknown": "(__name__) Kon doeltemperatuur niet aanpassen naar __temp__, error: __error__",
+    "unknown_structure": "Het geselecteerde huis bestaat niet"
   }
 }
