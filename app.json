@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "compatibility": ">=2.2.0",
   "sdk": 2,
   "name": {
@@ -13,6 +13,7 @@
     "nl": "Deze app laat jou je Nest Thermostat, Nest Protect en Nest Cameras bedienen",
     "de": "Diese App lässt dich deinen Nest Thermostat, Nest Protect und Nest Cameras steuern"
   },
+  "brandColor": "#00AFD8",
   "category": "climate",
   "author": {
     "name": "Athom B.V.",
