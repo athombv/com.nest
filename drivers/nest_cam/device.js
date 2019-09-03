@@ -18,10 +18,6 @@ class NestCam extends NestDevice {
       [LAST_EVENT_ID]: null,
     };
 
-    // Register images
-    await this._registerSnapshotImage();
-    await this._registerLastEventImage();
-
     // Do this after the above is done
     await super.onInit();
   }
@@ -128,6 +124,11 @@ class NestCam extends NestDevice {
 
       // Update url and then update Image instance
       this._imageUrls[SNAPSHOT_ID] = value;
+
+      // Check if snapshot image is registered, if not do so
+      if (!this._snapshotImage) {
+        await this._registerSnapshotImage();
+      }
       if (this._snapshotImage) this._snapshotImage.update();
     } else if (capabilityId === NEST_CAPABILITIES.IS_STREAMING && this.valueChangedAndNotNew(capabilityId, value)) {
       this.log('onCapabilityValue() -> new is_streaming', value);
@@ -150,6 +151,12 @@ class NestCam extends NestDevice {
 
       // Update url and then update Image instance
       this._imageUrls[LAST_EVENT_ID] = value.image_url;
+
+      // Check if last event image is registered, if not do so
+      if (!this._lastEventImage) {
+        await this._registerLastEventImage();
+      }
+
       this._lastEventImage.update();
 
       // Create Flow tokens object
