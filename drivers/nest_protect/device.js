@@ -1,51 +1,51 @@
 'use strict';
 
-const Homey = require('homey');
-const NestDevice = require('./../nestDevice');
+const NestDevice = require('../../lib/NestDevice');
+const {
+  CAPABILITIES, NEST_CAPABILITIES, SMOKE_ALARM_STATES, CO_ALARM_STATES,
+} = require('../../constants');
 
 class NestProtect extends NestDevice {
+  /**
+   * Getter for device specific capabilities
+   * @returns {*[]}
+   */
+  get capabilities() {
+    return [
+      NEST_CAPABILITIES.BATTERY_HEALTH,
+      NEST_CAPABILITIES.CO_ALARM_STATE,
+      NEST_CAPABILITIES.SMOKE_ALARM_STATE,
+    ];
+  }
 
-	onInit() {
-		super.onInit();
-	}
+  /**
+   * Method that is called when a capability value update is received.
+   * @param capabilityId
+   * @param value
+   */
+  onCapabilityValue(capabilityId, value) {
+    if (capabilityId === NEST_CAPABILITIES.CO_ALARM_STATE) {
+      if (!((this.co_alarm_state === CO_ALARM_STATES.WARNING
+        || this.co_alarm_state === CO_ALARM_STATES.EMERGENCY)
+        && (value === CO_ALARM_STATES.WARNING
+          || value === CO_ALARM_STATES.EMERGENCY))) {
+        this.setCapabilityValue(CAPABILITIES.ALARM_CO, (value !== CO_ALARM_STATES.OK)).catch(this.error);
+      }
+    }
 
-	/**
-	 * Create client and bind event listeners.
-	 * @returns {*}
-	 */
-	createClient() {
+    if (capabilityId === NEST_CAPABILITIES.SMOKE_ALARM_STATE) {
+      if (!((this.smoke_alarm_state === SMOKE_ALARM_STATES.WARNING
+        || this.smoke_alarm_state === SMOKE_ALARM_STATES.EMERGENCY)
+        && (value === SMOKE_ALARM_STATES.WARNING
+          || value === SMOKE_ALARM_STATES.EMERGENCY))) {
+        this.setCapabilityValue(CAPABILITIES.ALARM_SMOKE, (value !== SMOKE_ALARM_STATES.OK)).catch(this.error);
+      }
+    }
 
-		// Create thermostat
-		this.client = Homey.app.nestAccount.createProtect(this.getData().id);
-
-		// If client construction failed, set device unavailable
-		if (!this.client) return this.setUnavailable(Homey.__('removed_externally'));
-
-		// Subscribe to events on data change
-		this.client
-			.on('co_alarm_state', coAlarmState => {
-				if (!((this.client.co_alarm_state === 'warning' ||
-					this.client.co_alarm_state === 'emergency') &&
-					(coAlarmState === 'warning' ||
-					coAlarmState === 'emergency'))) {
-					this.setCapabilityValue('alarm_co', (coAlarmState !== 'ok'));
-				}
-			})
-			.on('smoke_alarm_state', smokeAlarmState => {
-				if (!((this.client.smoke_alarm_state === 'warning' ||
-					this.client.smoke_alarm_state === 'emergency') &&
-					(smokeAlarmState === 'warning' ||
-					smokeAlarmState === 'emergency'))) {
-					this.setCapabilityValue('alarm_smoke', (smokeAlarmState !== 'ok'));
-				}
-			})
-			.on('battery_health', batteryHealth => {
-				this.setCapabilityValue('alarm_battery', (batteryHealth !== 'ok'));
-			})
-			.on('removed', () => {
-				this.setUnavailable(Homey.__('removed_externally'));
-			});
-	}
+    if (capabilityId === NEST_CAPABILITIES.BATTERY_HEALTH) {
+      this.setCapabilityValue(CAPABILITIES.ALARM_BATTERY, (value !== SMOKE_ALARM_STATES.OK)).catch(this.error);
+    }
+  }
 }
 
 module.exports = NestProtect;

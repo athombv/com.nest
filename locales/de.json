@@ -1,18 +1,9 @@
 {
-  "offline": "Dieses Gerät scheint offline zu sein",
   "removed_externally": "Dieses Gerät konnte nicht gefunden werden, bitte erneut koppeln",
-  "unauthenticated": "Autorisierung wurde wiederrufen; gehe in Einstellungen > Nest, um erneut zu autorisieren",
   "reconnecting": "Neu verbinden...",
   "version_repair": "Aufgrund eines großen Updates muss dieses Gerät erneut gekoppelt werden",
   "settings": {
     "title": "Nest-Einstellungen",
-    "authorize_intro": "Um Homey Zugriff auf deine Nest-Geräte zu gewähren, klicke auf die untenstehende Schaltfläche!",
-    "auth_title": "Homey autorisieren",
-    "deauth_title": "Homey deautorisieren",
-    "deauthorize_intro": "Wenn du dein Homey von deinem Nest-Konto trennen möchtest, klicke auf die untenstehende Schaltfläche.",
-    "deauthorize": "Homeys Autorisierung wiederrufen",
-    "authorize": "Autorisiere Homey, dein Nest-Gerät zu verwenden!",
-    "warning": "Etwas ist schiefgelaufen, bitte versuche es erneut.",
     "january": "Januar",
     "february": "Februar",
     "march": "März",
@@ -28,11 +19,9 @@
     "time": "Zeit",
     "msg": "Nachricht"
   },
-  "error":{
-    "not_streaming": "(__name__) Abrufen des Schnappschusses fehlgeschlagen, Gerät streamt nicht",
+  "error": {
     "hvac_mode_is_heat_cool": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung nicht möglich, wenn HVAC-Modus Heizen/Kühlen ist",
     "hvac_mode_is_eco": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung nicht möglich, wenn HVAC-Modus Eco ist",
-    "structure_is_away": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung nicht möglich, wenn Strukturmodus Weg ist",
     "temp_lock": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung außerhalb Temperaturrahmen nicht möglich (__min__ - __max__)",
     "emergency_heat": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen; Anpassung bei Notheizen nicht möglich",
     "hvac_emergency_heat": "(__name__) Setzen des HVAC-Modus fehlgeschlagen; Anpassung bei Notheizen nicht möglich",
@@ -42,13 +31,5 @@
     "hvac_mode_eco_unsupported": "(__name__) HVAC-Modus Eco wird nicht unterstützt",
     "hvac_mode_eco_override_failed": "(__name__) Überschreiben von HVAC-Eco-Modus fehlgeschlagen: ",
     "unknown": "(__name__) Setzen der Zieltemperatur auf __temp__ fehlgeschlagen, Fehler: __error__"
-  },
-  "pair": {
-    "no_devices_found": "Es kann bis zu 30 Minuten dauern, bevor ein neues Nest-Gerät verfügbar ist, nachdem es deinem Nest-Konto hinzugefügt wurde.",
-    "authorization": {
-      "authenticate": "Mit Nest autorisieren",
-      "authorization_explanation": "Gib Homey Zugriff auf deine Nest-Geräte!",
-      "start_authentication": "Authentifizieren"
-    }
   }
 }
