@@ -1,6 +1,6 @@
 {
   "id": "com.nest",
-  "version": "2.6.5",
+  "version": "3.0.0",
   "compatibility": ">=2.2.0",
   "sdk": 2,
   "name": {
@@ -34,6 +34,7 @@
   "drivers": [
     {
       "id": "nest_thermostat",
+      "deprecated": true,
       "name": {
         "en": "Nest Thermostat",
         "nl": "Nest Thermostaat",
@@ -165,6 +166,7 @@
     },
     {
       "id": "nest_protect",
+      "deprecated": true,
       "name": {
         "en": "Nest Protect",
         "nl": "Nest Protect",
@@ -223,6 +225,7 @@
     },
     {
       "id": "nest_cam",
+      "deprecated": true,
       "name": {
         "en": "Nest Cam",
         "nl": "Nest Cam",
