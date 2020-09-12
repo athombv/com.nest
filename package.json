@@ -6,7 +6,7 @@
   "dependencies": {
     "eventsource": "^1.0.7",
     "homey-log": "git+https://github.com/athombv/node-homey-log.git",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "semver": "^5.3.0"
   },
   "devDependencies": {},
